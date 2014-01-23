@@ -1,8 +1,7 @@
-![YägGLer logo](data/yaggler-small.png) YägGLer
+![YägGLer logo](data/yaggler-small.png)
 =======
 
-
-YägGLer is a kind of 3D renderer, mainly focused on beeing non user-friendly.
+**YägGLer** is a kind of 3D renderer, mainly focused on beeing non user-friendly.
 
 -------------
 
