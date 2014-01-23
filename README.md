@@ -1,7 +1,7 @@
-yägGler
+yägGLer
 =======
 
-YägGler is a kind of 3D renderer, mainly focused on beeing non user-friendly.
+YägGLer is a kind of 3D renderer, mainly focused on beeing non user-friendly.
 
 
         /\          /\
@@ -19,28 +19,30 @@ YägGler is a kind of 3D renderer, mainly focused on beeing non user-friendly.
 
 -------------
 
-YagGLer is not intended to be user friendly.
+YägGLer is not intended to be user friendly.
 
-YagGLer is not intended to "produce" beautifull code.
+YägGLer is not intended to _"produce"_ a beautiful code.
 
-YagGLer does not optimise for you.
+YägGLer does not optimise for you.
 
-YagGLer does not abstract OpenGL, you have to know OpenGL
-        (or whatever the "backend" is) to use YagGLer.
+YägGLer does not abstract OpenGL, you have to know OpenGL (or whatever the "backend" is) to use YägGLer.
 
-YagGLer does not help you to code.
+YägGLer does not help you to code.
 
-YagGLer does not have inheritence/strict hardcoded structure,
-        but implicit patterns (that you had to now, and are undocumented)
+YägGLer does not have inheritence/strict hardcoded structure, but implicit patterns (that you had to now, and are undocumented)
 
 -------------
 
-You IDE won't help you, and your compiler is buggy, you can't use YagGLer.
+_*Your IDE won't help you, and your compiler is broken.*_
+
+_(should build on g++ 4.8.2 and clang++ 3.2)_
 
 -------------
 
 Credits:
-  code: neam :) (aka. tim42)
+--------
+
+-  code: *neam :)* (aka. tim42)
 
 -------------
 
