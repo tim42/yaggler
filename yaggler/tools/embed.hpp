@@ -1,0 +1,123 @@
+//
+// file : embed.hpp
+// in : file:///home/tim/projects/yaggler/yaggler/tools/embed.hpp
+//
+// created by : Timothée Feuillet on linux-coincoin.tim
+// date: 17/10/2013 17:28:01
+//
+//
+// Copyright (C) 2013-2014 Timothée Feuillet
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//
+
+
+#ifndef __N_95287358664168721_1073738764__EMBED_HPP__
+# define __N_95287358664168721_1073738764__EMBED_HPP__
+
+#include <tools/ct_string.hpp>
+#include <ct_point.hpp>
+
+// the purpose of this header is to allow 'embedding' of values as types in templates
+// (really useful for the construct "typename... Args" in the base class)
+// Metrik Ft. Reija Lee - Freefall Vip
+namespace neam
+{
+  namespace embed
+  {
+    // the generic one...
+    template<typename EmbeddedType, EmbeddedType Value>
+    class embed
+    {
+      public:
+        // "disable" this class (to kill even more the user under endless error messages).
+        constexpr embed() = default;
+        ~embed() = default;
+
+        constexpr operator EmbeddedType()
+        {
+          return Value;
+        }
+
+      public:
+        static constexpr EmbeddedType value = Value;
+    };
+
+    // some internal things
+    namespace internal
+    {
+//       template<typename Ret> using _fnc = Ret(*)();
+
+//       template<typename Ret>
+//       constexpr _fnc<Ret> _create_wrapper_func(Ret &&val)
+//       {
+//         return [] {return val;};
+//       }
+    } // namespace internal
+
+    // to embed floats
+    template<double(*Value)()>
+    class embed<double(*)(), Value>
+    {
+      public:
+        // "disable" this class (to kill even more the user under endless error messages).
+        constexpr embed() = default;
+        ~embed() = default;
+
+        constexpr operator double()
+        {
+          return Value();
+        }
+
+//       public:
+//         static constexpr double (&value)() = Value();
+    };
+
+    // defs (for faster/clearer use ;) )
+#define N_EMBED_USING(name, type)    template<type Value> using name = neam::embed::embed<type, Value>
+    N_EMBED_USING(GLenum, GLenum);
+
+    N_EMBED_USING(int8, int8_t);
+    N_EMBED_USING(int16, int16_t);
+    N_EMBED_USING(int32, int32_t);
+    N_EMBED_USING(int64, int64_t);
+
+    N_EMBED_USING(uint8, uint8_t);
+    N_EMBED_USING(uint16, uint16_t);
+    N_EMBED_USING(uint32, uint32_t);
+    N_EMBED_USING(uint64, uint64_t);
+
+    N_EMBED_USING(int8_array, const int8_t *);
+    N_EMBED_USING(int16_array, const int16_t *);
+    N_EMBED_USING(int32_array, const int32_t *);
+    N_EMBED_USING(int64_array, const int64_t *);
+
+    N_EMBED_USING(uint8_array, const uint8_t *);
+    N_EMBED_USING(uint16_array, const uint16_t *);
+    N_EMBED_USING(uint32_array, const uint32_t *);
+    N_EMBED_USING(uint64_array, const uint64_t *);
+
+    N_EMBED_USING(string, const char *);
+    N_EMBED_USING(fixed_t, ct::fixed_t); // floats don't really work with templates, so fixed pos.
+
+    template<double(*Value)()> using floating_point = neam::embed::embed<double(*)(), Value>;
+#define embed_fp(f)      [] -> double {return (f);}
+  } // namespace embed
+} // namespace neam
+
+#endif /*__N_95287358664168721_1073738764__EMBED_HPP__*/
+
+// kate: indent-mode cstyle; indent-width 2; replace-tabs on; 
+
