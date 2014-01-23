@@ -1,4 +1,4 @@
-YägGLer ![YägGLer logo](data/yaggler-small.png)
+![YägGLer logo](data/yaggler-small.png) YägGLer
 =======
 
 
