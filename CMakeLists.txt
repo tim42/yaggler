@@ -70,6 +70,4 @@ add_subdirectory(samples/dev)
 
 
 # copy
-file(COPY ./neam.png DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
-file(COPY ./yaggler.png DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 file(COPY ./data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
