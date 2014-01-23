@@ -17,8 +17,16 @@ YägGler is a kind of 3D renderer, mainly focused on beeing non user-friendly.
               !   !        \/
               `---'
 
+-------------
 
-YagGLer rocks.
+YagGLer is not intended to be user friendly.
+YagGLer is not intended to "produce" beautifull code.
+YagGLer does not optimise for you.
+YagGLer does not abstract OpenGL, you have to know OpenGL
+        (or whatever the "backend" is) to use YagGLer.
+YagGLer does not help you to code.
+YagGLer does not have inheritence/strict hardcoded structure,
+        but implicit patterns (that you had to now, and are undocumented)
 
 -------------
 
@@ -27,11 +35,11 @@ You IDE won't help you, and your compiler is buggy, you can't use YagGLer.
 -------------
 
 Credits:
-  code: neam (aka. tim42) :)
+  code: neam :) (aka. tim42)
 
 -------------
 
-Copyright (C) 2014  Timothée Feuillet
+Copyright (C) 2013-2014  Timothée Feuillet
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
