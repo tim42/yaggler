@@ -69,7 +69,7 @@ int main(int argc, char **argv)
        neam::yaggler::shader::opengl::file, neam::embed::string<vert>,
        neam::embed::shader::option<neam::yaggler::shader::shader_option::reload_on_change> >> prog;
 
-  prog.bind_attribute_location("in_Position", 0);
+  prog.bind_attribute_location("in_position", 0);
   prog.link();
 
   // the texture
@@ -92,10 +92,10 @@ int main(int argc, char **argv)
   my_fg_texture.set_gl_parameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   // some vars
-  neam::yaggler::shader::uniform_variable resolution_var = prog.get_uniform_variable("iResolution");
-  neam::yaggler::shader::uniform_variable time_var = prog.get_uniform_variable("iGlobalTime");
-  neam::yaggler::shader::uniform_variable texture_var = prog.get_uniform_variable("iTexture");
-  neam::yaggler::shader::uniform_variable fg_texture_var = prog.get_uniform_variable("iFGTexture");
+  neam::yaggler::shader::uniform_variable resolution_var = prog.get_uniform_variable("screen_resolution");
+  neam::yaggler::shader::uniform_variable time_var = prog.get_uniform_variable("global_time");
+  neam::yaggler::shader::uniform_variable texture_var = prog.get_uniform_variable("texture_sampler");
+  neam::yaggler::shader::uniform_variable fg_texture_var = prog.get_uniform_variable("fg_texture_sampler");
 
   // the autobinder
   auto ctx = neam::yaggler::shader::variable_context<neam::yaggler::shader::contexts::none>::create<neam::yaggler::shader::contexts::fixed>
