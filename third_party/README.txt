@@ -1,5 +1,5 @@
 
-YägGler ship some libraries, that, in some parts, are modified to fulfill some
+YägGLer ship some libraries, that, in some parts, are modified to fulfill some
 purposes (or to simply work).
 
 Modified libs are:
