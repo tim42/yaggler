@@ -17,8 +17,7 @@
 //
 
 
-
-
 // man, I love this file !!!!
 
 
+// kate: indent-mode cstyle; indent-width 2; replace-tabs on; 

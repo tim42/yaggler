@@ -43,6 +43,9 @@ endif()
 # deps check
 include(cmake/deps.cmake)
 
+# create the YAGGLER_FLAGS variable
+include(cmake/flags.cmake)
+
 # output
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/")
@@ -55,11 +58,11 @@ add_subdirectory("./third_party/glew")
 add_subdirectory("./third_party/glfw")
 
 # include those third party libs
-include_directories(SYSTEM "third_party/glfw/include/")
-include_directories(SYSTEM "third_party/glew/include/")
-include_directories(SYSTEM "third_party/png++/include/")
+include_directories(SYSTEM "./third_party/glfw/include/")
+include_directories(SYSTEM "./third_party/glew/include/")
+include_directories(SYSTEM "./third_party/png++/include/")
 
-include_directories(yaggler/)
+include_directories("./yaggler/")
 
 # build yaggler lib
 add_subdirectory(yaggler)
