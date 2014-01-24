@@ -48,10 +48,11 @@
 // #define YAGGLER_NO_FUCKING_TESTS
 
 
-// GL, glew and other external things
+// GL, glew and other external things (see the third_party folder)
 #include <GLEW/glew.h>
 #include <GLFW/glfw3.h>
 #include <GL/gl.h>
+#include <glm/glm.hpp>
 
 // init and window
 #include "yaggler_except.hpp"
