@@ -22,6 +22,6 @@ file(GLOB_RECURSE srcs ./*.cpp)
 add_definitions(${YAGGLER_FLAGS})
 
 # and "build" yaggler
-add_library(${PROJ_APP} ${srcs})
+add_library(${PROJ_APP} STATIC ${srcs})
 add_dependencies(${PROJ_APP} invalidate_version)
 

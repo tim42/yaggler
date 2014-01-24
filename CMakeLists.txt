@@ -49,7 +49,7 @@ include(cmake/flags.cmake)
 # output
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/")
-set(LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/")
+set(LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/libs")
 
 set(YAGGLER_SRCS "")
 
@@ -61,14 +61,16 @@ add_subdirectory("./third_party/glfw")
 include_directories(SYSTEM "./third_party/glfw/include/")
 include_directories(SYSTEM "./third_party/glew/include/")
 include_directories(SYSTEM "./third_party/png++/include/")
+include_directories(SYSTEM "./third_party/glm/")
 
 include_directories("./yaggler/")
 
-# build yaggler lib
+# build yaggler dummy "lib"
 add_subdirectory(yaggler)
 
-# build the test sample
+# build the samples
 add_subdirectory(samples/dev)
+add_subdirectory(samples/test)
 
 
 

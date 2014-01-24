@@ -11,3 +11,8 @@ Modified libs are:
     directories/build system, added an include directory.
     There's is also a fix in glew.c
 
+  - GLM: removed unused directories/CMakeFiles.
+
+I do not own those libs, see the copying/license file in their folders.
+You can download the original version on their respective author/official
+website.

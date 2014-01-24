@@ -17,4 +17,4 @@ endif(OPENGL_FOUND)
 # endif(GLEW_FOUND)
 
 # yaggler deps libs (for exec)
-set(YAGGLER_DEPS_LIBS ${OPENGL_gl_LIBRARY} glfw png)
+set(YAGGLER_DEPS_LIBS ${OPENGL_gl_LIBRARY} glfw glew png)
