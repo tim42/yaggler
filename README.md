@@ -1,27 +1,11 @@
 ![YägGLer logo](data/yaggler-small.png)
 =======
 
-**YägGLer** is a kind of 3D renderer, mainly focused on beeing non user-friendly.
+**YägGLer** is a kind of 3D renderer, mainly focused on being non user-friendly.
 
 -------------
-
-**Your IDE won't help you, and your compiler is broken.**
 
 _(should build on g++ 4.8.2 and clang++ 3.2)_
-
--------------
-
-YägGLer is not intended to be user friendly.
-
-YägGLer is not intended to _"produce"_ a beautiful code.
-
-YägGLer does not optimise for you.
-
-YägGLer does not abstract OpenGL, you have to know OpenGL (or whatever the _"backend"_ is) to use YägGLer.
-
-YägGLer does not help you to code.
-
-YägGLer does not have inheritence/strict hardcoded structure, but implicit patterns (that you had to now, and are undocumented)
 
 -------------
 
