@@ -62,6 +62,26 @@ namespace neam
           static constexpr bool normalized = Normalized;
         };
 
+        // ct buffer init
+        template<typename Data, GLenum DrawType, bool Convert = false>
+        struct ct_buffer_init
+        {
+          static constexpr typename std::remove_const<decltype(Data::value)>::type data = Data::value;
+          static constexpr GLenum draw_type = DrawType;
+          static constexpr bool convert = Convert;
+        };
+
+        // ct vao init
+        // (and here, you can see the powa of those ct inits :) )
+        template<typename Buffer, typename View>
+        struct ct_vao_init
+        {
+          using buffer_type = Buffer;
+          using view_type = View;
+
+          Buffer buffer = Buffer();
+          static constexpr View view = View();
+        };
       } // namespace options
 #undef NYG_UNUSABLE_OPTION_CLASS
     } // namespace texture

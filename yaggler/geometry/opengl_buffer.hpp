@@ -32,6 +32,7 @@
 
 #include <geometry/buffer_base.hpp>
 #include <geometry/options.hpp>
+#include <tools/array_wrapper.hpp>
 
 namespace neam
 {
@@ -40,25 +41,83 @@ namespace neam
     namespace geometry
     {
       // GeomType is an GLenum embed.
+      //
+      // Args... should be used to init "at ct" (in fact, also a bit at runtime) the buffer.
       template<typename GeomType, typename... Args>
       class buffer<type::opengl, GeomType, Args...>
       {
+        static_assert(sizeof...(Args) == 1 || sizeof...(Args) == 0, "the number of tpl argument after the geometry type should be 0 or 1 (see geometry::options::ct_buffer_init)");
+
+        private:
+          // init/no convert
+          template<typename Init>
+          void __split_init(NCR_ENABLE_IF((Init::convert == false), size_t))
+          {
+            Init init;
+            set_data(init.data, init.draw_type);
+          }
+
+          // init/convert
+          template<typename Init>
+          void __split_init(NCR_ENABLE_IF((Init::convert == true), size_t))
+          {
+            Init init;
+            set_data_convert_to_float(init.data, init.draw_type);
+          }
+
+          // no init
+          template<size_t = 0>
+          void __split_init(size_t)
+          {
+          }
+
+          void __tpl_init()
+          {
+            __split_init<Args...>(0);
+          }
+
         public:
           // constructors
           buffer()
           : id(0), link(false)
           {
             glGenBuffers(1, &id);
+            __tpl_init();
           }
 
           explicit buffer(GLuint _id)
             : id(_id), link(true)
           {
+            __tpl_init();
           }
 
           buffer(GLuint _id, assume_ownership_t)
             : id(_id), link(false)
           {
+            __tpl_init();
+          }
+
+          template<typename... BArgs>
+          buffer(const buffer<GeomType, BArgs...> &b)
+          : id(b.id), link(true)
+          {
+            __tpl_init();
+          }
+
+          template<typename... BArgs>
+          buffer(buffer<GeomType, BArgs...> &&b)
+          : id(b.id), link(false)
+          {
+            b.link = true;
+            __tpl_init();
+          }
+
+          template<typename... BArgs>
+          buffer(buffer<GeomType, BArgs...> &b, stole_ownership_t)
+          : id(b.id), link(false)
+          {
+            b.link = true;
+            __tpl_init();
           }
 
           // destructor
@@ -84,6 +143,95 @@ namespace neam
           {
             glBindBuffer(GeomType::value, id);
           }
+          // bind the buffer
+          void use() const
+          {
+            glBindBuffer(GeomType::value, id);
+          }
+
+          // set the data from a C array (with fixed size)
+          template<typename ArrayType, size_t ArraySize>
+          void set_data(const ArrayType (&data)[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
+          {
+            bind();
+            glBufferData(GeomType::value, sizeof(data), data, draw_type);
+          }
+          // set the data from a C array (with fixed size)
+//           template<typename ArrayType, size_t ArraySize>
+//           void set_data(const ArrayType (&)[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
+//           {
+//             bind();
+//             glBufferData(GeomType::value, sizeof(data), data, draw_type);
+//           }
+          // set the data from an array_wrapper
+          template<typename ArrayType>
+          void set_data(const array_wrapper<ArrayType> &w, GLenum draw_type = GL_STATIC_DRAW)
+          {
+            bind();
+            glBufferData(GeomType::value, sizeof(sizeof(ArrayType) * w.size), w.array, draw_type);
+          }
+
+          // set the data from an C array (with fixed size)
+          template<size_t ArraySize>
+          void set_data_convert_to_float(ct::vector4 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
+          {
+            bind();
+            GLfloat dest_data[ArraySize * 4];
+            for (size_t i = 0; i < ArraySize; ++i)
+            {
+              dest_data[i + 0] = ct::conversion::to<GLfloat>(data[i].x);
+              dest_data[i + 1] = ct::conversion::to<GLfloat>(data[i].y);
+              dest_data[i + 2] = ct::conversion::to<GLfloat>(data[i].z);
+              dest_data[i + 3] = ct::conversion::to<GLfloat>(data[i].w);
+            }
+
+            glBufferData(GeomType::value, sizeof(dest_data), dest_data, draw_type);
+          }
+          // set the data from an C array (with fixed size)
+          template<size_t ArraySize>
+          void set_data_convert_to_float(ct::vector3 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
+          {
+            bind();
+            GLfloat dest_data[ArraySize * 3];
+            for (size_t i = 0; i < ArraySize; ++i)
+            {
+              dest_data[i + 0] = ct::conversion::to<GLfloat>(data[i].x);
+              dest_data[i + 1] = ct::conversion::to<GLfloat>(data[i].y);
+              dest_data[i + 2] = ct::conversion::to<GLfloat>(data[i].z);
+            }
+
+            glBufferData(GeomType::value, sizeof(dest_data), dest_data, draw_type);
+          }
+          // set the data from an C array (with fixed size)
+          template<size_t ArraySize>
+          void set_data_convert_to_float(ct::vector2 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
+          {
+            bind();
+            GLfloat dest_data[ArraySize * 2];
+            for (size_t i = 0; i < ArraySize; ++i)
+            {
+              dest_data[i + 0] = ct::conversion::to<GLfloat>(data[i].x);
+              dest_data[i + 1] = ct::conversion::to<GLfloat>(data[i].y);
+            }
+
+            glBufferData(GeomType::value, sizeof(dest_data), dest_data, draw_type);
+          }
+          // set the data from an C array (with fixed size)
+          template<size_t ArraySize>
+          void set_data_convert_to_float(ct::fixed_t data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
+          {
+            bind();
+            GLfloat dest_data[ArraySize];
+            for (size_t i = 0; i < ArraySize; ++i)
+            {
+              dest_data[i + 0] = ct::conversion::to<GLfloat>(data[i]);
+            }
+
+            glBufferData(GeomType::value, sizeof(dest_data), dest_data, draw_type);
+          }
+
+        public:
+          static constexpr GLenum geom_type = GeomType::value;
 
         private:
           GLuint id;
