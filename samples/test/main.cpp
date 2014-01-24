@@ -59,7 +59,7 @@ int main(int argc, char **argv)
   (void)argc;
   (void)argv;
 
-  // init glut
+  // init yaggler (+glfw)
   neam::yaggler::yaggler_init yi;
 
   // create a window

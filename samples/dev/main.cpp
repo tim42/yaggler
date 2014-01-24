@@ -45,7 +45,7 @@ constexpr uint32_t image_4x4_data[] =
 };
 
 // The fullscreen quad's FBO
- GLfloat fs_quad_data[] =
+GLfloat fs_quad_data [] =
 {
   -1.0f, -1.f, 0.0f,
   1.0f, -1.0f, 0.0f,
@@ -60,7 +60,7 @@ int main(int argc, char **argv)
   (void)argc;
   (void)argv;
 
-  // init glut
+  // init yaggler (+glfw)
   neam::yaggler::yaggler_init yi;
 
   // create a window
