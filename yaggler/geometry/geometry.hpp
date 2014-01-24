@@ -32,6 +32,8 @@
 #include "geometry/opengl_buffer.hpp"
 #include "geometry/opengl_buffer_view.hpp"
 
+#include "geometry/opengl_vao.hpp"
+
 #endif /*__N_302503673843070490_1235359853__GEOMETRY_HPP__*/
 
 // kate: indent-mode cstyle; indent-width 2; replace-tabs on; 

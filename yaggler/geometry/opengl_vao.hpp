@@ -32,6 +32,8 @@
 
 #include <geometry/vao_base.hpp>
 #include <geometry/options.hpp>
+#include <tools/tuple.hpp>
+#include <yaggler_except.hpp>
 
 namespace neam
 {
@@ -44,7 +46,19 @@ namespace neam
       {
         private: // helpers
           // init from <views/vbo>, <view/vbo>, ...
-          
+          template<size_t Idx, typename Opt>
+          char __init_single(size_t)
+          {
+            ct_buffers_views.template get<Idx>().buffer.use();
+            ct_buffers_views.template get<Idx>().view.use();
+            return 0;
+          }
+
+          template<size_t... Idxs>
+          void __int_from_ct(neam::cr::seq<Idxs...>&&)
+          {
+            void((char []){__init_single<Idxs, Init>(0)...});
+          }
 
         public:
           // constructors
@@ -52,16 +66,22 @@ namespace neam
           : id(0), link(false)
           {
             glGenVertexArrays(1, &id);
+            bind();
+            __int_from_ct(cr::gen_seq<sizeof...(Init)>());
           }
 
           explicit vao(GLuint _id)
             : id(_id), link(true)
           {
+            bind();
+            __int_from_ct(cr::gen_seq<sizeof...(Init)>());
           }
 
           vao(GLuint _id, assume_ownership_t)
             : id(_id), link(false)
           {
+            bind();
+            __int_from_ct(cr::gen_seq<sizeof...(Init)>());
           }
 
           // destructor
@@ -93,9 +113,33 @@ namespace neam
             glBindVertexArray(id);
           }
 
+          // YAY :D
+          // (but there'll always be that annoying GeomType around... :( )
+          //
+          // return a "link" to the buffer at the specified index.
+          // (buffers from the ct init)
+          template<size_t Idx, GLenum GeomType>
+          buffer<type::opengl, neam::embed::GLenum<GeomType>> get_buffer_link()
+          {
+            return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get<Idx>());
+          }
+
+          // see stole_ownership_t
+          // COULD ONLY WORK ONE TIME for a given buffer (else throw)
+          template<size_t Idx, GLenum GeomType>
+          buffer<type::opengl, neam::embed::GLenum<GeomType>> stole_buffer()
+          {
+            if (ct_buffers_views.template get<Idx>().is_link())
+              throw yaggler_exception("n/y::geometry::vao::stole_buffer(): unable to stole owneship: ownership has already been stolen.");
+            return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get<Idx>(), stole_ownership);
+          }
+
         private:
           GLuint id;
           bool link;
+
+          // buffers/views couples
+          cr::tuple<Init...> ct_buffers_views;
       };
     } // namespace geometry
   } // namespace yaggler
