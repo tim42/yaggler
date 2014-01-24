@@ -55,44 +55,18 @@ namespace neam
         static constexpr EmbeddedType value = Value;
     };
 
+    template<typename EmbeddedType, EmbeddedType Value>
+    constexpr EmbeddedType embed<EmbeddedType, Value>::value;
+
     // some internal things
     namespace internal
     {
-//       template<typename Ret> using _fnc = Ret(*)();
-
-//       template<typename Ret>
-//       constexpr _fnc<Ret> _create_wrapper_func(Ret &&val)
-//       {
-//         return [] {return val;};
-//       }
       template<typename ArrayType, size_t Size>
       constexpr size_t _array_size(const ArrayType (&)[Size])
       {
         return Size;
       }
-
-      template<typename Type>
-      using _array_type = const Type (&)[];
-
     } // namespace internal
-
-    // to embed floats
-    template<double(*Value)()>
-    class embed<double(*)(), Value>
-    {
-      public:
-        // "disable" this class (to kill even more the user under endless error messages).
-        constexpr embed() = default;
-        ~embed() = default;
-
-        constexpr operator double()
-        {
-          return Value();
-        }
-
-//       public:
-//         static constexpr double (&value)() = Value();
-    };
 
     // defs (for faster/clearer use ;) )
 #define N_EMBED_USING(name, type)    template<type Value> using name = neam::embed::embed<type, Value>
@@ -146,9 +120,6 @@ namespace neam
     N_EMBED_USING(GLenum, GLenum);
 
     N_EMBED_USING(fixed_t, ct::fixed_t); // floats don't really work with templates, so fixed pos.
-
-//     template<double(*Value)()> using floating_point = neam::embed::embed<double(*)(), Value>;
-// #define embed_fp(f)      [] -> double {return (f);}
   } // namespace embed
 } // namespace neam
 

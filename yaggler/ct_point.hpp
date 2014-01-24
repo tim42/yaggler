@@ -193,6 +193,9 @@ namespace neam
         static constexpr size_t dimensionality = sizeof...(Vals);
     };
 
+    template<fixed_t... Vals>
+    constexpr typename vector<Vals...>::vec_type vector<Vals...>::value;
+
   } // namespace ct
 } // namespace neam
 

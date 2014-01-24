@@ -73,9 +73,10 @@ namespace neam
             static constexpr data_t data = Data::value;
             static constexpr GLenum draw_type = DrawType;
             static constexpr bool convert = Convert;
-
-            NY_CLANG_CT_DATA_FIX__DATA_GETTER;
         };
+
+        template<typename Data, GLenum DrawType, bool Convert>
+        constexpr typename ct_buffer_init<Data, DrawType, Convert>::data_t ct_buffer_init<Data, DrawType, Convert>::data;
 
         // ct vao init
         // (and here, you can see the powa of those ct inits :) )
@@ -90,6 +91,10 @@ namespace neam
           Buffer buffer = Buffer();
           static constexpr View view = View();
         };
+
+        template<typename Buffer, typename View>
+        constexpr View ct_vao_init<Buffer, View>::view;
+
       } // namespace options
 #undef NYG_UNUSABLE_OPTION_CLASS
     } // namespace texture

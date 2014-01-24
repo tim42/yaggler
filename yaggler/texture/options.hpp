@@ -63,8 +63,6 @@ namespace neam
         class ct_texture_init
         {
           private:
-            using data_t = GLvoid *;
-
           public:
             constexpr ct_texture_init() {}
 
@@ -76,17 +74,19 @@ namespace neam
             static constexpr GLvoid *data = (GLvoid *)(Data::value);
 
             static constexpr bool is_init = true;
-
-            NY_CLANG_CT_DATA_FIX__DATA_GETTER;
         };
+
+        template<GLint InternalFormat, typename Vector, GLenum Format, GLenum Type, typename Data, size_t Level>
+        constexpr GLvoid *ct_texture_init<InternalFormat, Vector, Format, Type, Data, Level>::data;
+
+        template<GLint InternalFormat, typename Vector, GLenum Format, GLenum Type, typename Data, size_t Level>
+        constexpr typename Vector::vec_type ct_texture_init<InternalFormat, Vector, Format, Type, Data, Level>::size;
 
         // init an empty texture
         template<GLint InternalFormat, typename Vector, size_t Level = 0>
         class empty_texture_init
         {
           private:
-            using data_t = GLvoid *;
-
           public:
             constexpr empty_texture_init() {}
 
@@ -99,9 +99,13 @@ namespace neam
             static constexpr GLvoid *data = nullptr;
 
             static constexpr bool is_init = true;
-
-            NY_CLANG_CT_DATA_FIX__DATA_GETTER_CONST(nullptr);
         };
+
+        template<GLint InternalFormat, typename Vector, size_t Level>
+        constexpr GLvoid *empty_texture_init<InternalFormat, Vector, Level>::data;
+
+        template<GLint InternalFormat, typename Vector, size_t Level>
+        constexpr typename Vector::vec_type empty_texture_init<InternalFormat, Vector, Level>::size;
 
         /// ### frame buffer options
 

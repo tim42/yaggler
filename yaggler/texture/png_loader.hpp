@@ -92,9 +92,6 @@ namespace neam
             using png_image_type = remove_cref<decltype(__types__.get<get_value_index(InternalFormat)>())>;
             using png_pixel_type = remove_cref<decltype(__pixel_types__.get<get_value_index(InternalFormat) % 3>())>;
 
-            // clang fix
-            using data_t = GLvoid *;
-
             static constexpr size_t comp_size = __pixel_comp_size__[get_value_index(InternalFormat) % (sizeof(__pixel_comp_size__) / sizeof(__pixel_comp_size__[0]))];
             static constexpr size_t comp_num = __pixel_comp_num__[get_value_index(InternalFormat) % (sizeof(__pixel_comp_num__) / sizeof(__pixel_comp_num__[0]))];
             static constexpr size_t pixel_size = comp_size * comp_num;
@@ -190,8 +187,6 @@ namespace neam
             GLvoid *data;
 
             static constexpr bool is_init = true;
-
-            NY_CLANG_DATA_FIX__DATA_GETTER_CONST(data);
         };
 
 
