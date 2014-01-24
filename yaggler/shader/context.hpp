@@ -94,7 +94,7 @@ namespace neam
           template<size_t... Idxs>
           void binder(neam::cr::seq<Idxs...>&&)
           {
-            void((char []){_binder<Idxs, Args>(0)...}); // who know how this'll be optimised out ?
+            void((char []){_binder<Idxs, Args>(0)...}); // who knows how this'll be optimised out ?
             // (and which compiler supports it...)
 //             char _[] __attribute__((unused)) = {_binder<Idxs, Args>(0)...};
           }
