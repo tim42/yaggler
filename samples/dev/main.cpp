@@ -44,6 +44,17 @@ constexpr uint32_t image_4x4_data[] =
   0x00FF00, 0xAAFFAA, 0x005566, 0x778899,
 };
 
+// The fullscreen quad's FBO
+ GLfloat fs_quad_data[] =
+{
+  -1.0f, -1.f, 0.0f,
+  1.0f, -1.0f, 0.0f,
+  -1.0f,  1.0f, 0.0f,
+  -1.0f,  1.0f, 0.0f,
+  1.0f, -1.0f, 0.0f,
+  1.0f,  1.0f, 0.0f,
+};
+
 int main(int argc, char **argv)
 {
   (void)argc;
@@ -74,7 +85,7 @@ int main(int argc, char **argv)
 
   // the texture
 //   neam::yaggler::texture::texture < neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>,
-//        neam::yaggler::texture::options::ct_texture_init<GL_RGB, neam::ct::vector<4, 4>, GL_BGRA, GL_UNSIGNED_BYTE, neam::embed::uint32_array<image_4x4_data> >> my_test_texture(0);
+//        neam::yaggler::texture::options::ct_texture_init<GL_RGB, neam::ct::vector<4, 4>, GL_BGRA, GL_UNSIGNED_BYTE, neam::embed::uint32_ptr<image_4x4_data> >> my_test_texture(0);
   neam::yaggler::texture::texture < neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>,
        neam::yaggler::texture::options::png_texture_init<GL_RGBA, neam::embed::string<yaggler_logo> >> my_test_texture(0);
 
@@ -84,7 +95,7 @@ int main(int argc, char **argv)
   my_test_texture.generate_mipmaps();
 
 //   neam::yaggler::texture::texture < neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>,
-//        neam::yaggler::texture::options::ct_texture_init<GL_RGB, neam::ct::vector<4, 4>, GL_BGRA, GL_UNSIGNED_BYTE, neam::embed::uint32_array<image_4x4_data> >> my_fg_texture(1);
+//        neam::yaggler::texture::options::ct_texture_init<GL_RGB, neam::ct::vector<4, 4>, GL_BGRA, GL_UNSIGNED_BYTE, neam::embed::uint32_ptr<image_4x4_data> >> my_fg_texture(1);
   neam::yaggler::texture::texture < neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>,
        neam::yaggler::texture::options::png_texture_init<GL_RGBA, neam::embed::string<bg_image> >> my_fg_texture(1);
 
@@ -104,49 +115,15 @@ int main(int argc, char **argv)
                time_var, resolution_var, texture_var, fg_texture_var                                                                                                                                   // vars
              );
 
+  // the FS quad vao
+  neam::yaggler::geometry::vao < neam::yaggler::type::opengl, neam::yaggler::geometry::options::ct_vao_init
+  <
+       neam::yaggler::geometry::buffer < neam::yaggler::type::opengl, neam::embed::GLenum<GL_ARRAY_BUFFER>,
+       neam::yaggler::geometry::options::ct_buffer_init<neam::embed::GLfloat_array(fs_quad_data), GL_STATIC_DRAW >> ,
+       neam::yaggler::geometry::buffer_view < neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>,
+       neam::yaggler::geometry::options::ct_buffer_view_init<0, 3, GL_FLOAT, 0, 0, false >>
+  >> fs_vao;
 
-  neam::yaggler::geometry::buffer_view < neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>,
-       neam::yaggler::geometry::options::ct_buffer_view_init<0, 3, GL_FLOAT, 0, 0, false>> fsquad_view;
-
-  // The fullscreen quad's FBO
-  static const GLfloat g_quad_vertex_buffer_data[] =
-  {
-    -1.0f, -1.f, 0.0f,
-    1.0f, -1.0f, 0.0f,
-    -1.0f,  1.0f, 0.0f,
-    -1.0f,  1.0f, 0.0f,
-    1.0f, -1.0f, 0.0f,
-    1.0f,  1.0f, 0.0f,
-  };
-//   static const GLfloat g_quad_vertex_buffer_data[] =
-//   {
-//     -0.90f, -0.90f, -0.0f,
-//     0.90f, -0.90f, 0.0f,
-//     -0.90f,  0.90f, -0.0f,
-//     -0.90f,  0.95f, -0.0f,
-//     0.95f, -0.90f, 01.0f,
-//     0.90f,  0.90f, 0.0f,
-//   };
-
-  GLuint quad_vertexbuffer;
-  glGenBuffers(1, &quad_vertexbuffer);
-  glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
-
-  GLuint vao_id;
-  glGenVertexArrays(1, &vao_id);
-  glBindVertexArray(vao_id);
-//   glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-//   glEnableVertexAttribArray(0);
-//   glVertexAttribPointer(
-//     0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-//     3,                  // size
-//     GL_FLOAT,           // type
-//     GL_FALSE,           // normalized?
-//     0,                  // stride
-//     (void*)0            // array buffer offset
-//   );
-  fsquad_view.use();
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -179,7 +156,7 @@ int main(int argc, char **argv)
     glClearColor(0.30, 0.30, 0.30, 0.1);
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, resolution.x, resolution.y);
-    /* Clear background with NOT BLACK colour */
+    /* Clear background with the NOT BLACK colour */
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
@@ -190,23 +167,11 @@ int main(int argc, char **argv)
     my_test_texture.use();
     my_fg_texture.use();
 
+    // the geom
+    fs_vao.use();
 
-    // 1rst attribute buffer : vertices
-//     glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-//     glEnableVertexAttribArray(0);
-//     glVertexAttribPointer(
-//       0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-//       3,                  // size
-//       GL_FLOAT,           // type
-//       GL_FALSE,           // normalized?
-//       0,                  // stride
-//       (void*)0            // array buffer offset
-//     );
-    glBindVertexArray(vao_id);
     // Draw the triangles !
     glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
-
-//     glDisableVertexAttribArray(0);
 
     win.swap_buffers();
   }
