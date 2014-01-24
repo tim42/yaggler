@@ -36,12 +36,12 @@
 //
 // #include <yaggler/yaggler.hpp>
 
-#error (see the exemple above)
+#error (see the comment above)
 #endif
 
 // some defines/switches
 
-// disable the print of the init message
+// disable the print of the init message, and png loading messages
 // #define YAGGLER_NO_MESSAGES
 
 // avoid some checks at ct. (notably in the texture code)
