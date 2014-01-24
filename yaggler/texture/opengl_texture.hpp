@@ -28,6 +28,7 @@
 # define __N_470500441990277920_992406037__OPENGL_TEXTURE_HPP__
 
 #include <GLEW/glew.h>
+#include <compiler_fixs.hpp>
 #include <tools/enable_if.hpp>
 #include <yaggler_type.hpp>
 
@@ -83,7 +84,7 @@ namespace neam
           -> NCR_ENABLE_IF((TextureType::value != GL_TEXTURE_CUBE_MAP && TextureType::value != GL_TEXTURE_RECTANGLE), void)
           {
             const _Opt opt;
-            set_texture_data(_Opt::internal_format, opt.size, opt.format, opt.type, opt.data, opt.level);
+            set_texture_data(_Opt::internal_format, opt.size, opt.format, opt.type, opt.NY_CLANG_CT_DATA_FIX__GET_DATA, opt.level);
             __rec_init<0, _Args...>();
           }
 
@@ -93,7 +94,7 @@ namespace neam
           -> NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_RECTANGLE), void)
           {
             const _Opt opt;
-            set_texture_data(opt.internal_format, opt.size, opt.format, opt.type, opt.data);
+            set_texture_data(opt.internal_format, opt.size, opt.format, opt.type, opt.NY_CLANG_CT_DATA_FIX__GET_DATA);
             __rec_init<0, _Args...>();
           }
 
@@ -103,7 +104,7 @@ namespace neam
           -> NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_CUBE_MAP), void)
           {
             const _Opt opt;
-            set_texture_data(_Face::value, opt.internal_format, opt.size, opt.format, opt.type, opt.data, opt.level);
+            set_texture_data(_Face::value, opt.internal_format, opt.size, opt.format, opt.type, opt.NY_CLANG_CT_DATA_FIX__GET_DATA, opt.level);
             __rec_init<0, _Args...>();
           }
           template<size_t, typename _Face, typename _Opt>
@@ -111,7 +112,7 @@ namespace neam
           -> NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_CUBE_MAP), void)
           {
             const _Opt opt;
-            set_texture_data(_Face::value, opt.internal_format, opt.size, opt.format, opt.type, opt.data, opt.level);
+            set_texture_data(_Face::value, opt.internal_format, opt.size, opt.format, opt.type, opt.NY_CLANG_CT_DATA_FIX__GET_DATA, opt.level);
           }
 
           // init from template parameters

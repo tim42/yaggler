@@ -66,9 +66,15 @@ namespace neam
         template<typename Data, GLenum DrawType, bool Convert = false>
         struct ct_buffer_init
         {
-          static constexpr typename std::remove_const<decltype(Data::value)>::type data = Data::value;
-          static constexpr GLenum draw_type = DrawType;
-          static constexpr bool convert = Convert;
+          private:
+            using data_t = typename std::remove_const<decltype(Data::value)>::type;
+
+          public:
+            static constexpr data_t data = Data::value;
+            static constexpr GLenum draw_type = DrawType;
+            static constexpr bool convert = Convert;
+
+            NY_CLANG_CT_DATA_FIX__DATA_GETTER;
         };
 
         // ct vao init
@@ -78,6 +84,8 @@ namespace neam
         {
           using buffer_type = Buffer;
           using view_type = View;
+
+//           ct_vao_init() : buffer() {}
 
           Buffer buffer = Buffer();
           static constexpr View view = View();

@@ -28,6 +28,8 @@
 # define __N_19241511841048067712_64997576__OPENGL_BUFFER_HPP__
 
 #include <yaggler_type.hpp>
+#include <compiler_fixs.hpp>
+
 #include <GLEW/glew.h>
 
 #include <geometry/buffer_base.hpp>
@@ -54,7 +56,7 @@ namespace neam
           void __split_init(NCR_ENABLE_IF((Init::convert == false), size_t))
           {
             Init init;
-            set_data(init.data, init.draw_type);
+            set_data(init.NY_CLANG_CT_DATA_FIX__GET_DATA, init.draw_type);
           }
 
           // init/convert
@@ -62,7 +64,7 @@ namespace neam
           void __split_init(NCR_ENABLE_IF((Init::convert == true), size_t))
           {
             Init init;
-            set_data_convert_to_float(init.data, init.draw_type);
+            set_data_convert_to_float(init.NY_CLANG_CT_DATA_FIX__GET_DATA, init.draw_type);
           }
 
           // no init

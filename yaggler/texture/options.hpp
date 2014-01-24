@@ -63,6 +63,8 @@ namespace neam
         class ct_texture_init
         {
           private:
+            using data_t = GLvoid *;
+
           public:
             constexpr ct_texture_init() {}
 
@@ -74,6 +76,8 @@ namespace neam
             static constexpr GLvoid *data = (GLvoid *)(Data::value);
 
             static constexpr bool is_init = true;
+
+            NY_CLANG_CT_DATA_FIX__DATA_GETTER;
         };
 
         // init an empty texture
@@ -81,6 +85,8 @@ namespace neam
         class empty_texture_init
         {
           private:
+            using data_t = GLvoid *;
+
           public:
             constexpr empty_texture_init() {}
 
@@ -93,6 +99,8 @@ namespace neam
             static constexpr GLvoid *data = nullptr;
 
             static constexpr bool is_init = true;
+
+            NY_CLANG_CT_DATA_FIX__DATA_GETTER_CONST(nullptr);
         };
 
         /// ### frame buffer options
