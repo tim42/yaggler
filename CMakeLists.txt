@@ -43,9 +43,6 @@ endif()
 # deps check
 include(cmake/deps.cmake)
 
-# create the YAGGLER_FLAGS variable
-include(cmake/flags.cmake)
-
 # output
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/")
@@ -62,6 +59,9 @@ include_directories(SYSTEM "./third_party/glfw/include/")
 include_directories(SYSTEM "./third_party/glew/include/")
 include_directories(SYSTEM "./third_party/png++/include/")
 include_directories(SYSTEM "./third_party/glm/")
+
+# create the YAGGLER_FLAGS variable
+include(cmake/flags.cmake)
 
 include_directories("./yaggler/")
 
