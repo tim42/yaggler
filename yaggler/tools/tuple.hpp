@@ -123,7 +123,7 @@ namespace neam
           constexpr auto get() const -> typename std::enable_if<Index, const ThisType &>::type
           {
             static_assert(!Index, "index is out of range : BAD USAGE OF neam::cr::tuple !!!");
-            return *(void *)0; // clang complain... but this won't cause anyway, the code won't be built.
+            return *(void *)0; // clang complain... but this won't seg anyway, as the code won't be built.
           }
           template<uint64_t Index, typename RetType>
           constexpr auto get() const -> typename std::enable_if<!Index, const ThisType &>::type
