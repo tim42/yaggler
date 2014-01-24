@@ -65,6 +65,15 @@ namespace neam
 //       {
 //         return [] {return val;};
 //       }
+      template<typename ArrayType, size_t Size>
+      constexpr size_t _array_size(const ArrayType (&)[Size])
+      {
+        return Size;
+      }
+
+      template<typename Type>
+      using _array_type = const Type (&)[];
+
     } // namespace internal
 
     // to embed floats
@@ -87,8 +96,9 @@ namespace neam
 
     // defs (for faster/clearer use ;) )
 #define N_EMBED_USING(name, type)    template<type Value> using name = neam::embed::embed<type, Value>
-    N_EMBED_USING(GLenum, GLenum);
+#define N_EMBED_ARRAY(type, obj)     embed<const type (&)[neam::embed::internal::_array_size(obj)], obj>
 
+    // POD types
     N_EMBED_USING(int8, int8_t);
     N_EMBED_USING(int16, int16_t);
     N_EMBED_USING(int32, int32_t);
@@ -99,21 +109,46 @@ namespace neam
     N_EMBED_USING(uint32, uint32_t);
     N_EMBED_USING(uint64, uint64_t);
 
-    N_EMBED_USING(int8_array, const int8_t *);
-    N_EMBED_USING(int16_array, const int16_t *);
-    N_EMBED_USING(int32_array, const int32_t *);
-    N_EMBED_USING(int64_array, const int64_t *);
+    // pointers
+    N_EMBED_USING(int8_ptr, const int8_t *);
+    N_EMBED_USING(int16_ptr, const int16_t *);
+    N_EMBED_USING(int32_ptr, const int32_t *);
+    N_EMBED_USING(int64_ptr, const int64_t *);
 
-    N_EMBED_USING(uint8_array, const uint8_t *);
-    N_EMBED_USING(uint16_array, const uint16_t *);
-    N_EMBED_USING(uint32_array, const uint32_t *);
-    N_EMBED_USING(uint64_array, const uint64_t *);
+    N_EMBED_USING(uint8_ptr, const uint8_t *);
+    N_EMBED_USING(uint16_ptr, const uint16_t *);
+    N_EMBED_USING(uint32_ptr, const uint32_t *);
+    N_EMBED_USING(uint64_ptr, const uint64_t *);
 
+    N_EMBED_USING(float_ptr, const float *);
+    N_EMBED_USING(GLfloat_ptr, const GLfloat *);
+    N_EMBED_USING(double_ptr, const double *);
+
+    // arrays refs (to conserve ct size acces)
+    // NOTE: those are macros, not 'using's
+#define int8_array(array)       N_EMBED_ARRAY(int8_t, array)
+#define int16_array(array)      N_EMBED_ARRAY(int16_t, array)
+#define int32_array(array)      N_EMBED_ARRAY(int32_t, array)
+#define int64_array(array)      N_EMBED_ARRAY(int64_t, array)
+
+#define uint8_array(array)      N_EMBED_ARRAY(uint8_t, array)
+#define uint16_array(array)     N_EMBED_ARRAY(uint16_t, array)
+#define uint32_array(array)     N_EMBED_ARRAY(uint32_t, array)
+#define uint64_array(array)     N_EMBED_ARRAY(uint64_t, array)
+
+#define float_array(array)      N_EMBED_ARRAY(float, array)
+#define double_array(array)     N_EMBED_ARRAY(double, array)
+#define GLfloat_array(array)    N_EMBED_ARRAY(GLfloat, array)
+
+    // other
     N_EMBED_USING(string, const char *);
+
+    N_EMBED_USING(GLenum, GLenum);
+
     N_EMBED_USING(fixed_t, ct::fixed_t); // floats don't really work with templates, so fixed pos.
 
-    template<double(*Value)()> using floating_point = neam::embed::embed<double(*)(), Value>;
-#define embed_fp(f)      [] -> double {return (f);}
+//     template<double(*Value)()> using floating_point = neam::embed::embed<double(*)(), Value>;
+// #define embed_fp(f)      [] -> double {return (f);}
   } // namespace embed
 } // namespace neam
 
