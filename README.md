@@ -7,6 +7,7 @@
 
 _(should build on g++ 4.8+ and clang 3.2 (with some **[ugly]** workarounds))_
 
+_ok... CLang don't support "compile-time" texture initialisation... but almost every other features seems to work fine._
 
 -------------
 
