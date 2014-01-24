@@ -29,7 +29,9 @@
 
 namespace neam
 {
-  class assume_ownership_t {} assume_ownership;
+  class assume_ownership_t {} assume_ownership; // do not change the "link" type of the previous object
+
+  class stole_ownership_t {} stole_ownership; // the previous object become a "link"
 } // namespace neam
 
 #endif /*__N_2119167279615582259_1717942984__OWNERSHIP_HPP__*/
