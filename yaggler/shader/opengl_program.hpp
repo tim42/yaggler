@@ -37,6 +37,7 @@
 #include "opengl_uniform_var.hpp"
 
 #include <tools/tuple.hpp>
+#include <tools/type_at_index.hpp>
 #include <yaggler_type.hpp>
 
 namespace neam
@@ -57,7 +58,7 @@ namespace neam
           template<typename Shader>
           inline int _it_attach_cts_inner(const Shader &shader)
           {
-            glAttachShader(pg_id, shader.get_shader_id());
+            glAttachShader(pg_id, shader.get_id());
             return 0;
           }
 
@@ -289,14 +290,14 @@ namespace neam
           template<typename Shader>
           void attach_shader(const Shader &shader)
           {
-            glAttachShader(pg_id, shader.get_shader_id());
+            glAttachShader(pg_id, shader.get_id());
           }
 
           // detach a shader
           template<typename Shader>
           void detach_shader(const Shader &shader)
           {
-            glDetachShader(pg_id, shader.get_shader_id());
+            glDetachShader(pg_id, shader.get_id());
           }
 
           // return true if the program has failed to build...
@@ -311,6 +312,19 @@ namespace neam
           operator program<type::opengl> ()
           {
             return program<type::opengl> (pg_id);
+          }
+
+          template<size_t Index>
+          auto get_shader_at_index()
+          -> typename ct::type_at_index<Index, CTShaders..., int>::type &
+          {
+            return shaders.template get_ref<Index>();
+          }
+          template<size_t Index>
+          auto get_shader_at_index() const
+          -> const typename ct::type_at_index<Index, CTShaders..., int>::type &
+          {
+            return shaders.template get<Index>();
           }
 
         private: // vars.

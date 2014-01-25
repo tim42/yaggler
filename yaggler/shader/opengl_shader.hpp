@@ -107,8 +107,6 @@ namespace neam
 
           const neam::cr::string &get_source() const
           {
-//             std::lock_guard<neam::spinlock> _u0(lock);
-
             return source;
           }
 
@@ -116,18 +114,13 @@ namespace neam
           // NOTE: this could be slow.
           void recompile()
           {
-//             std::lock_guard<neam::spinlock> _u0(lock);
-
             unlocked_recompile();
           }
 
           // rebuild the shader only if it has changed since the last build
           // possibly faster than a direct call to 'recompile()'
-          // NOTE: could be extremly slow when ShaderSourceType is opengl::function !!! (as it'll call two time the function)
           void recompile_if_changed()
           {
-//             std::lock_guard<neam::spinlock> _u0(lock);
-
             if (has_source_changed(0))
               unlocked_recompile();
           }
@@ -144,8 +137,6 @@ namespace neam
           // you may need to call recompile_if_changed() after...
           void set_source(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::dyn_string>::value), const neam::cr::string &) _source = "")
           {
-//             std::lock_guard<neam::spinlock> _u0(lock);
-
             source = _source;
             changed = true;
           }
@@ -157,17 +148,16 @@ namespace neam
           }
 
           // return the shader id
-          GLuint get_shader_id() const
+          GLuint get_id() const
           {
-//             std::lock_guard<neam::spinlock> _u0(lock); // better be safe, with almost no cost (except cpu burns)
-
             return shader_id;
           }
 
         private: // unlocked functions (they must be called with their lock held)
           inline void unlocked_recompile()
           {
-            source = get_source_string(0);
+            if (!std::is_same<ShaderSourceType, opengl::function>::value)
+              source = get_source_string(0);
 
             GLint length = source.size();
             const GLchar *data = source.data();
@@ -224,13 +214,13 @@ namespace neam
           {
             // only on linux: ( :D )
             //
-            // http://stackoverflow.com/questions/9376975
+            // http://stackoverflow.com/q/9376975
             float old_old_time = old_time;
             struct stat file_stat;
 
             int err = stat(ShaderSource::value, &file_stat);
             if (err != 0)
-              throw yaggler_exception("shader<type::opengl>::has_source_changed: could not monitor file for change... :(");
+              return true;
 
             // ~0.76 day, it may be enought ^^ (another big point is that if the filesystem support it, the < 1s time is also used)
             old_time = static_cast<float>(file_stat.st_mtim.tv_sec & 0xFFFF) + (static_cast<float>(file_stat.st_mtim.tv_nsec) * 1e-9f);
@@ -254,7 +244,13 @@ namespace neam
           inline bool has_source_changed(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::function>::value && ShaderOption::value == shader_option::reload_on_change), int) = 0) const
           {
             // check the string:
-            return source != get_source_string(0);
+            neam::cr::string tstr = get_source_string(0);
+            if (!(tstr == source))
+            {
+              source = tstr;
+              return true;
+            }
+            return false;
           }
 
           // can't change (constexpr string)
@@ -274,12 +270,9 @@ namespace neam
           GLuint shader_id;
           neam::cr::string source;
 
-
           bool failed = false;
           bool changed = false;
           float old_time = 0.0f;
-
-//           mutable neam::spinlock lock;
       };
     } // namespace shader
   } // namespace yaggler
