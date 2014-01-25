@@ -136,19 +136,35 @@ namespace neam
 
           texture(GLuint _id, size_t _spl_idx) : link(true), id(_id), spl_idx(_spl_idx)
           {
+            __tpl_init();
           }
 
           texture(GLuint _id, size_t _spl_idx, assume_ownership_t) : link(false), id(_id), spl_idx(_spl_idx)
           {
+            __tpl_init();
           }
 
           template<typename... TArgs>
           texture(const texture< type::opengl, TextureType, TArgs... > &o)
-            : link(true), id(o.id), spl_idx(o.spl_idx)
+            : link(true), id(o.get_id()), spl_idx(o.get_texture_sampler())
           {
-#ifndef YAGGLER_NO_FUCKING_TESTS // even if this quite like a sanity test...
-            static_assert(!sizeof...(Args), "uh... You've created a shallow clone of a texture, but you've also given it the template args to initialise it...");
-#endif
+            __tpl_init();
+          }
+
+          template<typename... TArgs>
+          texture(texture< type::opengl, TextureType, TArgs... > &o, stole_ownership_t)
+          : link(o.is_link()), id(o.get_id()), spl_idx(o.get_texture_sampler())
+          {
+            o.give_up_ownership();
+            __tpl_init();
+          }
+
+          template<typename... TArgs>
+          texture(texture< type::opengl, TextureType, TArgs... > &&t)
+          : link(t.is_link()), id(t.get_id()), spl_idx(t.get_texture_sampler)
+          {
+            t.give_up_ownership();
+            __tpl_init();
           }
 
           ~texture()
@@ -157,8 +173,54 @@ namespace neam
               glDeleteTextures(1, &id);
           }
 
+          // give up the buffer WITHOUT DELETING IT
+          // (simply become a link)
+          texture &give_up_ownership()
+          {
+            link = true;
+            return *this;
+          }
+
+          texture &assume_ownership()
+          {
+            link = false;
+            return *this;
+          }
+
+          // see stole_ownership_t
+          template<typename... BArgs>
+          texture &stole(texture<type::opengl, TextureType, BArgs...> &t)
+          {
+            if (&t != this)
+            {
+              if (!link)
+                glDeleteTextures(1, &id);
+
+              link = t.is_link();
+              id = t.get_id();
+              spl_idx = t.get_texture_sampler();
+              t.give_up();
+            }
+            return *this;
+          }
+
+          // create a simple link
+          template<typename... BArgs>
+          texture &link_to(const texture<type::opengl, TextureType, BArgs...> &t)
+          {
+            if (&t != this)
+            {
+              if (!link)
+                glDeleteTextures(1, &id);
+
+              link = true;
+              id = t.get_id();
+              spl_idx = t.get_texture_sampler();
+            }
+            return *this;
+          }
+
           // this won't do what you want.
-          texture(const texture &) = delete;
           texture &operator = (const texture &) = delete;
 
           GLuint get_id() const
@@ -309,6 +371,12 @@ namespace neam
             glTexParameterIuiv(TextureType::value, pname, params);
           }
 
+          // create a link to a more generic texture.
+          // no inheritance involved. This cast will create a 'link' program shader object.
+          operator texture<type::opengl, TextureType> ()
+          {
+            return texture<type::opengl, TextureType> (*this);
+          }
 
         private:
           bool link;

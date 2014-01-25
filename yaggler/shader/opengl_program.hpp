@@ -88,16 +88,21 @@ namespace neam
         public:
           // create a link to the original shader
           explicit program(GLuint _pg_id)
-            : shaders(), pg_id(_pg_id), do_not_erase(true)
+          : shaders(), pg_id(_pg_id), symlink(true)
           {
+            it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
+            link();
           }
+
           program(GLuint _pg_id, assume_ownership_t)
-            : shaders(), pg_id(_pg_id)
+          : shaders(), pg_id(_pg_id), symlink(false)
           {
+            it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
+            link();
           }
 
           program()
-            : shaders(), pg_id(0)
+          : shaders(), pg_id(0), symlink(false)
           {
             if (!(pg_id = glCreateProgram()))
             {
@@ -109,10 +114,79 @@ namespace neam
             link();
           }
 
+          template<typename... OCTShaders>
+          program(program<type::opengl, OCTShaders...> &p, stole_ownership_t)
+          : shaders(), pg_id(p.get_id()), symlink(p.is_link())
+          {
+            p.give_up_ownership();
+            it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
+            link();
+          }
+          template<typename... OCTShaders>
+          program(program<type::opengl, OCTShaders...> &&p)
+          : shaders(), pg_id(p.get_id()), symlink(p.is_link())
+          {
+            p.give_up_ownership();
+            it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
+            link();
+          }
+          template<typename... OCTShaders>
+          program(const program<type::opengl, OCTShaders...> &p)
+          : shaders(), pg_id(p.get_id()), symlink(true)
+          {
+            it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
+            link();
+          }
+
           ~program()
           {
-            if (pg_id && !do_not_erase)
+            if (pg_id && !symlink)
               glDeleteProgram(pg_id);
+          }
+
+          // give up the buffer WITHOUT DELETING IT
+          // (simply become a link)
+          program &give_up_ownership()
+          {
+            symlink = true;
+            return *this;
+          }
+
+          program &assume_ownership()
+          {
+            symlink = false;
+            return *this;
+          }
+
+          // see stole_ownership_t
+          template<typename... OInit>
+          program &stole(program<type::opengl, OInit...> &t)
+          {
+            if (&t != this)
+            {
+              if (!link)
+                glDeleteProgram(pg_id);
+
+              symlink = t.is_link();
+              pg_id = t.get_id();
+              t.give_up();
+            }
+            return *this;
+          }
+
+          // create a simple link
+          template<typename... OInit>
+          program &link_to(program<type::opengl, OInit...> &t)
+          {
+            if (&t != this)
+            {
+              if (!link)
+                glDeleteProgram(pg_id);
+
+              symlink = true;
+              pg_id = t.get_id();
+            }
+            return *this;
           }
 
           // return the number of shaders in CTShaders
@@ -129,7 +203,7 @@ namespace neam
           // this is NOT if the shader is linked, but if it's a linked 'copy'
           bool is_link() const
           {
-            return do_not_erase;
+            return link;
           }
 
           void recompile_cts_shader_if_changed()
@@ -242,8 +316,8 @@ namespace neam
         private: // vars.
           cr::tuple<CTShaders..., int> shaders; // ct shaders
           GLuint pg_id;
+          bool symlink;
           bool failed = false;
-          bool do_not_erase = false;
       };
     } // namespace shader
   } // namespace yaggler

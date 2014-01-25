@@ -49,8 +49,8 @@ namespace neam
           template<size_t Idx, typename Opt>
           char __init_single(size_t)
           {
-            ct_buffers_views.template get<Idx>().buffer.use();
-            ct_buffers_views.template get<Idx>().view.use();
+            ct_buffers_views.template get<Idx + 1>().buffer.use();
+            ct_buffers_views.template get<Idx + 1>().view.use();
             return 0;
           }
 
@@ -84,11 +84,81 @@ namespace neam
             __int_from_ct(cr::gen_seq<sizeof...(Init)>());
           }
 
+          template<typename... OInit>
+          vao(vao<type::opengl, OInit...> &o, stole_ownership_t)
+            : id(o.get_id()), link(o.get_link())
+          {
+            o.give_up_ownership();
+            bind();
+            __int_from_ct(cr::gen_seq<sizeof...(Init)>());
+          }
+          template<typename... OInit>
+          vao(vao<type::opengl, OInit...> && o)
+            : id(o.get_id()), link(o.get_link())
+          {
+            o.give_up_ownership();
+            bind();
+            __int_from_ct(cr::gen_seq<sizeof...(Init)>());
+          }
+
+          template<typename... OInit>
+          vao(const vao<type::opengl, OInit...> &o)
+          : id(o.get_id()), link(true)
+          {
+            bind();
+            __int_from_ct(cr::gen_seq<sizeof...(Init)>());
+          }
+
           // destructor
           ~vao()
           {
             if (!link)
               glDeleteVertexArrays(1, &id);
+          }
+
+          // give up the buffer WITHOUT DELETING IT
+          // (simply become a link)
+          vao &give_up_ownership()
+          {
+            link = true;
+            return *this;
+          }
+
+          vao &assume_ownership()
+          {
+            link = false;
+            return *this;
+          }
+
+          // see stole_ownership_t
+          template<typename... OInit>
+          vao &stole(vao<type::opengl, OInit...> &t)
+          {
+            if (&t != this)
+            {
+              if (!link)
+                glDeleteVertexArrays(1, &id);
+
+              link = t.is_link();
+              id = t.get_id();
+              t.give_up();
+            }
+            return *this;
+          }
+
+          // create a simple link
+          template<typename... OInit>
+          vao &link_to(vao<type::opengl, OInit...> &t)
+          {
+            if (&t != this)
+            {
+              if (!link)
+                glDeleteVertexArrays(1, &id);
+
+              link = true;
+              id = t.get_id();
+            }
+            return *this;
           }
 
           // getters
@@ -113,6 +183,13 @@ namespace neam
             glBindVertexArray(id);
           }
 
+          // create a link to a more generic texture.
+          // no inheritance involved. This cast will create a 'link' program shader object.
+          operator vao<type::opengl> ()
+          {
+            return vao<type::opengl> (*this);
+          }
+
           // YAY :D
           // (but there'll always be that annoying GeomType around... :( )
           //
@@ -121,7 +198,7 @@ namespace neam
           template<size_t Idx, GLenum GeomType>
           buffer<type::opengl, neam::embed::GLenum<GeomType>> get_buffer_link()
           {
-            return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get<Idx>());
+            return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get<Idx + 1>());
           }
 
           // see stole_ownership_t
@@ -131,7 +208,7 @@ namespace neam
           {
             if (ct_buffers_views.template get<Idx>().is_link())
               throw yaggler_exception("n/y::geometry::vao::stole_buffer(): unable to stole owneship: ownership has already been stolen.");
-            return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get<Idx>(), stole_ownership);
+            return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get<Idx + 1>(), stole_ownership);
           }
 
         private:
@@ -139,7 +216,7 @@ namespace neam
           bool link;
 
           // buffers/views couples
-          cr::tuple<Init...> ct_buffers_views;
+          cr::tuple<int, Init...> ct_buffers_views;
       };
     } // namespace geometry
   } // namespace yaggler

@@ -99,25 +99,25 @@ namespace neam
           }
 
           template<typename... BArgs>
-          buffer(const buffer<GeomType, BArgs...> &b)
-          : id(b.id), link(true)
+          buffer(const buffer<type::opengl, GeomType, BArgs...> &b)
+          : id(b.get_id()), link(true)
           {
             __tpl_init();
           }
 
           template<typename... BArgs>
-          buffer(buffer<GeomType, BArgs...> &&b)
-          : id(b.id), link(false)
+          buffer(buffer<type::opengl, GeomType, BArgs...> &&b)
+          : id(b.get_id()), link(false)
           {
-            b.link = true;
+            b.give_up_ownership();
             __tpl_init();
           }
 
           template<typename... BArgs>
-          buffer(buffer<GeomType, BArgs...> &b, stole_ownership_t)
-          : id(b.id), link(false)
+          buffer(buffer<type::opengl, GeomType, BArgs...> &b, stole_ownership_t)
+          : id(b.get_id()), link(false)
           {
-            b.link = true;
+            b.give_up_ownership();
             __tpl_init();
           }
 
@@ -127,6 +127,54 @@ namespace neam
             if (!link)
               glDeleteBuffers(1, &id);
           }
+
+          // give up the buffer WITHOUT DELETING IT
+          // (simply become a link)
+          buffer &give_up_ownership()
+          {
+            link = true;
+            return *this;
+          }
+
+          buffer &assume_ownership()
+          {
+            link = false;
+            return *this;
+          }
+
+          // see stole_ownership_t
+          template<typename... BArgs>
+          buffer &stole(buffer<type::opengl, GeomType, BArgs...> &b)
+          {
+            if (&b != this)
+            {
+              if (!link)
+                glDeleteBuffers(1, &id);
+
+              link = b.is_link();
+              id = b.get_id();
+              b.give_up_ownership();
+            }
+            return *this;
+          }
+
+          // create a simple link
+          template<typename... BArgs>
+          buffer &link_to(const buffer<type::opengl, GeomType, BArgs...> &b)
+          {
+            if (&b != this)
+            {
+              if (!link)
+                glDeleteBuffers(1, &id);
+
+              link = true;
+              id = b.get_id();
+            }
+            return *this;
+          }
+
+          // this won't do what you want.
+          buffer &operator = (const buffer &) = delete;
 
           // getters
           GLuint get_id() const
@@ -229,6 +277,13 @@ namespace neam
             }
 
             glBufferData(GeomType::value, sizeof(dest_data), dest_data, draw_type);
+          }
+
+          // create a link to a more generic buffer.
+          // no inheritance involved. This cast will create a 'link' program shader object.
+          operator buffer<type::opengl, GeomType> ()
+          {
+            return buffer<type::opengl, GeomType> (*this);
           }
 
         public:
