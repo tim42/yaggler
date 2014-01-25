@@ -51,7 +51,7 @@ namespace neam
         {
           static_assert(Index < sizeof...(Types), "index is out of range");
           using type = const Type &;
-          using nc_type = const Type &;
+          using nc_type = Type &;
         };
         template<uint64_t Index>
         class out_of_range_check
@@ -65,7 +65,7 @@ namespace neam
         {
           out_of_range_check<Index> __oorc;
           using type = const typename get_type_at_index<Index - 1, OtherTypes...>::type &;
-          using nc_type = typename get_type_at_index<Index - 1, OtherTypes...>::type;
+          using nc_type = typename get_type_at_index<Index - 1, OtherTypes...>::type &;
         };
         template<typename ThisType, typename... OtherTypes>
         struct get_type_at_index<0, ThisType, OtherTypes...>
@@ -97,12 +97,12 @@ namespace neam
           }
 
           template<uint64_t Index, typename RetType>
-          constexpr auto get_ref() -> typename std::enable_if<Index != 0, RetType &>::type
+          auto get_ref() -> typename std::enable_if<Index != 0, RetType &>::type
           {
             return (next.template get_ref<Index - 1, RetType>());
           }
           template<uint64_t Index, typename RetType>
-          constexpr auto get_ref() -> typename std::enable_if<Index == 0, RetType &>::type
+          auto get_ref() -> typename std::enable_if<Index == 0, RetType &>::type
           {
             return value;
           }
@@ -173,7 +173,7 @@ namespace neam
         }
 
         template<uint64_t Index>
-        constexpr auto get_ref() -> typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::nc_type>::nc_type
+        auto get_ref() -> typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::nc_type>::nc_type
         {
           return storage.template get_ref<Index, typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::nc_type>::nc_type>();
         }
