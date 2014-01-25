@@ -51,6 +51,7 @@ namespace neam
         {
           static_assert(Index < sizeof...(Types), "index is out of range");
           using type = const Type &;
+          using nc_type = const Type &;
         };
         template<uint64_t Index>
         class out_of_range_check
@@ -64,12 +65,14 @@ namespace neam
         {
           out_of_range_check<Index> __oorc;
           using type = const typename get_type_at_index<Index - 1, OtherTypes...>::type &;
+          using nc_type = typename get_type_at_index<Index - 1, OtherTypes...>::type;
         };
         template<typename ThisType, typename... OtherTypes>
         struct get_type_at_index<0, ThisType, OtherTypes...>
         {
           out_of_range_check<0> __oorc;
           using type = const ThisType &;
+          using nc_type = ThisType &;
         };
 
         // 'recursively' store values
@@ -82,7 +85,6 @@ namespace neam
 //           constexpr store(const ThisType &o, const OtherTypes &...ot) : value(o), next(ot...) {}
 //           constexpr store(const ThisType &&o, const OtherTypes &&...ot) : value(o), next(ot...) {}
 
-          // here, G++ (4.7.x and 4.8.x will produce a code that crash.)
           template<uint64_t Index, typename RetType>
           constexpr auto get() const -> typename std::enable_if<Index != 0, const RetType &>::type
           {
@@ -94,16 +96,16 @@ namespace neam
             return value;
           }
 
-//           template<uint64_t Index, typename RetType>
-//           constexpr auto get_rec() const -> const RetType &
-//           {
-//             return Index - 1 ? (next.template get_rec<Index - 1, RetType>()) : (next.template get_end<RetType>());
-//           }
-//           template<typename RetType>
-//           constexpr auto get_end() const -> const RetType &
-//           {
-//             return value;
-//           }
+          template<uint64_t Index, typename RetType>
+          constexpr auto get_ref() -> typename std::enable_if<Index != 0, RetType &>::type
+          {
+            return (next.template get_ref<Index - 1, RetType>());
+          }
+          template<uint64_t Index, typename RetType>
+          constexpr auto get_ref() -> typename std::enable_if<Index == 0, RetType &>::type
+          {
+            return value;
+          }
 
           ThisType value;
           store<OtherTypes...> next;
@@ -127,6 +129,18 @@ namespace neam
           }
           template<uint64_t Index, typename RetType>
           constexpr auto get() const -> typename std::enable_if<!Index, const ThisType &>::type
+          {
+            return value;
+          }
+
+          template<uint64_t Index, typename RetType>
+          constexpr auto get_ref() -> typename std::enable_if<Index, ThisType &>::type
+          {
+            static_assert(!Index, "index is out of range : BAD USAGE OF neam::cr::tuple !!!");
+            return *(void *)0; // clang complain... but this won't seg anyway, as the code won't be built.
+          }
+          template<uint64_t Index, typename RetType>
+          constexpr auto get_ref() -> typename std::enable_if<!Index, ThisType &>::type
           {
             return value;
           }
@@ -157,22 +171,17 @@ namespace neam
         {
           return storage.template get<Index, typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::type>::type>();
         }
-//         template<uint64_t Index>
-//         constexpr auto get() const -> typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::type>::type
-//         {
-//           return Index ? storage.template get_rec<Index, typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::type>::type>() : storage.template get_end<typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::type>::type>();
-//         }
+
+        template<uint64_t Index>
+        constexpr auto get_ref() -> typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::nc_type>::nc_type
+        {
+          return storage.template get_ref<Index, typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::nc_type>::nc_type>();
+        }
 
         constexpr static size_t size()
         {
           return sizeof...(Types);
         }
-// TODO
-//         template<uint64_t Index>
-//         void set(typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::type>::type val)
-//         {
-//           return storage.set<Index>(val);
-//         }
 
       private:
         store<Types...> storage;
