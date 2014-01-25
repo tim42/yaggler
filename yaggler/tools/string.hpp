@@ -192,6 +192,19 @@ namespace neam
           return string(strcat(strcpy((char *)malloc(size() + s.size()), cdata), s.cdata), assume_ownership);
         }
 
+        bool operator == (const string &s) const
+        {
+          if (str_size != s.str_size)
+            return false;
+          return !memcmp(cdata, s.cdata, str_size);
+        }
+        bool operator != (const string &s) const
+        {
+          if (str_size != s.str_size)
+            return true;
+          return memcmp(cdata, s.cdata, str_size);
+        }
+
       private:
         char *cdata;
         bool to_delete;
