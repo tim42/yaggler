@@ -32,6 +32,7 @@
 #include <tools/enable_if.hpp>
 #include <tools/function.hpp>
 #include <tools/array.hpp>
+#include <tools/type_at_index.hpp>
 
 namespace neam
 {
@@ -42,23 +43,19 @@ namespace neam
       // context types
       namespace contexts
       {
-        class dynamic {};
-        class fixed {};
         class none {};
+        class fixed {};
+        class dynamic {};
       } // namespace contexts
 
       // aim to create a context for vars (and avoid to set them again and again)
       template<typename Type, typename... Args> class variable_context
       {
-          // create an error message
-//         static_assert(!(sizeof...(Args) + 1), "This context type doesn't exist or is not valid.");
-
-          // construct a new static context (this use arg deduction)
-          // "disable" this class (to kill even more the user under endless error messages).
           variable_context() = delete;
           ~variable_context() = delete;
 
         public:
+          // construct a new context (this use arg deduction)
           template<typename CTXType, typename... NArgs, typename... Vars>
           constexpr static variable_context<CTXType, NArgs...> create(neam::cr::tuple<NArgs...> && _values, Vars && ... _vars)
           {
@@ -88,6 +85,32 @@ namespace neam
           void use()
           {
             binder(cr::gen_seq<sizeof...(Args)>());
+          }
+
+          constexpr size_t get_number_of_variables() const
+          {
+            return sizeof...(Args);
+          }
+
+          template<size_t Index>
+          typename ct::type_at_index<Index, Args...>::type & get_value_at_index()
+          {
+            return values.template get_ref<Index>();
+          }
+
+          template<size_t Index>
+          const typename ct::type_at_index<Index, Args...>::type & get_value_at_index() const
+          {
+            return values.template get<Index>();
+          }
+
+          uniform_variable &get_uniform_variable_at_index(size_t index)
+          {
+            return vars[index];
+          }
+          const uniform_variable &get_uniform_variable_at_index(size_t index) const
+          {
+            return vars[index];
           }
 
         private:
