@@ -253,13 +253,13 @@ namespace neam
             }
           }
 
-          GLint get_uniform_variable(const neam::cr::string &name)
+          GLint get_uniform_variable(const std::string &name)
           {
             return glGetUniformLocation(pg_id, name.data());
           }
 
           // don't forget to link it after :)
-          void bind_attribute_location(const neam::cr::string &attribute_name, GLuint location)
+          void bind_attribute_location(const std::string &attribute_name, GLuint location)
           {
             glBindAttribLocation(pg_id, location, attribute_name.data());
           }

@@ -105,7 +105,7 @@ namespace neam
             }
           }
 
-          const neam::cr::string &get_source() const
+          const std::string &get_source() const
           {
             return source;
           }
@@ -121,7 +121,7 @@ namespace neam
           // possibly faster than a direct call to 'recompile()'
           void recompile_if_changed()
           {
-            if (has_source_changed(0))
+            if (changed || has_source_changed(0))
               unlocked_recompile();
           }
 
@@ -133,17 +133,17 @@ namespace neam
 
           // set/change the internal source string
           // only existing for ShaderSourceType === opengl::dyn_string
-          // an empty string will reset the source to its default value
-          // you may need to call recompile_if_changed() after...
-          void set_source(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::dyn_string>::value), const neam::cr::string &) _source = "")
+          // an empty string will reset the source to its default (ct) value
+          // you may need to call recompile() (and link() in the program) after...
+          void set_source(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::dyn_string>::value), const std::string &) _source = "")
           {
             source = _source;
             changed = true;
           }
 
-          constexpr int set_source(NCR_ENABLE_IF((!std::is_same<ShaderSourceType, opengl::dyn_string>::value), const neam::cr::string &) = "")
+          constexpr int set_source(NCR_ENABLE_IF((!std::is_same<ShaderSourceType, opengl::dyn_string>::value), const std::string &) = "")
           {
-            static_assert(!(sizeof(ShaderSourceType) + 1), "shader<type::opengl>::set_source is only possible with ShaderSourceType setted to opengl::dyn_string");
+            static_assert(!(sizeof(ShaderSourceType) + 1), "shader<type::opengl>::set_source is only possible with ShaderSourceType set to opengl::dyn_string");
             return 0;
           }
 
@@ -153,31 +153,84 @@ namespace neam
             return shader_id;
           }
 
+          shader &clear_additional_strings()
+          {
+            additional_str.clear();
+            return *this;
+          }
+
+          // add some strings to the code of the shader
+          // (right after the #version token)
+          // you may want to recompile and link the program after this...
+          shader &append_to_additional_strings(const std::string &to_add)
+          {
+            additional_str = (additional_str + to_add) + std::string("\n");
+            changed = true;
+            return *this;
+          }
+
         private: // unlocked functions (they must be called with their lock held)
           inline void unlocked_recompile()
           {
             if (!std::is_same<ShaderSourceType, opengl::function>::value)
               source = get_source_string(0);
 
-            GLint length = source.size();
-            const GLchar *data = source.data();
-            glShaderSource(shader_id, 1, &data, &length);
+            // get the version string
+            for (size_t i = 0; source.size() > 9 && i < source.size() - 9; ++i)
+            {
+              if (source[i] == '\n' && source[i + 1] == '#')
+              {
+                // we got our #version
+                if (!strncmp(source.data() + i + 1, "#version ", 9))
+                {
+                  size_t j = i + 10;
+                  for (; j < source.size() && source.data()[j] != '\n'; ++j);
+
+                  char *str = strndup(source.data() + i + 1, (j - i));
+
+                  version_str = std::string(str);
+
+                  // comment the original #version string
+                  source[i + 1] = '/';
+                  source[i + 2] = '/';
+
+                  break;
+                }
+              }
+            }
+
+            // build
+            GLint length_array[] =
+            {
+              (GLint)version_str.size(),
+              (GLint)additional_str.size(),
+              (GLint)source.size(),
+            };
+            const GLchar *source_array[] =
+            {
+              version_str.data(),
+              additional_str.data() ? additional_str.data() : "",
+              source.data(),
+            };
+
+            glShaderSource(shader_id, sizeof(length_array) / sizeof(length_array[0]), source_array, length_array);
             failed = true;
             throw_on_glerror<shader_exception>("unable to set the shader source (glShaderSource): ");
             failed = false;
 
             glCompileShader(shader_id);
 
-            glGetShaderiv(shader_id, GL_COMPILE_STATUS, &length);
+            GLint status;
+            glGetShaderiv(shader_id, GL_COMPILE_STATUS, &status);
 
-            if (length == GL_FALSE)
+            if (status == GL_FALSE)
             {
               failed = true;
               constexpr size_t max_len = 8192;
               char *message = new char[max_len];
               const char *header = "could not compile shader:\n";
               strcpy(message, header);
-              glGetShaderInfoLog(shader_id, max_len - strlen(header), &length, message + strlen(header));
+              glGetShaderInfoLog(shader_id, max_len - strlen(header), &status, message + strlen(header));
               throw shader_exception(message, true);
             }
             failed = false;
@@ -185,26 +238,26 @@ namespace neam
 
         private: // source helpers
 
-          // this one return directly a const char * to avoid the creation of a temporary neam::cr::string (and also because it's possible :D )
+          // this one return directly a const char * to avoid the creation of a temporary std::string (and also because it's possible :D )
           constexpr inline const char *get_source_string(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::constexpr_string>::value), int)) const
           {
             return ShaderSource::value;
           }
 
-          inline neam::cr::string get_source_string(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::file>::value), int) = 0) const
+          inline std::string get_source_string(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::file>::value), int) = 0) const
           {
             // if anybody says there's a shorter way to load a file into a string in C++, perhaps he is lying ;)
             return static_cast<std::ostringstream&>(std::ostringstream() << (std::ifstream(ShaderSource::value).rdbuf())).str();
           }
 
-          inline neam::cr::string get_source_string(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::dyn_string>::value), int) = 0) const
+          inline std::string get_source_string(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::dyn_string>::value), int) = 0) const
           {
             if (source.empty())
               source = ShaderSource::value;
             return source;
           }
 
-          inline neam::cr::string get_source_string(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::function>::value), int) = 0) const
+          inline std::string get_source_string(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::function>::value), int) = 0) const
           {
             return ShaderSource::value();
           }
@@ -244,7 +297,7 @@ namespace neam
           inline bool has_source_changed(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::function>::value && ShaderOption::value == shader_option::reload_on_change), int) = 0) const
           {
             // check the string:
-            neam::cr::string tstr = get_source_string(0);
+            std::string tstr = get_source_string(0);
             if (!(tstr == source))
             {
               source = tstr;
@@ -268,7 +321,9 @@ namespace neam
 
         private:
           GLuint shader_id;
-          neam::cr::string source;
+          std::string source;
+          std::string version_str;
+          std::string additional_str;
 
           bool failed = false;
           bool changed = false;
