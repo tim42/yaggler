@@ -64,7 +64,6 @@
 
 // tools
 #include "tools/ct_string.hpp"
-#include "tools/string.hpp"
 #include "tools/embed.hpp"
 #include "tools/ref.hpp"
 #include "tools/chrono.hpp"
@@ -82,8 +81,12 @@
 
 // simple check stuff
 #if defined __NO_INLINE__ or (not defined __OPTIMIZE__ and defined __GNUC__)
-#warning you shall enable optimisations / do not disable inlining to get some perfs from yaggler.
+#warning you shall enable optimisations / do not disable inlining to get some perfs boost from yaggler.
 #endif
+
+
+// lets include klmb main header.
+#include <klmb/klmb.hpp>
 
 namespace neam
 {
