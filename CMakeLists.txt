@@ -69,8 +69,9 @@ include_directories("./yaggler/")
 add_subdirectory(yaggler)
 
 # build the samples
-add_subdirectory(samples/dev)
 add_subdirectory(samples/test)
+add_subdirectory(samples/dev)
+add_subdirectory(samples/dev-klmb)
 
 
 
