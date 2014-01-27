@@ -16,7 +16,10 @@ out vec4 output_color;
 in vec4  vertex_position;
 
 // defines
+#ifndef RM_STEP
 #define RM_STEP         55.
+#endif
+
 #define RM_INC          0.00435
 
 // consts

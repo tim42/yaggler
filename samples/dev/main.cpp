@@ -81,7 +81,11 @@ int main(int argc, char **argv)
        neam::embed::shader::option<neam::yaggler::shader::shader_option::reload_on_change> >> prog;
 
   prog.bind_attribute_location("in_position", 0);
-  prog.link();
+
+  float rm_step = 55.;
+  prog.get_shader_at_index<0>().append_to_additional_strings("#define RM_STEP " + static_cast<std::ostringstream&>(std::ostringstream() << rm_step).str()); // base define
+
+  prog. link();
 
   // the texture
 //   neam::yaggler::texture::texture < neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>,
@@ -140,8 +144,21 @@ int main(int argc, char **argv)
     if (chronos.get_accumulated_time() >= 2)
     {
       std::cout << "FPS: " << frame_counter / 2 << std::endl;
+      if (frame_counter / 2. < 40 && rm_step > 5)
+      {
+        rm_step -= 5;
+        prog.get_shader_at_index<0>().clear_additional_strings().append_to_additional_strings("#define RM_STEP " + static_cast<std::ostringstream &>(std::ostringstream() << rm_step).str() + ". "); // base define
+        prog.link();
+      }
+      else if (frame_counter / 2. > 50)
+      {
+        rm_step += 5;
+        prog.get_shader_at_index<0>().clear_additional_strings().append_to_additional_strings("#define RM_STEP " + static_cast<std::ostringstream&>(std::ostringstream() << rm_step).str() + ". "); // base define
+        prog.link();
+      }
       frame_counter = 0;
       chronos.reset();
+
     }
 
     glfwPollEvents();
