@@ -62,6 +62,11 @@
 // types
 #include "yaggler_type.hpp"
 
+// fpoints
+#include "ct_fixed.hpp"
+#include "ct_point.hpp"
+#include "ct_point_udl.hpp"
+
 // tools
 #include "tools/ct_string.hpp"
 #include "tools/embed.hpp"

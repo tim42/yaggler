@@ -23,7 +23,6 @@
 #ifndef __CT_POINT_HPP__
 #define __CT_POINT_HPP__
 
-// obviously, it's in this header that a 3D -> 2D projections/transformations is done...
 // TODO: doc ?
 namespace neam
 {
