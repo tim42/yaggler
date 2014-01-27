@@ -31,7 +31,6 @@
 #include <iostream>
 #include <stdexcept>
 #include <GLEW/glew.h>
-#include "tools/string.hpp"
 
 // base exceptions for yaggler
 
@@ -40,11 +39,11 @@ namespace neam
   class runtime_error
   {
     public:
-      runtime_error(const neam::cr::string &s) noexcept
+      runtime_error(const std::string &s) noexcept
         : str(s)
       {
       }
-      runtime_error(neam::cr::string &&s) noexcept
+      runtime_error(std::string &&s) noexcept
         : str(s)
       {
       }
@@ -59,7 +58,7 @@ namespace neam
       }
 
     private:
-      neam::cr::string str;
+      std::string str;
   };
 
   namespace yaggler
@@ -79,7 +78,7 @@ namespace neam
     {
       public:
         explicit glfw_exception(const char *__arg, bool _free_message = false) noexcept
-          : neam::runtime_error(neam::cr::string("yaggler/GLFW: ") + __arg)
+          : neam::runtime_error(std::string("yaggler/GLFW: ") + __arg)
         {
           std::cerr << "yaggler/glfw exception: " << __arg << std::endl;
 
@@ -100,7 +99,7 @@ namespace neam
       public:
         explicit glew_exception(const char *__arg, bool _free_message = false) noexcept
       :
-        neam::runtime_error(neam::cr::string("yaggler/GLEW: ") + __arg)
+        neam::runtime_error(std::string("yaggler/GLEW: ") + __arg)
         {
           std::cerr << "yaggler/glew exception: " << __arg << std::endl;
 
@@ -121,7 +120,7 @@ namespace neam
       public:
         explicit opengl_exception(const char *__arg, bool _free_message = false) noexcept
       :
-        neam::runtime_error(neam::cr::string("yaggler/OpenGL: ") + __arg)
+        neam::runtime_error(std::string("yaggler/OpenGL: ") + __arg)
         {
           std::cerr << "yaggler/opengl exception: " << __arg << std::endl;
 
@@ -142,7 +141,7 @@ namespace neam
       public:
         explicit yaggler_exception(const char *__arg, bool _free_message = false) noexcept
         :
-        neam::runtime_error(neam::cr::string("YagGler: ") + __arg)
+        neam::runtime_error(std::string("YagGler: ") + __arg)
         {
           std::cerr << "yaggler exception: " << __arg << std::endl;
 

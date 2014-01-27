@@ -55,7 +55,7 @@ namespace neam
 
       public:
         // window_size MUST be an integer, NOT a fixed point size.
-        glfw_window(window_mode::windowed_t, const neam::ct::vector2 &window_size, const neam::cr::string &title = "[ neam/yaggler")
+        glfw_window(window_mode::windowed_t, const neam::ct::vector2 &window_size, const std::string &title = "[ neam/yaggler")
           : win(nullptr)
         {
           glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, ::opengl_version::gl_major);
@@ -98,7 +98,7 @@ namespace neam
             throw glew_exception(reinterpret_cast<const char *>(glewGetErrorString(err)));
           }
         }
-        glfw_window(window_mode::fullscreen_t, const neam::cr::string &title = "[ neam/yaggler")
+        glfw_window(window_mode::fullscreen_t, const std::string &title = "[ neam/yaggler")
           : win(nullptr)
         {
           glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, ::opengl_version::gl_major);
@@ -194,7 +194,7 @@ namespace neam
           return neam::ct::vector2{ret[0], ret[1]};
         }
 
-        void set_title(const neam::cr::string &title = "[ neam/yaggler")
+        void set_title(const std::string &title = "[ neam/yaggler")
         {
           glfwSetWindowTitle(win, title.data());
         }

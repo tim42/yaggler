@@ -47,12 +47,12 @@ namespace neam
         NYST_CLASS(file);
         NYST_CLASS(constexpr_string);
         NYST_CLASS(dyn_string); // in that case, the 'source' tpl param is the default value.
-        NYST_CLASS(function);   // in that case, the 'source' tpl param is a function pointer: neam::cr::string (*)(void).
+        NYST_CLASS(function);   // in that case, the 'source' tpl param is a function pointer: std::string (*)(void).
                                 // (could be used to inflate the source ;) )
 
         namespace embed
         {
-          using __function_pointer =  neam::cr::string (*)();
+          using __function_pointer =  std::string (*)();
           N_EMBED_USING(function_ptr, __function_pointer);
         } // namespace embed
 
