@@ -46,7 +46,11 @@ namespace neam
         constexpr embed() = default;
         ~embed() = default;
 
-        constexpr operator EmbeddedType()
+        operator EmbeddedType &()
+        {
+          return Value;
+        }
+        constexpr operator EmbeddedType () const
         {
           return Value;
         }

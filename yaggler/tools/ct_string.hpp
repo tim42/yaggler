@@ -74,24 +74,24 @@ namespace neam
         ~string() {}
 
         // allow casting back the class to a const char *
-        constexpr operator const char *()
+        constexpr operator const char *() const
         {
           return value + Start;
         }
 
         // comparison operators
         template<const char *OStr>
-        constexpr bool operator == (const string<OStr> &)
+        constexpr bool operator == (const string<OStr> &) const
         {
           return str_is_same<Str, OStr>();
         }
         template<const char *OStr>
-        constexpr bool operator != (const string<OStr> &other)
+        constexpr bool operator != (const string<OStr> &other) const
         {
           return !(*this == other);
         }
 
-        constexpr char operator[](size_t pos)
+        constexpr char operator[](size_t pos) const
         {
           return pos + Start < End ? Str[pos + Start] : 0;
         }
@@ -145,7 +145,7 @@ namespace neam
 
         // comparison func
         template<typename T>
-        constexpr bool is_same(const T &o, size_t index = 0)
+        constexpr bool is_same(const T &o, size_t index = 0) const
         {
           return ((*this)[index] == o[index] ? ((*this)[index] ? is_same(o, index + 1) : true) : false);
         }
@@ -154,18 +154,18 @@ namespace neam
         constexpr string_set() {}
         ~string_set() {}
 
-        constexpr char operator[](size_t index)
+        constexpr char operator[](size_t index) const
         {
           return get_char_at_index<0, StringSet...>(index + Start);
         }
 
         template<typename T>
-        constexpr bool operator == (const T &o)
+        constexpr bool operator == (const T &o) const
         {
           return is_same(o);
         }
         template<typename T>
-        constexpr bool operator != (const T &o)
+        constexpr bool operator != (const T &o) const
         {
           return !(*this == o);
         }

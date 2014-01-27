@@ -141,7 +141,7 @@ namespace neam
             changed = true;
           }
 
-          constexpr int set_source(NCR_ENABLE_IF((!std::is_same<ShaderSourceType, opengl::dyn_string>::value), const std::string &) = "")
+          constexpr int set_source(NCR_ENABLE_IF((!std::is_same<ShaderSourceType, opengl::dyn_string>::value), const std::string &) = "") const
           {
             static_assert(!(sizeof(ShaderSourceType) + 1), "shader<type::opengl>::set_source is only possible with ShaderSourceType set to opengl::dyn_string");
             return 0;

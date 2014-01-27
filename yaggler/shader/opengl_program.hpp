@@ -165,7 +165,7 @@ namespace neam
           {
             if (&t != this)
             {
-              if (!link)
+              if (!symlink)
                 glDeleteProgram(pg_id);
 
               symlink = t.is_link();
@@ -181,7 +181,7 @@ namespace neam
           {
             if (&t != this)
             {
-              if (!link)
+              if (!symlink)
                 glDeleteProgram(pg_id);
 
               symlink = true;
@@ -191,7 +191,7 @@ namespace neam
           }
 
           // return the number of shaders in CTShaders
-          constexpr size_t get_ct_shaders_number()
+          constexpr size_t get_ct_shaders_number() const
           {
             return shaders.size();
           }
@@ -204,7 +204,7 @@ namespace neam
           // this is NOT if the shader is linked, but if it's a linked 'copy'
           bool is_link() const
           {
-            return link;
+            return symlink;
           }
 
           void recompile_cts_shader_if_changed()

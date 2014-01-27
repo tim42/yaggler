@@ -34,11 +34,10 @@ namespace neam
       fixed_t x;
       fixed_t y;
 
-      constexpr vector2() : x(0), y(0) {}
-      constexpr vector2(fixed_t _x, fixed_t _y) : x(_x), y(_y) {}
+      constexpr vector2(fixed_t _x = conversion::from(0), fixed_t _y = conversion::from(0)) : x(_x), y(_y) {}
       constexpr vector2(const vector2 &_v) : x(_v.x), y(_v.y) {}
 
-      constexpr vector2 convert_to_fixed()
+      constexpr vector2 convert_to_fixed() const
       {
         return vector2
         {
@@ -46,7 +45,7 @@ namespace neam
           conversion::from<fixed_t>(y),
         };
       }
-      constexpr vector2 convert_to_integer()
+      constexpr vector2 convert_to_integer() const
       {
         return vector2
         {
@@ -69,7 +68,7 @@ namespace neam
         :
           vector2 { -1, -1};
         }
-        constexpr vector3 _transform_last(const vector3 &p, const vector3 &a, const vector3 &t, const vector3 &/*s*/) // FIXME: why s is unused ???
+        constexpr vector3 _transform_last(const vector3 &p, const vector3 &a, const vector3 &t, const vector3 &/*s*/) const // FIXME: why s is unused ???
         {
           return
           {
@@ -78,7 +77,7 @@ namespace neam
             mul(p.y, sin(a.x)) + mul(p.z, cos(a.x)) + t.z
           };
         }
-        constexpr vector3 _transform(const vector3 &p, const vector3 &a, const vector3 &t, const vector3 &s)
+        constexpr vector3 _transform(const vector3 &p, const vector3 &a, const vector3 &t, const vector3 &s) const
         {
           return _transform_last(
           {
@@ -93,21 +92,19 @@ namespace neam
         fixed_t y;
         fixed_t z;
 
-        constexpr vector3() : x(0), y(0), z(0) {}
-        constexpr vector3(fixed_t _x, fixed_t _y, fixed_t _z) : x(_x), y(_y), z(_z) {}
         constexpr vector3(const vector3 &_v) : x(_v.x), y(_v.y), z(_v.z) {}
 
         constexpr vector3(const vector2 &ov2, fixed_t _z = conversion::from(0))
           : x(ov2.x), y(ov2.y), z(_z)
         {
         }
-//         constexpr vector3(fixed_t _x = conversion::from(0), fixed_t _y = conversion::from(0), fixed_t _z = conversion::from(0))
-//           : x(_x), y(_y), z(_z)
-//         {
-//         }
+        constexpr vector3(fixed_t _x = conversion::from(0), fixed_t _y = conversion::from(0), fixed_t _z = conversion::from(0))
+          : x(_x), y(_y), z(_z)
+        {
+        }
 
         // FIXME: is the sin/cos twice calls worth a copy + a single sin/cos call ??
-        constexpr vector3 transform(const vector3 &a, const vector3 &t, const vector3 &s)
+        constexpr vector3 transform(const vector3 &a, const vector3 &t, const vector3 &s) const
         {
           return _transform(
           {
@@ -116,11 +113,11 @@ namespace neam
             mul(mul(s.x, x + t.x), sin(a.y)) + mul(mul(s.z, z), cos(a.y))
           }, a, t, s);
         }
-        constexpr vector2 project(const vector3 &a, const vector3 &t, const vector3 &s, fixed_t x_factor)
+        constexpr vector2 project(const vector3 &a, const vector3 &t, const vector3 &s, fixed_t x_factor) const
         {
           return _project(transform(a, t, s), x_factor);
         }
-        constexpr vector3 convert_to_fixed()
+        constexpr vector3 convert_to_fixed() const
         {
           return vector3
           {
@@ -129,7 +126,7 @@ namespace neam
             conversion::from<fixed_t>(z)
           };
         }
-        constexpr vector3 convert_to_integer()
+        constexpr vector3 convert_to_integer() const
         {
           return vector3
           {
@@ -147,11 +144,10 @@ namespace neam
       fixed_t z;
       fixed_t w;
 
-      constexpr vector4() : x(0), y(0), z(0), w(0) {}
-      constexpr vector4(fixed_t _x, fixed_t _y, fixed_t _z, fixed_t _w) : x(_x), y(_y), z(_z), w(_w) {}
+      constexpr vector4(fixed_t _x = conversion::from(0), fixed_t _y = conversion::from(0), fixed_t _z = conversion::from(0), fixed_t _w = conversion::from(0)) : x(_x), y(_y), z(_z), w(_w) {}
       constexpr vector4(const vector4 &_v) : x(_v.x), y(_v.y), z(_v.z), w(_v.w) {}
 
-      constexpr vector4 convert_to_fixed()
+      constexpr vector4 convert_to_fixed() const
       {
         return vector4
         {
@@ -161,7 +157,7 @@ namespace neam
           conversion::from<fixed_t>(w),
         };
       }
-      constexpr vector4 convert_to_integer()
+      constexpr vector4 convert_to_integer() const
       {
         return vector4
         {
