@@ -77,6 +77,19 @@ namespace neam
 
       cr::tuple<Types...> instance;
     };
+
+    // send a list of types in another class as template parameters
+    template<template<typename... X> class Class, typename Type>
+    struct extract_types
+    {
+    };
+
+    template<template<typename... X> class Class, typename... Types>
+    struct extract_types<Class, type_list<Types...>>
+    {
+      using type = Class<Types...>;
+    };
+
   } // namespace ct
 } // namespace neam
 
