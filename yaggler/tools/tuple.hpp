@@ -38,7 +38,9 @@ namespace neam
 {
   namespace cr
   {
-    // a motherfucking constexpr tuple
+    class end {};
+
+    // a (motherfucking) constexpr tuple
     template<typename... Types>
     class tuple
     {
