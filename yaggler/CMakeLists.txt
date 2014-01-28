@@ -14,7 +14,7 @@ add_custom_target(invalidate_version ALL COMMAND ${CMAKE_COMMAND} -E touch versi
 #
 # [here I could not use 'set(...)', and I had to use file(GLOB_RECURSE ...) to
 #  have kdevelop parsing and pushing include directories]
-file(GLOB_RECURSE srcs ./*.cpp)
+file(GLOB_RECURSE srcs ./*.cpp ./*.hpp)
 
 
 # set(YAGGLER_SRCS ${srcs} PARENT_SCOPE)

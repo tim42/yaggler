@@ -64,6 +64,7 @@ include_directories(SYSTEM "./third_party/glm/")
 include(cmake/flags.cmake)
 
 include_directories("./yaggler/")
+include_directories("./")
 
 # build yaggler dummy "lib"
 add_subdirectory(yaggler)
