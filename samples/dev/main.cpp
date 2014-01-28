@@ -23,9 +23,6 @@ using opengl_version = neam::yaggler::setup::opengl<3, 1>;
 
 #include <yaggler.hpp>
 
-// lets include klmb main header.
-#include <klmb/klmb.hpp>
-
 #include <iostream>
 
 constexpr neam::string_t vert = "data/shaders/shader_test.vert";
