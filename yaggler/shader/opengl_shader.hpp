@@ -110,6 +110,11 @@ namespace neam
             return source;
           }
 
+          constexpr static GLenum get_shader_type()
+          {
+            return ShaderType::value;
+          }
+
           // rebuild the shader. re-get the sources, ...
           // NOTE: this could be slow.
           void recompile()
