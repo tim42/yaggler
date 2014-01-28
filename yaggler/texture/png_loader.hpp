@@ -34,7 +34,8 @@
 #include <tools/embed.hpp>
 #include <tools/tuple.hpp>
 #include <tools/chrono.hpp>
-#include "../ct_fixed.hpp"
+#include "ct_fixed.hpp"
+#include "tools/ct_list.hpp"
 
 namespace neam
 {
@@ -60,8 +61,8 @@ namespace neam
           private:
             // pixel types
             // gray are converted to GL_RED, gray+alpha to GL_RG
-            neam::cr::tuple<png::gray_pixel, png::gray_pixel, png::gray_pixel_16, png::ga_pixel, png::ga_pixel, png::ga_pixel_16,
-                 png::rgb_pixel, png::rgb_pixel, png::rgb_pixel_16, png::rgba_pixel, png::rgba_pixel, png::rgba_pixel_16 > __types__;
+            using __types__ = neam::ct::type_list<png::gray_pixel, png::gray_pixel, png::gray_pixel_16, png::ga_pixel, png::ga_pixel, png::ga_pixel_16,
+                 png::rgb_pixel, png::rgb_pixel, png::rgb_pixel_16, png::rgba_pixel, png::rgba_pixel, png::rgba_pixel_16 >;
             static constexpr GLenum __values__ [] = {GL_R, GL_R8, GL_R16, GL_RG, GL_RG8, GL_RG16, GL_RGB, GL_RGB8, GL_RGB16, GL_RGBA, GL_RGBA8, GL_RGBA16};
             static constexpr size_t __default_value__ = 9; // index of png::rgba_pixel
 
@@ -72,7 +73,7 @@ namespace neam
             // comp num and size per pixel
             static constexpr GLenum __pixel_comp_num__ [] = {1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4};
             static constexpr GLenum __pixel_comp_size__ [] = {1, 1, 2};
-            neam::cr::tuple < uint8_t, uint8_t, uint16_t > __pixel_types__;
+            using __pixel_types__ = neam::ct::type_list < uint8_t, uint8_t, uint16_t >;
 
             // getter
             static constexpr size_t __rec_get_value_index(GLenum val, size_t idx, size_t max)
@@ -89,8 +90,8 @@ namespace neam
             template<typename T>
             using remove_cref = typename std::remove_const<typename std::remove_reference<T>::type>::type;
 
-            using png_image_type = remove_cref<decltype(__types__.get<get_value_index(InternalFormat)>())>;
-            using png_pixel_type = remove_cref<decltype(__pixel_types__.get<get_value_index(InternalFormat) % 3>())>;
+            using png_image_type = remove_cref<typename __types__::get_type<get_value_index(InternalFormat)>>;
+            using png_pixel_type = remove_cref<typename __pixel_types__::get_type<get_value_index(InternalFormat) % 3>>;
 
             static constexpr size_t comp_size = __pixel_comp_size__[get_value_index(InternalFormat) % (sizeof(__pixel_comp_size__) / sizeof(__pixel_comp_size__[0]))];
             static constexpr size_t comp_num = __pixel_comp_num__[get_value_index(InternalFormat) % (sizeof(__pixel_comp_num__) / sizeof(__pixel_comp_num__[0]))];

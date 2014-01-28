@@ -19,6 +19,7 @@
 
 #include "ct_fixed.hpp"
 #include "tools/tuple.hpp"
+#include "tools/ct_list.hpp"
 
 #ifndef __CT_POINT_HPP__
 #define __CT_POINT_HPP__
@@ -176,13 +177,14 @@ namespace neam
       private:
         static_assert(sizeof...(Vals), "attempt to create a neam::ct::vector of dimensionality 0");
         static_assert(sizeof...(Vals) <= 4, "attempt to create a neam::ct::vector of dimensionality > 4");
-        neam::cr::tuple<fixed_t, vector2, vector3, vector4> __types__;
+
+        using __types__ = neam::ct::type_list<fixed_t, vector2, vector3, vector4>;
 
         template<typename T>
         using remove_cref = typename std::remove_const<typename std::remove_reference<T>::type>::type;
 
       public:
-        using vec_type = remove_cref<decltype(__types__.get<sizeof...(Vals) - 1>())>;
+        using vec_type = remove_cref<typename __types__::get_type<sizeof...(Vals) - 1>>;
 
         static constexpr vec_type value = vec_type{Vals...};
         static constexpr size_t dimensionality = sizeof...(Vals);
