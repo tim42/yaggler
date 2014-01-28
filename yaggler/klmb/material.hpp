@@ -26,8 +26,10 @@
 #ifndef __N_654936713606318107_1809439057__MATERIAL_HPP__
 # define __N_654936713606318107_1809439057__MATERIAL_HPP__
 
-#include <klmb/ct_shader_list.hpp>
-#include <klmb/ct_texture_list.hpp>
+#include <klmb/tools/ct_shader_list.hpp>
+#include <klmb/tools/ct_texture_list.hpp>
+
+#include <tools/merge_pack.hpp>
 
 // a simple material class.
 
@@ -72,6 +74,7 @@ namespace neam
 
         private:
           VarCtx vctx;
+          
       };
     } // namespace yaggler
   } // namespace klmb
