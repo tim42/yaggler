@@ -33,19 +33,16 @@
 #include <cstdint>
 
 #include <tools/genseq.hpp>
+#include <tools/bad_type.hpp>
 
 namespace neam
 {
   namespace cr
   {
-    class end {};
-
     // a (motherfucking) constexpr tuple
     template<typename... Types>
     class tuple
     {
-      static_assert(sizeof...(Types) > 0, "attempt to create an empty tuple");
-
       private: // helper structs
         // out of range checks
         template<uint64_t Index, typename Type>
@@ -187,6 +184,33 @@ namespace neam
 
       private:
         store<Types...> storage;
+    };
+
+    // an empty tuple
+    template<>
+    class tuple<>
+    {
+      public:
+        constexpr tuple() {}
+        constexpr tuple(const tuple &) {}
+
+        template<size_t Index>
+        constexpr cr::bad_type get() const
+        {
+          static_assert(!(Index + 1), "tuple<>::get() on an empty tuple.");
+          return cr::bad_type(cr::bad_type::construct_from_return);
+        }
+        template<size_t Index>
+        constexpr cr::bad_type get_ref() const
+        {
+          static_assert(!(Index + 1), "tuple<>::get_ref() on an empty tuple.");
+          return cr::bad_type(cr::bad_type::construct_from_return);
+        }
+
+        constexpr static size_t size()
+        {
+          return 0;
+        }
     };
 
     // and a motherfucking constexpr tuple builder
