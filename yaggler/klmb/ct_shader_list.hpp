@@ -44,15 +44,15 @@ namespace neam
           template <typename Cr, typename Type> struct make_type;
 
           template <typename Cr, typename ...Others>
-          struct make_type<Cr, cr::tuple<Others..., cr::end>>
+          struct make_type<Cr, cr::tuple<Others...>>
           {
-            using type = cr::tuple<Cr, Others..., cr::end>;
+            using type = cr::tuple<Cr, Others...>;
           };
 
           template<GLenum ShaderType, typename...>
           struct filter
           {
-            using type = cr::tuple<cr::end>;
+            using type = cr::tuple<>;
           };
           template<GLenum ShaderType, typename Current, typename... Types>
           struct filter<ShaderType, Current, Types...>

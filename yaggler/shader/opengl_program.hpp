@@ -35,6 +35,7 @@
 #include <shader/program_base.hpp>
 #include <shader/except.hpp>
 #include "opengl_uniform_var.hpp"
+#include <tools/bad_type.hpp>
 
 #include <tools/tuple.hpp>
 #include <tools/type_at_index.hpp>
@@ -316,19 +317,19 @@ namespace neam
 
           template<size_t Index>
           auto get_shader_at_index()
-          -> typename ct::type_at_index<Index, CTShaders..., int>::type &
+          -> typename ct::type_at_index<Index, CTShaders..., cr::bad_type>::type &
           {
             return shaders.template get_ref<Index>();
           }
           template<size_t Index>
           auto get_shader_at_index() const
-          -> const typename ct::type_at_index<Index, CTShaders..., int>::type &
+          -> const typename ct::type_at_index<Index, CTShaders..., cr::bad_type>::type &
           {
             return shaders.template get<Index>();
           }
 
         private: // vars.
-          cr::tuple<CTShaders..., int> shaders; // ct shaders
+          cr::tuple<CTShaders...> shaders; // ct shaders
           GLuint pg_id;
           bool symlink;
           bool failed = false;

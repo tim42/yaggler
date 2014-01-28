@@ -49,8 +49,8 @@ namespace neam
           template<size_t Idx, typename Opt>
           char __init_single(size_t)
           {
-            ct_buffers_views.template get<Idx + 1>().buffer.use();
-            ct_buffers_views.template get<Idx + 1>().view.use();
+            ct_buffers_views.template get<Idx>().buffer.use();
+            ct_buffers_views.template get<Idx>().view.use();
             return 0;
           }
 
@@ -198,7 +198,7 @@ namespace neam
           template<size_t Idx, GLenum GeomType>
           buffer<type::opengl, neam::embed::GLenum<GeomType>> get_buffer_link()
           {
-            return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get<Idx + 1>());
+            return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get<Idx>());
           }
 
           // see stole_ownership_t
@@ -208,7 +208,7 @@ namespace neam
           {
             if (ct_buffers_views.template get<Idx>().is_link())
               throw yaggler_exception("n/y::geometry::vao::stole_buffer(): unable to stole owneship: ownership has already been stolen.");
-            return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get<Idx + 1>(), stole_ownership);
+            return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get<Idx>(), stole_ownership);
           }
 
         private:
@@ -216,7 +216,7 @@ namespace neam
           bool link;
 
           // buffers/views couples
-          cr::tuple<int, Init...> ct_buffers_views;
+          cr::tuple<Init...> ct_buffers_views;
       };
     } // namespace geometry
   } // namespace yaggler
