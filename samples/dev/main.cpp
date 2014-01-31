@@ -82,6 +82,8 @@ int main(int argc, char **argv)
 
   prog.bind_attribute_location("in_position", 0);
 
+  std::cout << "[" << prog.get_shader_at_index<0>().get_preprocessor_value("RM_STEP") << "]" << std::endl;
+
   float rm_step = 55.;
   prog.get_shader_at_index<0>().append_to_additional_strings("#define RM_STEP " + static_cast<std::ostringstream&>(std::ostringstream() << rm_step).str()); // base define
 
