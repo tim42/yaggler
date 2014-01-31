@@ -28,6 +28,7 @@
 
 #include <GLEW/glew.h>
 #include <tools/ct_list.hpp>
+#include <shader/opengl_program.hpp>
 
 namespace neam
 {
@@ -37,7 +38,7 @@ namespace neam
     {
       // a shader list
       template<typename... Shaders>
-      struct shader_type_list : public ct::type_list_member_instance<Shaders...>
+      struct shader_list : public ct::type_list_member_instance<Shaders...>
       {
         private: // helpers
           // Thanks to : stackoverflow.com/q/18366398/
@@ -64,29 +65,36 @@ namespace neam
           };
 
         public:
-          shader_type_list() {}
-          shader_type_list(const shader_type_list &o) : ct::type_list_member_instance<Shaders...>(o) {}
-          shader_type_list(const cr::tuple<Shaders...> &o) : ct::type_list_member_instance<Shaders...>(o) {}
+          shader_list() {}
+          shader_list(const shader_list &o) : ct::type_list_member_instance<Shaders...>(o) {}
+          shader_list(const cr::tuple<Shaders...> &o) : ct::type_list_member_instance<Shaders...>(o) {}
 
           template<typename... Vals>
-          shader_type_list(Vals... vals) : ct::type_list_member_instance<Shaders...>(std::move(vals)...) {}
+          shader_list(Vals... vals) : ct::type_list_member_instance<Shaders...>(std::move(vals)...) {}
 
 
           // shaders by types
           using compute_shaders_t = typename filter<GL_COMPUTE_SHADER, Shaders...>::type;
-          using vertex_shaders_t = typename filter<GL_VERTEX_SHADER, Shaders...>::type;
+          using fragment_shaders_t = typename filter<GL_FRAGMENT_SHADER, Shaders...>::type;
+          using geometry_shaders_t = typename filter<GL_GEOMETRY_SHADER, Shaders...>::type;
           using tess_control_shaders_t = typename filter<GL_TESS_CONTROL_SHADER, Shaders...>::type;
           using tess_evaluation_shaders_t = typename filter<GL_TESS_EVALUATION_SHADER, Shaders...>::type;
-          using geometry_shaders_t = typename filter<GL_GEOMETRY_SHADER, Shaders...>::type;
-          using fragment_shaders_t = typename filter<GL_FRAGMENT_SHADER, Shaders...>::type;
+          using vertex_shaders_t = typename filter<GL_VERTEX_SHADER, Shaders...>::type;
+
+          // all shaders in one tuple
+          using all_shaders_t = cr::tuple<Shaders...>;
+
+          // the shader program
+          template<typename... AdditionalShader>
+          using program_t = neam::yaggler::shader::program<neam::yaggler::type::opengl, Shaders..., AdditionalShader...>;
 
           // shaders tuples by type
-          compute_shaders_t compute_shaders = compute_shaders_t();
-          vertex_shaders_t vertex_shaders = vertex_shaders_t();
-          tess_control_shaders_t tess_control_shaders = tess_control_shaders_t();
-          tess_evaluation_shaders_t tess_evaluation_shaders = tess_evaluation_shaders_t();
-          geometry_shaders_t geometry_shaders = geometry_shaders_t();
-          fragment_shaders_t fragment_shaders = fragment_shaders_t();
+//           compute_shaders_t compute_shaders = compute_shaders_t();
+//           vertex_shaders_t vertex_shaders = vertex_shaders_t();
+//           tess_control_shaders_t tess_control_shaders = tess_control_shaders_t();
+//           tess_evaluation_shaders_t tess_evaluation_shaders = tess_evaluation_shaders_t();
+//           geometry_shaders_t geometry_shaders = geometry_shaders_t();
+//           fragment_shaders_t fragment_shaders = fragment_shaders_t();
       };
 
     } // namespace yaggler

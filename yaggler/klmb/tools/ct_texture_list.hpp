@@ -36,14 +36,70 @@ namespace neam
     {
       // a texture list
       template<typename... Textures>
-      struct texture_type_list : public ct::type_list_member_instance<Textures...>
+      class texture_list : public ct::type_list_member_instance<Textures...>
       {
-        texture_type_list() {}
-        texture_type_list(const texture_type_list &o) : ct::type_list_member_instance<Textures...>(o) {}
-        texture_type_list(const cr::tuple<Textures...> &o) : ct::type_list_member_instance<Textures...>(o) {}
+        public:
+          texture_list()
+          {
+            // set default texture indexes (in the list order)
+            setup_samplers_idxs();
+          }
+          //           texture_list(const texture_list &o) : ct::type_list_member_instance<Textures...>(o), texture_list() {}
+          texture_list(const cr::tuple<Textures...> &o) : ct::type_list_member_instance<Textures...>(o)
+          {
+            // set default texture indexes (in the list order)
+            setup_samplers_idxs();
+          }
 
-        template<typename... Vals>
-        texture_type_list(Vals... vals) : ct::type_list_member_instance<Textures...>(std::move(vals)...) {}
+          template<typename... Vals>
+          texture_list(Vals... vals) : ct::type_list_member_instance<Textures...>(std::move(vals)...)
+          {
+            // set default texture indexes (in the list order)
+            setup_samplers_idxs();
+          }
+
+        private: // use() helpers
+          template<size_t Idx>
+          char _it_single_use() const
+          {
+            ct::type_list_member_instance<Textures...>::instance.template get<Idx>().use();
+            return 0;
+          }
+
+          template<size_t... Idxs>
+          void _it_use(cr::seq<Idxs...>) const
+          {
+            void((char []){_it_single_use<Idxs>()...}); // who knows how this'll be optimised out ?
+            // (and which compiler supports it...)
+          }
+
+        private: // setup_samplers_idxs() helpers
+          template<size_t Idx>
+          char _it_single_setup_samplers_idxs()
+          {
+            ct::type_list_member_instance<Textures...>::instance.template get_ref<Idx>().set_texture_sampler(Idx);
+            return 0;
+          }
+
+          template<size_t... Idxs>
+          void _it_setup_samplers_idxs(cr::seq<Idxs...>)
+          {
+            void((char []){_it_single_setup_samplers_idxs<Idxs>()...}); // who knows how this'll be optimised out ?
+            // (and which compiler supports it...)
+          }
+
+        public:
+          // call use() on every textures in the list.
+          void use() const
+          {
+            _it_use(cr::gen_seq<sizeof...(Textures)>());
+          }
+
+          // set default texture indexes (in the list order)
+          void setup_samplers_idxs()
+          {
+            _it_setup_samplers_idxs(cr::gen_seq<sizeof...(Textures)>());
+          }
       };
     } // namespace yaggler
   } // namespace klmb

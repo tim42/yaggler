@@ -30,6 +30,7 @@
 //
 // ok, lets start with klmb, the "usable" YägGLer.
 
+#include <klmb/klmb_context_helper.hpp>
 #include <klmb/material.hpp>
 
 namespace neam

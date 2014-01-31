@@ -33,9 +33,11 @@
 #include <type_traits>
 #include <mutex>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#ifndef _WIN32
+# include <sys/types.h>
+# include <sys/stat.h>
+# include <unistd.h>
+#endif
 
 #include <GLEW/glew.h>
 #include <GL/gl.h>
@@ -158,6 +160,73 @@ namespace neam
             return shader_id;
           }
 
+          // return the full #version line
+          // (you could not use get_preprocessor_value("", "version") for this value as the line is 'removed')
+          const std::string &get_version_string() const
+          {
+            return version_str;
+          }
+
+          // 'parse' (what a big word here...) the source to get a preprocessor token and its value.
+          // return an empty string if nothing was found, the 'value' of the first occurence if anything was found
+          // (if there isn't values, it simply return "\n")
+          //
+          // to get something like
+          // #define TOTO       42
+          // 'simply' do:
+          // my_shader.get_preprocessor_value("TODO");
+          // or
+          // my_shader.get_preprocessor_value("TODO", "define");
+          // and the function will return std::string("42")
+          //
+          // to get the first #ifdef, you could do:
+          // my_shader.get_preprocessor_value("", "ifdef")
+          std::string get_preprocessor_value(const std::string &name, const std::string &preprocessor_token = "define") const
+          {
+            std::string token = '#' + preprocessor_token;
+
+            // get the version string
+            for (size_t i = 0; source.size() > token.size() && i < source.size() - token.size(); ++i)
+            {
+              if (source[i] == '\n' && source[i + 1] == '#')
+              {
+                // we got our #[preprocessor_token]
+                if (!strncmp(source.data() + i + 1, token.data(), token.size()) && isspace(source[i + 1 + token.size()]))
+                {
+                  // skip whitespaces
+                  size_t ws = 0;
+                  size_t pos = i + 1 + token.size();
+
+                  while (isspace(source[pos + ws]) && source[pos + ws] != '\n')
+                    ++ws;
+
+                  pos += ws;
+
+                  // cmp the value
+                  if (name.empty() || (!strncmp(source.data() + pos, name.data(), name.size()) && isspace(source[pos + name.size()])))
+                  {
+                    // skip whitespaces
+                    size_t sec_ws = 0;
+                    pos += name.size();
+
+                    while (isspace(source[pos + sec_ws]) && source[pos + sec_ws] != '\n')
+                      ++sec_ws;
+
+                    pos += sec_ws;
+
+                    size_t j = pos;
+                    for (; j < source.size() && source.data()[j] != '\n'; ++j);
+
+                    if (j != pos)
+                      return source.substr(pos, j - pos);
+                    return std::string("\n");
+                  }
+                }
+              }
+            }
+            return std::string();
+          }
+
           shader &clear_additional_strings()
           {
             additional_str.clear();
@@ -172,6 +241,11 @@ namespace neam
             additional_str = (additional_str + to_add) + std::string("\n");
             changed = true;
             return *this;
+          }
+
+          const std::string &get_additional_strings() const
+          {
+            return additional_str;
           }
 
         private: // unlocked functions (they must be called with their lock held)
@@ -191,9 +265,7 @@ namespace neam
                   size_t j = i + 10;
                   for (; j < source.size() && source.data()[j] != '\n'; ++j);
 
-                  char *str = strndup(source.data() + i + 1, (j - i));
-
-                  version_str = std::string(str);
+                  version_str = source.substr(i + 1, j - i);
 
                   // comment the original #version string
                   source[i + 1] = '/';

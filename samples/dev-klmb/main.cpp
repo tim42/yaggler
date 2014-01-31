@@ -29,7 +29,7 @@ using opengl_version = neam::yaggler::setup::opengl<3, 1>;
 #include <iostream>
 
 constexpr neam::string_t vert = "data/shaders/shader_test.vert";
-constexpr neam::string_t frag = "data/shaders/shader_test.frag";
+constexpr neam::string_t frag = "data/shaders/klmb_test.frag";
 
 constexpr neam::string_t yaggler_logo = "data/textures/yaggler-w.png";
 constexpr neam::string_t bg_image = "data/textures/bg.png";
@@ -74,53 +74,33 @@ int main(int argc, char **argv)
   neam::yaggler::glfw_window win(neam::yaggler::window_mode::windowed, resolution);
   win.set_position(neam::ct::vector2 {0, 0});
 
-  // the shader
-  neam::yaggler::shader::program<neam::yaggler::type::opengl,
-       neam::yaggler::shader::shader < neam::yaggler::type::opengl, neam::embed::GLenum<GL_FRAGMENT_SHADER>,
-       neam::yaggler::shader::opengl::file, neam::embed::string<frag>,
-       neam::embed::shader::option<neam::yaggler::shader::shader_option::reload_on_change> > ,
-       neam::yaggler::shader::shader < neam::yaggler::type::opengl, neam::embed::GLenum<GL_VERTEX_SHADER>,
-       neam::yaggler::shader::opengl::file, neam::embed::string<vert>,
-       neam::embed::shader::option<neam::yaggler::shader::shader_option::reload_on_change> >> prog;
+  // the material
+  auto material = neam::klmb::yaggler::create_base_material
+                  <
+                  // SHADERS
+                  neam::klmb::yaggler::shader_list <
+                  neam::yaggler::shader::shader < neam::yaggler::type::opengl, neam::embed::GLenum<GL_FRAGMENT_SHADER>,
+                  neam::yaggler::shader::opengl::file, neam::embed::string<frag>,
+                  neam::embed::shader::option<neam::yaggler::shader::shader_option::reload_on_change> > ,
+                  neam::yaggler::shader::shader < neam::yaggler::type::opengl, neam::embed::GLenum<GL_VERTEX_SHADER>,
+                  neam::yaggler::shader::opengl::file, neam::embed::string<vert>,
+                  neam::embed::shader::option<neam::yaggler::shader::shader_option::reload_on_change> >
+                  > ,
+                  // TEXTURES
+                  neam::klmb::yaggler::texture_list <
+                  neam::yaggler::texture::texture < neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>,
+                  neam::yaggler::texture::options::png_texture_init<GL_RGBA, neam::embed::string<yaggler_logo> >> /*,
 
-  prog.bind_attribute_location("in_position", 0);
-
-  float rm_step = 55.;
-  prog.get_shader_at_index<0>().append_to_additional_strings("#define RM_STEP " + static_cast<std::ostringstream&>(std::ostringstream() << rm_step).str()); // base define
-
-  prog. link();
-
-  // the texture
-//   neam::yaggler::texture::texture < neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>,
-//        neam::yaggler::texture::options::ct_texture_init<GL_RGB, neam::ct::vector<4, 4>, GL_BGRA, GL_UNSIGNED_BYTE, neam::embed::uint32_ptr<image_4x4_data> >> my_test_texture(0);
-  neam::yaggler::texture::texture < neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>,
-       neam::yaggler::texture::options::png_texture_init<GL_RGBA, neam::embed::string<yaggler_logo> >> my_test_texture(0);
-
-  my_test_texture.set_gl_parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  my_test_texture.set_gl_parameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  my_test_texture.generate_mipmaps();
-
-//   neam::yaggler::texture::texture < neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>,
-//        neam::yaggler::texture::options::ct_texture_init<GL_RGB, neam::ct::vector<4, 4>, GL_BGRA, GL_UNSIGNED_BYTE, neam::embed::uint32_ptr<image_4x4_data> >> my_fg_texture(1);
-  neam::yaggler::texture::texture < neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>,
-       neam::yaggler::texture::options::png_texture_init<GL_RGBA, neam::embed::string<bg_image> >> my_fg_texture(1);
-
-  my_fg_texture.set_gl_parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  my_fg_texture.set_gl_parameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  // some vars
-  neam::yaggler::shader::uniform_variable resolution_var = prog.get_uniform_variable("screen_resolution");
-  neam::yaggler::shader::uniform_variable time_var = prog.get_uniform_variable("global_time");
-  neam::yaggler::shader::uniform_variable texture_var = prog.get_uniform_variable("texture_sampler");
-  neam::yaggler::shader::uniform_variable fg_texture_var = prog.get_uniform_variable("fg_texture_sampler");
-
-  // the autobinder
-  auto ctx = neam::yaggler::shader::variable_context<neam::yaggler::shader::contexts::none>::create<neam::yaggler::shader::contexts::fixed>
-             (
-               neam::cr::make_tuple(&neam::cr::chrono::now_relative, neam::cr::make_const_ref(fixed_resolution), neam::cr::make_const_ref(my_test_texture), neam::cr::make_const_ref(my_fg_texture)),  // values
-               time_var, resolution_var, texture_var, fg_texture_var                                                                                                                                   // vars
-             );
+                  neam::yaggler::texture::texture < neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>,
+                  neam::yaggler::texture::options::png_texture_init<GL_RGBA, neam::embed::string<bg_image> >>
+                  */ >
+                  >
+                  // CONTEXT
+                  (
+                    neam::klmb::yaggler::make_ctx_pair("screen_resolution", neam::cr::make_const_ref(fixed_resolution)),
+                    neam::klmb::yaggler::make_ctx_pair("global_time", &neam::cr::chrono::now_relative),
+                    neam::klmb::yaggler::make_ctx_pair("texture", neam::klmb::yaggler::texture_reference<0>())
+                  );
 
   // the FS quad vao
   neam::yaggler::geometry::vao < neam::yaggler::type::opengl, neam::yaggler::geometry::options::ct_vao_init
@@ -130,9 +110,6 @@ int main(int argc, char **argv)
        neam::yaggler::geometry::buffer_view < neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>,
        neam::yaggler::geometry::options::ct_buffer_view_init<0, 3, GL_FLOAT, 0, 0, false >>
   >> fs_vao;
-
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
   neam::cr::chrono chronos;
@@ -147,18 +124,6 @@ int main(int argc, char **argv)
     if (chronos.get_accumulated_time() >= 2)
     {
       std::cout << "FPS: " << frame_counter / 2 << std::endl;
-      if (frame_counter / 2. < 40 && rm_step > 5)
-      {
-        rm_step -= 5;
-        prog.get_shader_at_index<0>().clear_additional_strings().append_to_additional_strings("#define RM_STEP " + static_cast<std::ostringstream &>(std::ostringstream() << rm_step).str() + ". "); // base define
-        prog.link();
-      }
-      else if (frame_counter / 2. > 50)
-      {
-        rm_step += 5;
-        prog.get_shader_at_index<0>().clear_additional_strings().append_to_additional_strings("#define RM_STEP " + static_cast<std::ostringstream&>(std::ostringstream() << rm_step).str() + ". "); // base define
-        prog.link();
-      }
       frame_counter = 0;
       chronos.reset();
 
@@ -180,12 +145,9 @@ int main(int argc, char **argv)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-    // the magic, at no cost :) (but wait to see materials =) )
-    prog.use();
-    ctx.use();
 
-    my_test_texture.use();
-    my_fg_texture.use();
+    // magical !!! :)
+    material.use();
 
     // the geom
     fs_vao.use();
