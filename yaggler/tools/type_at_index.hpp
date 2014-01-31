@@ -30,8 +30,13 @@ namespace neam
 {
   namespace ct
   {
+    // default (unused)
+    template<size_t Index, typename... Types>
+    struct type_at_index {};
+
+    // non-empty list
     template<size_t Index, typename Current, typename... Types>
-    struct type_at_index
+    struct type_at_index<Index, Current, Types...>
     {
       static_assert(Index < sizeof...(Types), "out of range will requesting the type at some index of a tpl argument pack.");
       using type = typename type_at_index<Index - 1, Types...>::type;
@@ -41,6 +46,13 @@ namespace neam
     struct type_at_index<0, Current, Types...>
     {
       using type = Current;
+    };
+
+    // empty list
+    template<size_t Index>
+    struct type_at_index<Index>
+    {
+      static_assert(!(Index + 1), "requesting type_at_index of an empty 'type' list.");
     };
   } // namespace ct
 } // namespace neam

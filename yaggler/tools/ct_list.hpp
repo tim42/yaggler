@@ -40,6 +40,9 @@ namespace neam
       template<size_t Index>
       using get_type = typename type_at_index<Index, Types...>::type;
 
+      using tuple_type = cr::tuple<Types...>;
+      static constexpr size_t size = sizeof...(Types);
+
       template<typename... Values>
       static constexpr cr::tuple<Types...> instanciate_tuple(Values... vals)
       {
@@ -67,12 +70,12 @@ namespace neam
     template<typename... Types>
     struct type_list_member_instance : public type_list<Types...>
     {
-      type_list_member_instance() : cr::tuple<Types...>() {}
-      type_list_member_instance(const type_list_member_instance &o) : cr::tuple<Types...>(o.instance) {}
-      type_list_member_instance(const cr::tuple<Types...> &o) : cr::tuple<Types...>(o) {}
+      type_list_member_instance() : instance() {}
+      type_list_member_instance(const type_list_member_instance &o) : instance(o.instance) {}
+      type_list_member_instance(const cr::tuple<Types...> &o) : instance(o) {}
 
       template<typename... Vals>
-      type_list_member_instance(Vals... vals) : cr::tuple<Types...>(vals...) {}
+      type_list_member_instance(Vals... vals) : instance(vals...) {}
 
 
       cr::tuple<Types...> instance;
@@ -86,6 +89,12 @@ namespace neam
 
     template<template<typename... X> class Class, typename... Types>
     struct extract_types<Class, type_list<Types...>>
+    {
+      using type = Class<Types...>;
+    };
+
+    template<template<typename... X> class Class, typename... Types>
+    struct extract_types<Class, cr::tuple<Types...>>
     {
       using type = Class<Types...>;
     };
