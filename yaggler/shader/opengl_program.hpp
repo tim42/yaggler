@@ -30,7 +30,7 @@
 #include <cstring>
 
 #include <GLEW/glew.h>
-#include <GL/gl.h>
+// #include <GL/gl.h>
 
 #include <shader/program_base.hpp>
 #include <shader/except.hpp>
@@ -73,7 +73,7 @@ namespace neam
           inline int _it_recompile_cts_inner(const Shader &shader)
           {
             // fuck constness
-            const_cast<Shader &>(shader).recompile_if_changed();
+            const_cast<Shader &>(shader).recompile();
             failed |= shader.has_failed();
             return 0;
           }
@@ -93,14 +93,13 @@ namespace neam
           : shaders(), pg_id(_pg_id), symlink(true)
           {
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
-            link();
           }
 
           program(GLuint _pg_id, assume_ownership_t)
           : shaders(), pg_id(_pg_id), symlink(false)
           {
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
-            link();
+//             link();
           }
 
           program()
@@ -113,7 +112,6 @@ namespace neam
             }
 
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
-            link();
           }
 
           template<typename... OCTShaders>
@@ -122,7 +120,6 @@ namespace neam
           {
             p.give_up_ownership();
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
-            link();
           }
           template<typename... OCTShaders>
           program(program<type::opengl, OCTShaders...> &&p)
@@ -130,14 +127,12 @@ namespace neam
           {
             p.give_up_ownership();
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
-            link();
           }
           template<typename... OCTShaders>
           program(const program<type::opengl, OCTShaders...> &p)
           : shaders(), pg_id(p.get_id()), symlink(true)
           {
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
-            link();
           }
 
           ~program()
