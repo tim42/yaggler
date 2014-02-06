@@ -28,7 +28,7 @@
 # define __N_4228199451929725216_1925374995__OPENGL_UNIFORM_VAR_HPP__
 
 #include <GLEW/glew.h>
-#include <GL/gl.h>
+// #include <GL/gl.h>
 #include <vector>
 #include <array>
 
