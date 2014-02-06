@@ -24,6 +24,7 @@ using opengl_version = neam::yaggler::setup::opengl<3, 1>;
 #include <yaggler.hpp>
 
 #include <iostream>
+#include <iomanip>
 
 constexpr neam::string_t vert = "data/shaders/shader_test.vert";
 constexpr neam::string_t frag = "data/shaders/9slices.frag";
@@ -62,13 +63,13 @@ int main(int argc, char **argv)
   // init yaggler (+glfw)
   neam::yaggler::yaggler_init yi;
 
-  // create a window
-  neam::ct::vector2 resolution {800, 800};
-  neam::ct::vector2 fixed_resolution = resolution.convert_to_fixed();
+  // will holds the resolution, in fixed point
+  neam::ct::vector2 fixed_resolution;
 
-//   neam::yaggler::glfw_window win(neam::yaggler::window_mode::fullscreen);
-  neam::yaggler::glfw_window win(neam::yaggler::window_mode::windowed, resolution);
-  win.set_position(neam::ct::vector2 {0, 0});
+  // create a window
+  //   neam::yaggler::glfw_window win(neam::yaggler::window_mode::fullscreen);
+  neam::yaggler::glfw_window win(neam::yaggler::window_mode::windowed, {800, 800}, "[ :) / Y: ]");
+  win.set_position({0, 0});
 
   // the shader
   neam::yaggler::shader::program<neam::yaggler::type::opengl,
@@ -129,28 +130,29 @@ int main(int argc, char **argv)
     ++frame_counter;
     if (chronos.get_accumulated_time() >= 2)
     {
-      std::cout << "FPS: " << frame_counter / 2 << std::endl;
+      std::cout << "f/s: "       << std::setw(9) << std::left <<  frame_counter / chronos.get_accumulated_time()
+                << "  |  ms/f: " << std::setw(9) << std::left << chronos.get_accumulated_time() / frame_counter * 1000.f
+                << std::endl;
+
       frame_counter = 0;
       chronos.reset();
     }
-
     glfwPollEvents();
 
     // get windows size, convert it to fixed position (to get it work with shaders)
     // this will be automatically bound to the shader (via the neam::cr::make_const_ref(fixed_resolution) in the autobinder).
-    resolution = win.get_framebuffer_size();
-    fixed_resolution = resolution.convert_to_fixed();
+    fixed_resolution = win.get_framebuffer_size().convert_to_fixed();
 
 
     /* Set background colour to NOT BLACK */
     glClearColor(0.30, 0.30, 0.30, 0.1);
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, resolution.x, resolution.y);
-    /* Clear background with NOT BLACK colour */
+    glViewport(0, 0, neam::ct::conversion::to<GLint>(fixed_resolution.x), neam::ct::conversion::to<GLint>(fixed_resolution.y));
+    /* Clear background with the NOT BLACK colour */
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-    // the magic, at no cost :) (but wait to see materials =) )
+    // the magic, at ~no cost :) (but wait to see materials =) )
     prog.use();
     ctx.use();
 
