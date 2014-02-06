@@ -64,7 +64,6 @@ namespace neam
           // switch over a constexpr value: no overhead/no generaed branchement code.
           if (::opengl_version::gl_major > 3 || (::opengl_version::gl_major == 3 && ::opengl_version::gl_minor >= 2))
           {
-            std::cout << "mierda" << std::endl;
             switch (::opengl_version::profile)
             {
               case setup::opengl_profile::any:
@@ -107,7 +106,6 @@ namespace neam
           // switch over a constexpr value: no overhead/no generaed branchement code.
           if (::opengl_version::gl_major > 3 || (::opengl_version::gl_major == 3 && ::opengl_version::gl_minor >= 2))
           {
-            std::cout << "mierda" << std::endl;
             switch (::opengl_version::profile)
             {
               case setup::opengl_profile::any:

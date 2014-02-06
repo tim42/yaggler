@@ -32,7 +32,7 @@
 #include <GLEW/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <GL/gl.h>
+// #include <GL/gl.h>
 
 #include "yaggler_except.hpp"
 #include "ct_point.hpp"

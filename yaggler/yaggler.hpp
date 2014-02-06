@@ -51,7 +51,7 @@
 // GL, glew and other external things (see the third_party folder)
 #include <GLEW/glew.h>
 #include <GLFW/glfw3.h>
-#include <GL/gl.h>
+// #include <GL/gl.h>
 #include <glm/glm.hpp>
 
 // init and window
