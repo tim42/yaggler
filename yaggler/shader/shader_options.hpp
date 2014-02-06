@@ -38,7 +38,7 @@ namespace neam
       enum class shader_option
       {
         reload_on_change,       // ask to watch the shader file and recompile it when the file changes
-        on_shot_compilation,    // never recompile the shader (except when it's manualu asked)
+        one_shot_compilation,   // never recompile the shader (except when it's manualu asked)
       };
     } // namespace shader
   } // namespace yaggler
