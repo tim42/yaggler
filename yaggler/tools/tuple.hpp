@@ -64,7 +64,7 @@ namespace neam
         {
           out_of_range_check<Index> __oorc;
           using type = const typename get_type_at_index<Index - 1, OtherTypes...>::type &;
-          using nc_type = typename get_type_at_index<Index - 1, OtherTypes...>::type &;
+          using nc_type = typename get_type_at_index<Index - 1, OtherTypes...>::nc_type &;
         };
         template<typename ThisType, typename... OtherTypes>
         struct get_type_at_index<0, ThisType, OtherTypes...>
@@ -133,7 +133,7 @@ namespace neam
           }
 
           template<uint64_t Index, typename RetType>
-          constexpr auto get_ref() const -> typename std::enable_if<Index, ThisType &>::type
+          auto get_ref() -> typename std::enable_if<Index, ThisType &>::type
           {
             static_assert(!Index, "index is out of range : BAD USAGE OF neam::cr::tuple !!!");
             return *(void *)0; // clang complain... but this won't seg anyway, as the code won't be built.
@@ -166,7 +166,7 @@ namespace neam
 //         constexpr tuple(const Types &&... t) : storage(t...) {}
 
         template<uint64_t Index>
-        constexpr auto get() const -> typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::type>::type
+        constexpr auto get() const -> const typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::type>::type &
         {
           return storage.template get<Index, typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::type>::type>();
         }
