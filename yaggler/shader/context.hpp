@@ -87,7 +87,7 @@ namespace neam
             binder(cr::gen_seq<sizeof...(Args)>());
           }
 
-          constexpr size_t get_number_of_variables() const
+          static constexpr size_t get_number_of_variables()
           {
             return sizeof...(Args);
           }
@@ -113,6 +113,13 @@ namespace neam
             return vars[index];
           }
 
+          // after a link.
+          template<typename... Vars>
+          void set_variables(const Vars &... _vars)
+          {
+            var_setter<Vars...>(cr::gen_seq<sizeof...(Args)>(), _vars...);
+          }
+
         private:
           template<size_t... Idxs>
           void binder(neam::cr::seq<Idxs...>&&)
@@ -136,6 +143,14 @@ namespace neam
           {
             vars[Idx] = (values.template get<Idx>());
             return 0;
+          }
+
+          template<typename... Vars, size_t... Idxs>
+          void var_setter(neam::cr::seq<Idxs...>&&, const Vars &... _vars)
+          {
+            void((GLint []){(vars[Idxs]._set_id(_vars), 0)...}); // who knows how this'll be optimised out ?
+            // (and which compiler supports it...)
+
           }
 
         private:
