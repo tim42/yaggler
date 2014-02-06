@@ -26,6 +26,7 @@
 #ifndef __N_10235510111851740554_136762483__KLMB_CONTEXT_HELPER_HPP__
 # define __N_10235510111851740554_136762483__KLMB_CONTEXT_HELPER_HPP__
 #include <string>
+#include <tools/ref.hpp>
 
 // some types/helpers for shader contexts, mostly used in K:LMB materials
 namespace neam
@@ -40,26 +41,69 @@ namespace neam
       {
         using value_t = Value;
 
+        material_ctx_pair(const std::string &name, const Value &val) : variable_name(name), value(val) {}
+        material_ctx_pair(std::string &&name, const Value &val) : variable_name(name), value(val) {}
+        material_ctx_pair(const std::string &name, Value &&val) : variable_name(name), value(val) {}
+        material_ctx_pair(std::string &&name, Value &&val) : variable_name(name), value(val) {}
+
+        template<typename OtherValue>
+        material_ctx_pair(const material_ctx_pair<OtherValue> &o) : variable_name(o.variable_name), value(o.value) {}
+
+        template<typename OtherValue>
+        material_ctx_pair(material_ctx_pair<OtherValue> &&o) : variable_name(std::move(o.variable_name)), value(std::move(o.value)) {}
+
         std::string variable_name;
         value_t value;
       };
 
-      // an helper
+      // a maker
       template<typename Value>
       material_ctx_pair<Value> make_ctx_pair(const std::string &name, Value val)
       {
         return material_ctx_pair<Value>{name, std::move(val)};
       }
+      template<typename Value>
+      material_ctx_pair<Value> make_ctx_pair(std::string &&name, Value val)
+      {
+        return material_ctx_pair<Value>{name, std::move(val)};
+      }
+
 
       // reference a texture in the material's shader context
+      // will be replaced by a real (C++) reference to the texture.
       template<size_t Index>
-      struct texture_reference
+      struct reference_to_texture
       {
-        static constexpr size_t index = Index;
-        operator size_t() const
+      };
+
+      // create a variable a reference it in the context
+      // you can always change its value later in the material.
+      template<typename VariableType>
+      struct variable
+      {
+        variable(const VariableType &_default_value)
+          : value(_default_value)
         {
-          return index;
         }
+
+        using reference_t = cr::ref<VariableType>;
+
+        VariableType value;
+      };
+
+      template<typename VariableType, size_t Index>
+      struct indexed_variable
+      {
+        indexed_variable(const variable<VariableType> &_default_value)
+          : value(_default_value.value)
+        {
+        }
+
+        using reference_t = cr::ref<VariableType>;
+        using variable_t = VariableType;
+        static constexpr size_t index = Index;
+
+        VariableType value;
       };
     } // namespace yaggler
   } // namespace klmb

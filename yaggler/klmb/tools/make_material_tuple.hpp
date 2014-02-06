@@ -54,11 +54,23 @@ namespace neam
 
         // a texture reference
         template <typename Textures, size_t TextureIndex, typename ...Others>
-        struct make_type<Textures, texture_reference<TextureIndex>, cr::tuple<Others...>>
+        struct make_type<Textures, reference_to_texture<TextureIndex>, cr::tuple<Others...>>
         {
           using _texture_ref_type = cr::ref<typename Textures::template get_type<TextureIndex>>;
 
           using type = cr::tuple<typename std::remove_reference<_texture_ref_type>::type, Others...>;
+        };
+
+        // a variable reference
+        template <typename Textures, typename VariableType, size_t Index, typename ...Others>
+        struct make_type<Textures, indexed_variable<VariableType, Index>, cr::tuple<Others...>>
+        {
+          using type = cr::tuple<typename std::remove_reference<cr::ref<VariableType>>::type, Others...>;
+        };
+        template <typename Textures, typename VariableType, typename ...Others>
+        struct make_type<Textures, variable<VariableType>, cr::tuple<Others...>>
+        {
+          using type = cr::tuple<typename std::remove_reference<cr::ref<VariableType>>::type, Others...>;
         };
 
         template<typename Textures, typename...>
@@ -75,24 +87,34 @@ namespace neam
         // create the values for the tuple
 
         // not a texture reference
-        template<typename Textures, typename Type>
+        template<typename Textures, typename Variables, typename Type>
         struct get_type_instance
         {
-          static const Type &return_instance(const Textures &, const Type &instance)
+          static const Type &return_instance(const Textures &, const Variables &, const Type &instance)
           {
             return instance;
           }
         };
 
         // a texture reference
-        template<typename Textures, size_t TextureIndex>
-        struct get_type_instance<Textures, texture_reference<TextureIndex>>
+        template<typename Textures, typename Variables, size_t TextureIndex>
+        struct get_type_instance<Textures, Variables, reference_to_texture<TextureIndex>>
         {
           using _texture_ref_type = cr::ref<typename Textures::template get_type<TextureIndex>>;
 
-          static _texture_ref_type return_instance(Textures &textures, const texture_reference<TextureIndex> &)
+          static _texture_ref_type return_instance(Textures &textures, const Variables &, const reference_to_texture<TextureIndex> &)
           {
             return _texture_ref_type(textures.instance.template get_ref<TextureIndex>());
+          }
+        };
+
+        // a variable reference
+        template<typename Textures, typename Variables, typename VariableType, size_t Index>
+        struct get_type_instance<Textures, Variables, indexed_variable<VariableType, Index>>
+        {
+          static cr::ref<VariableType> return_instance(const Textures &, Variables &variables, const indexed_variable<VariableType, Index> &)
+          {
+            return cr::ref<VariableType>(variables.template get_ref<Index>());
           }
         };
 

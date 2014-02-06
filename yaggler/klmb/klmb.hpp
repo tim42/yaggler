@@ -33,6 +33,8 @@
 #include <klmb/klmb_context_helper.hpp>
 #include <klmb/material.hpp>
 
+#include <klmb/material_usings.hpp>
+
 namespace neam
 {
   namespace klmb

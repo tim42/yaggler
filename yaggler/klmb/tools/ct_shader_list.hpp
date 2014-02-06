@@ -58,7 +58,7 @@ namespace neam
           template<GLenum ShaderType, typename Current, typename... Types>
           struct filter<ShaderType, Current, Types...>
           {
-            using type = typename std::conditional<ShaderType == Current::get_shader_type(),
+            using type = typename std::conditional<ShaderType == Current::shader_type,
                   typename make_type<Current, typename filter<ShaderType, Types...>::type>::type,
                   typename filter<ShaderType, Types...>::type
                   >::type;
@@ -77,8 +77,8 @@ namespace neam
           using compute_shaders_t = typename filter<GL_COMPUTE_SHADER, Shaders...>::type;
           using fragment_shaders_t = typename filter<GL_FRAGMENT_SHADER, Shaders...>::type;
           using geometry_shaders_t = typename filter<GL_GEOMETRY_SHADER, Shaders...>::type;
-          using tess_control_shaders_t = typename filter<GL_TESS_CONTROL_SHADER, Shaders...>::type;
           using tess_evaluation_shaders_t = typename filter<GL_TESS_EVALUATION_SHADER, Shaders...>::type;
+          using tess_control_shaders_t = typename filter<GL_TESS_CONTROL_SHADER, Shaders...>::type;
           using vertex_shaders_t = typename filter<GL_VERTEX_SHADER, Shaders...>::type;
 
           // all shaders in one tuple
