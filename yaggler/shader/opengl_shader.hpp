@@ -40,7 +40,7 @@
 #endif
 
 #include <GLEW/glew.h>
-#include <GL/gl.h>
+// #include <GL/gl.h>
 #include <string.h>
 #include <tools/enable_if.hpp>
 
@@ -96,7 +96,7 @@ namespace neam
             }
 
             has_source_changed(0);      // init this func;
-            recompile();                // REEEEEBUUUILLLLL:D
+            changed = true;
           }
 
           ~shader()
@@ -112,10 +112,7 @@ namespace neam
             return source;
           }
 
-          constexpr static GLenum get_shader_type()
-          {
-            return ShaderType::value;
-          }
+          constexpr static GLenum shader_type = ShaderType::value;
 
           // rebuild the shader. re-get the sources, ...
           // NOTE: this could be slow.
@@ -224,7 +221,7 @@ namespace neam
                 }
               }
             }
-            return std::string();
+            return std::string("");
           }
 
           shader &clear_additional_strings()
@@ -248,7 +245,7 @@ namespace neam
             return additional_str;
           }
 
-        private: // unlocked functions (they must be called with their lock held)
+        private:
           inline void unlocked_recompile()
           {
             if (!std::is_same<ShaderSourceType, opengl::function>::value)
@@ -277,12 +274,6 @@ namespace neam
             }
 
             // build
-            GLint length_array[] =
-            {
-              (GLint)version_str.size(),
-              (GLint)additional_str.size(),
-              (GLint)source.size(),
-            };
             const GLchar *source_array[] =
             {
               version_str.data(),
@@ -290,7 +281,7 @@ namespace neam
               source.data(),
             };
 
-            glShaderSource(shader_id, sizeof(length_array) / sizeof(length_array[0]), source_array, length_array);
+            glShaderSource(shader_id, sizeof(source_array) / sizeof(source_array[0]), source_array, nullptr);
             failed = true;
             throw_on_glerror<shader_exception>("unable to set the shader source (glShaderSource): ");
             failed = false;
@@ -305,11 +296,22 @@ namespace neam
               failed = true;
               constexpr size_t max_len = 8192;
               char *message = new char[max_len];
-              const char *header = "could not compile shader:\n";
+              const char *header = "could not compile shader";
               strcpy(message, header);
-              glGetShaderInfoLog(shader_id, max_len - strlen(header), &status, message + strlen(header));
+              if (neam::ct::strlen(ShaderSource::value) < 50)
+              {
+                strcat(message, " '");
+                strcat(message, ShaderSource::value);
+                strcat(message, "'");
+              }
+              strcat(message, ":\n");
+              glGetShaderInfoLog(shader_id, max_len - strlen(message), &status, message + strlen(message));
               throw shader_exception(message, true);
             }
+#ifndef YAGGLER_NO_MESSAGES
+            if (neam::ct::strlen(ShaderSource::value) < 50)
+              std::cout << "YAGGLER: compiled shader  '" << ShaderSource::value << "'" << std::endl;
+#endif
             failed = false;
           }
 
