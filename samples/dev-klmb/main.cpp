@@ -19,7 +19,7 @@
 
 #include <setup.hpp>
 
-using opengl_version = neam::yaggler::setup::opengl<3, 1>;
+using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::opengl_profile::core, false, true>;
 
 #include <yaggler.hpp>
 
@@ -27,25 +27,12 @@ using opengl_version = neam::yaggler::setup::opengl<3, 1>;
 #include <klmb/klmb.hpp>
 
 #include <iostream>
+#include <iomanip>
 
 constexpr neam::string_t vert = "data/shaders/shader_test.vert";
 constexpr neam::string_t frag = "data/shaders/klmb_test.frag";
 
-constexpr neam::string_t yaggler_logo = "data/textures/yaggler-w.png";
-constexpr neam::string_t bg_image = "data/textures/bg.png";
-
-constexpr uint32_t image_1x1_data[] =
-{
-  0x001111FF,
-};
-
-constexpr uint32_t image_4x4_data[] =
-{
-  0xFF00FF, 0xFFAAFF, 0x445566, 0x112233,
-  0x0000FF, 0xAAAAFF, 0x556600, 0x334455,
-  0xFF0000, 0xFFAAAA, 0x440066, 0x556677,
-  0x00FF00, 0xAAFFAA, 0x005566, 0x778899,
-};
+constexpr neam::string_t yaggler_white_logo = "data/textures/yaggler-w.png";
 
 // The fullscreen quad's FBO
 GLfloat fs_quad_data [] =
@@ -66,41 +53,46 @@ int main(int argc, char **argv)
   // init yaggler (+glfw)
   neam::yaggler::yaggler_init yi;
 
-  // create a window
-  neam::ct::vector2 resolution {800, 800};
-  neam::ct::vector2 fixed_resolution = resolution.convert_to_fixed();
+  // will holds the resolution, in fixed point
+  neam::ct::vector2 fixed_resolution;
 
+  // create a window
 //   neam::yaggler::glfw_window win(neam::yaggler::window_mode::fullscreen);
-  neam::yaggler::glfw_window win(neam::yaggler::window_mode::windowed, resolution);
-  win.set_position(neam::ct::vector2 {0, 0});
+  neam::yaggler::glfw_window win(neam::yaggler::window_mode::windowed, {800, 800}, "[ :) / K: / Y: ]");
+  win.set_position({0, 0});
+
+
 
   // the material
+  // (much easier than using only the vanilla YägGLer, isn't it ?? ;) )
   auto material = neam::klmb::yaggler::create_base_material
-                  <
-                  // SHADERS
-                  neam::klmb::yaggler::shader_list <
-                  neam::yaggler::shader::shader < neam::yaggler::type::opengl, neam::embed::GLenum<GL_FRAGMENT_SHADER>,
-                  neam::yaggler::shader::opengl::file, neam::embed::string<frag>,
-                  neam::embed::shader::option<neam::yaggler::shader::shader_option::reload_on_change> > ,
-                  neam::yaggler::shader::shader < neam::yaggler::type::opengl, neam::embed::GLenum<GL_VERTEX_SHADER>,
-                  neam::yaggler::shader::opengl::file, neam::embed::string<vert>,
-                  neam::embed::shader::option<neam::yaggler::shader::shader_option::reload_on_change> >
-                  > ,
-                  // TEXTURES
-                  neam::klmb::yaggler::texture_list <
-                  neam::yaggler::texture::texture < neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>,
-                  neam::yaggler::texture::options::png_texture_init<GL_RGBA, neam::embed::string<yaggler_logo> >> /*,
+  <
+    // SHADERS
+    neam::klmb::yaggler::shader_list
+    <
+      neam::klmb::yaggler::auto_file_shader<frag>,
+      neam::klmb::yaggler::auto_file_shader<vert>
+    >,
+    // TEXTURES
+    neam::klmb::yaggler::rgba_png_2d_texture_list
+    <
+      yaggler_white_logo
+    >
+  >
+  // CONTEXT
+  (
+    neam::klmb::yaggler::make_ctx_pair("screen_resolution", neam::cr::make_const_ref(fixed_resolution)),
+    neam::klmb::yaggler::make_ctx_pair("global_time", &neam::cr::chrono::now_relative),
+    neam::klmb::yaggler::make_ctx_pair("texture", neam::klmb::yaggler::reference_to_texture<0>()),
+    neam::klmb::yaggler::make_ctx_pair("myuniform", neam::klmb::yaggler::variable<int>(2))
+  );
 
-                  neam::yaggler::texture::texture < neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>,
-                  neam::yaggler::texture::options::png_texture_init<GL_RGBA, neam::embed::string<bg_image> >>
-                  */ >
-                  >
-                  // CONTEXT
-                  (
-                    neam::klmb::yaggler::make_ctx_pair("screen_resolution", neam::cr::make_const_ref(fixed_resolution)),
-                    neam::klmb::yaggler::make_ctx_pair("global_time", &neam::cr::chrono::now_relative),
-                    neam::klmb::yaggler::make_ctx_pair("texture", neam::klmb::yaggler::texture_reference<0>())
-                  );
+  // some ops on the texture.
+  material.get_texture<0>().generate_mipmaps();
+
+  // some ops on vars
+  material.get_variable<0>() = 4;
+
 
   // the FS quad vao
   neam::yaggler::geometry::vao < neam::yaggler::type::opengl, neam::yaggler::geometry::options::ct_vao_init
@@ -123,24 +115,25 @@ int main(int argc, char **argv)
     ++frame_counter;
     if (chronos.get_accumulated_time() >= 2)
     {
-      std::cout << "FPS: " << frame_counter / 2 << std::endl;
+      std::cout << "f/s: "       << std::setw(9) << std::left <<  frame_counter / chronos.get_accumulated_time()
+                << "  |  ms/f: " << std::setw(9) << std::left << chronos.get_accumulated_time() / frame_counter * 1000.f
+                << std::endl;
+
       frame_counter = 0;
       chronos.reset();
-
     }
 
     glfwPollEvents();
 
     // get windows size, convert it to fixed position (to get it work with shaders)
     // this will be automatically bound to the shader (via the neam::cr::make_const_ref(fixed_resolution) in the autobinder).
-    resolution = win.get_framebuffer_size();
-    fixed_resolution = resolution.convert_to_fixed();
+    fixed_resolution = win.get_framebuffer_size().convert_to_fixed();
 
 
     /* Set background colour to NOT BLACK */
     glClearColor(0.30, 0.30, 0.30, 0.1);
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, resolution.x, resolution.y);
+    glViewport(0, 0, neam::ct::conversion::to<GLint>(fixed_resolution.x), neam::ct::conversion::to<GLint>(fixed_resolution.y));
     /* Clear background with the NOT BLACK colour */
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

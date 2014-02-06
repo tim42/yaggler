@@ -22,10 +22,15 @@ in vec4  vertex_position;
 vec4 KLMB_SHARED_NAME(color_1);
 
 
-// some mandatory K:LMB macros
+// // some mandatory K:LMB macros
+
+// this file is using the 'framework'
+#define KLMB_IS_USING_FRAMEWORK         1
+// this file is an shader entry point
+#define KLMB_IS_ENTRY_POINT             1
 
 // the number of output buffers
-#define KLMB_NUMBER_OF_OUTPUT_BUFFERS     1
+#define KLMB_NUMBER_OF_OUTPUT_BUFFERS   1
 
 void KLMB_MAIN_FUNCTION()
 {
@@ -40,11 +45,12 @@ void main()
   vec2 frag_coord = (vertex_position.xy / 2 + 0.5) * screen_resolution;
   vec4 tex_color = texture2D(texture, vec2(frag_coord.xy / screen_resolution.xy));
 
-  vec2 n_coord = gl_FragCoord.xy / screen_resolution.xy + 0.9;
+  vec2 n_coord = gl_FragCoord.xy / (screen_resolution.xy * vec2(0.5, 0.5)) + 0.9;
   vec2 r_coord = n_coord * screen_resolution.xy;
   float stime = abs(cos(global_time / 5 + r_coord.x + r_coord.y) * 5 + sin(global_time / 5) * 15) + 20;
   color_1 = (vec4(0.5 * abs(cos(stime * n_coord.y * n_coord.x)) * 0.25 * abs(sin(stime / n_coord.x* n_coord.y * 10)), 0., 0., 0.));
-  color_1 = color_1.xxxw * 4. + tex_color;
+  color_1 = color_1.xxxw * 8. - vec4((tex_color.rgb * tex_color.a).rgb, 1.);
+  color_1 = color_1.xxxw * 4. * vec4((tex_color.rgb * tex_color.a).rgb, 1.);
 }
 
 #endif
