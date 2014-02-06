@@ -13,5 +13,5 @@ file(GLOB_RECURSE srcs
 )
 
 # and build yaggler
-add_library(glew SHARED ${srcs})
+add_library(glew STATIC ${srcs})
 
