@@ -73,6 +73,7 @@ add_subdirectory(yaggler)
 add_subdirectory(samples/test)
 add_subdirectory(samples/dev)
 add_subdirectory(samples/dev-klmb)
+add_subdirectory(samples/test-klmb)
 
 
 
