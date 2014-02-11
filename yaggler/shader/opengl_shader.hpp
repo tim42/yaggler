@@ -198,7 +198,6 @@ namespace neam
                     ++ws;
 
                   pos += ws;
-
                   // cmp the value
                   if (name.empty() || (!strncmp(source.data() + pos, name.data(), name.size()) && isspace(source[pos + name.size()])))
                   {
@@ -243,6 +242,18 @@ namespace neam
           const std::string &get_additional_strings() const
           {
             return additional_str;
+          }
+
+          void _preload()
+          {
+            if (!std::is_same<ShaderSourceType, opengl::function>::value)
+              source = get_source_string(0);
+          }
+
+          // return the source name (filename) or type (ex.: "<dynamic string>")
+          static constexpr inline const char *get_source_name()
+          {
+            return _get_source_name(0);
           }
 
         private:
@@ -298,21 +309,40 @@ namespace neam
               char *message = new char[max_len];
               const char *header = "could not compile shader";
               strcpy(message, header);
-              if (neam::ct::strlen(ShaderSource::value) < 50)
-              {
-                strcat(message, " '");
-                strcat(message, ShaderSource::value);
-                strcat(message, "'");
-              }
+
+              strcat(message, " '");
+              strcat(message, get_source_name());
+              strcat(message, "'");
+
               strcat(message, ":\n");
               glGetShaderInfoLog(shader_id, max_len - strlen(message), &status, message + strlen(message));
               throw shader_exception(message, true);
             }
 #ifndef YAGGLER_NO_MESSAGES
-            if (neam::ct::strlen(ShaderSource::value) < 50)
-              std::cout << "YAGGLER: compiled shader  '" << ShaderSource::value << "'" << std::endl;
+            std::cout << "YAGGLER: compiled shader  '" << get_source_name() << "'" << std::endl;
 #endif
             failed = false;
+          }
+
+          // return the name (filename/typename)
+          static constexpr inline const char *_get_source_name(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::constexpr_string>::value), int) = 0)
+          {
+            return "<constexpr  string>";
+          }
+
+          static constexpr inline const char *_get_source_name(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::file>::value), int) = 0)
+          {
+            return ShaderSource::value;
+          }
+
+          static constexpr inline const char *_get_source_name(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::dyn_string>::value), int) = 0)
+          {
+            return "<dynamic string>";
+          }
+
+          static constexpr inline const char *_get_source_name(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::function>::value), int) = 0)
+          {
+            return "<function return>";
           }
 
         private: // source helpers

@@ -57,7 +57,7 @@ namespace neam
       {
         private: // iterate over ct shaders. [helper]
           template<typename Shader>
-          inline int _it_attach_cts_inner(const Shader &shader)
+          inline int _it_attach_cts_inner(Shader &shader)
           {
             glAttachShader(pg_id, shader.get_id());
             return 0;
@@ -66,15 +66,15 @@ namespace neam
           template<uint64_t... Idx>
           inline void it_over_cts_attach(cr::seq<Idx...>)
           {
-            int _[] __attribute__((unused)) = {_it_attach_cts_inner(shaders.template get<Idx>())...}; // gcc may be enought intelligent to ignore this array ;)
+            int _[] __attribute__((unused)) = {_it_attach_cts_inner(shaders.template get_ref<Idx>())...}; // gcc may be enought intelligent to ignore this array ;)
           }
 
           template<typename Shader>
-          inline int _it_recompile_cts_inner(const Shader &shader)
+          inline int _it_recompile_cts_inner(Shader &shader)
           {
-            // fuck constness
-            const_cast<Shader &>(shader).recompile();
+            shader.recompile();
             failed |= shader.has_failed();
+
             return 0;
           }
 
@@ -82,7 +82,7 @@ namespace neam
           inline void it_over_cts_recompile(cr::seq<Idx...>)
           {
             failed = false;
-            int _[] __attribute__((unused)) = {_it_recompile_cts_inner(shaders.template get<Idx>())...}; // gcc may be enought intelligent to ignore this array ;)
+            int _[] __attribute__((unused)) = {_it_recompile_cts_inner(shaders.template get_ref<Idx>())...}; // gcc may be enought intelligent to ignore this array ;)
           }
 
         private: // constructor
@@ -187,9 +187,9 @@ namespace neam
           }
 
           // return the number of shaders in CTShaders
-          constexpr size_t get_ct_shaders_number() const
+          static constexpr size_t get_ct_shaders_number()
           {
-            return shaders.size();
+            return sizeof...(CTShaders);
           }
 
           GLuint get_id() const

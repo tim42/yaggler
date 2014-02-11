@@ -27,7 +27,11 @@
 # define __N_18450143281336995145_1567800396__CT_LIST_HPP__2___
 
 #include <GLEW/glew.h>
+
 #include <tools/ct_list.hpp>
+#include <tools/merge_pack.hpp>
+#include <tools/pair.hpp>
+
 #include <shader/opengl_program.hpp>
 
 namespace neam
@@ -42,14 +46,6 @@ namespace neam
       {
         private: // helpers
           // Thanks to : stackoverflow.com/q/18366398/
-          template <typename Cr, typename Type> struct make_type;
-
-          template <typename Cr, typename ...Others>
-          struct make_type<Cr, cr::tuple<Others...>>
-          {
-            using type = cr::tuple<Cr, Others...>;
-          };
-
           template<GLenum ShaderType, typename...>
           struct filter
           {
@@ -59,7 +55,7 @@ namespace neam
           struct filter<ShaderType, Current, Types...>
           {
             using type = typename std::conditional<ShaderType == Current::shader_type,
-                  typename make_type<Current, typename filter<ShaderType, Types...>::type>::type,
+                  typename ct::append_type<Current, typename filter<ShaderType, Types...>::type>::type,
                   typename filter<ShaderType, Types...>::type
                   >::type;
           };
@@ -74,12 +70,12 @@ namespace neam
 
 
           // shaders by types
-          using compute_shaders_t = typename filter<GL_COMPUTE_SHADER, Shaders...>::type;
           using fragment_shaders_t = typename filter<GL_FRAGMENT_SHADER, Shaders...>::type;
           using geometry_shaders_t = typename filter<GL_GEOMETRY_SHADER, Shaders...>::type;
           using tess_evaluation_shaders_t = typename filter<GL_TESS_EVALUATION_SHADER, Shaders...>::type;
           using tess_control_shaders_t = typename filter<GL_TESS_CONTROL_SHADER, Shaders...>::type;
           using vertex_shaders_t = typename filter<GL_VERTEX_SHADER, Shaders...>::type;
+          using compute_shaders_t = typename filter<GL_COMPUTE_SHADER, Shaders...>::type;
 
           // all shaders in one tuple
           using all_shaders_t = cr::tuple<Shaders...>;
@@ -88,6 +84,28 @@ namespace neam
           template<typename... AdditionalShader>
           using program_t = neam::yaggler::shader::program<neam::yaggler::type::opengl, Shaders..., AdditionalShader...>;
 
+          // a serie of ct::pair<X, Y> [with X the shader type (embed) and Y the shader::shader<opengl> to append]
+          template<typename... Values>
+          struct program_auto_merger
+          {
+            private:
+              template<typename...>
+              struct am_filter
+              {
+                using type = cr::tuple<>;
+              };
+              template<typename Current, typename... Types>
+              struct am_filter<Current, Types...>
+              {
+                using type = typename std::conditional < filter<Current::type_1::value, Shaders...>::type::size(),
+                      typename ct::append_type<typename Current::type_2, typename am_filter<Types...>::type>::type,
+                      typename am_filter<Types...>::type
+                      >::type;
+              };
+
+            public:
+              using type = typename ct::extract_types<program_t, typename am_filter<Values...>::type>::type;
+          };
           // shaders tuples by type
 //           compute_shaders_t compute_shaders = compute_shaders_t();
 //           vertex_shaders_t vertex_shaders = vertex_shaders_t();

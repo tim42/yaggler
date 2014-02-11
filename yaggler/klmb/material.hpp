@@ -33,8 +33,11 @@
 #include <klmb/tools/shader_framework.hpp>
 
 #include <klmb/klmb_context_helper.hpp>
+#include <klmb/material_usings.hpp>
 
+#include <tools/ct_string.hpp>
 #include <tools/merge_pack.hpp>
+
 #include <shader/context.hpp>
 
 // a simple material class.
@@ -161,7 +164,7 @@ namespace neam
           // called to reset the klmb shader 'framework'
           void _setup_klmb_defines()
           {
-            _klmb_defines_loop_over_shaders(cr::gen_seq<Shaders::size>());
+            _klmb_defines_loop_over_shaders(cr::gen_seq<program_t::get_ct_shaders_number()>());
           }
 
         private:
@@ -174,15 +177,19 @@ namespace neam
 
           // shader framework
           template<size_t Idx>
-          char _klmb_defines_single_shader_setup(uint8_t &prog_counter)
+          char _klmb_defines_single_shader_setup(uint8_t &prog_counter, internal::_shader_framework_data &framework_data)
           {
-            auto &shader = shader_prog.template get_shader_at_index<1>();
+            auto &shader = shader_prog.template get_shader_at_index<Idx>();
 
-            bool is_using_klmb = shader.get_preprocessor_value("KLMB_IS_USING_FRAMEWORK")[0] == '1';
+            shader._preload();
+
+            bool is_using_klmb = tools::is_true(shader.get_preprocessor_value("KLMB_IS_USING_FRAMEWORK"));
 
             // setup klmb frmwk
             if (is_using_klmb)
-              prog_counter += internal::setup_shader_framework<std::remove_reference<decltype(shader)>::type::shader_type>::setup(shader, prog_counter);
+              prog_counter += internal::setup_shader_framework<std::remove_reference<decltype(shader)>::type::shader_type>::setup(shader, prog_counter, framework_data);
+
+//             shader.recompile();
 
             return 0;
           }
@@ -191,19 +198,31 @@ namespace neam
           void _klmb_defines_loop_over_shaders(neam::cr::seq<Idxs...>)
           {
             uint8_t prog_counter = 0;
-            void((char []){_klmb_defines_single_shader_setup<Idxs>(prog_counter)...}); // who knows how this'll be optimised out ?
+            internal::_shader_framework_data framework_data;
+            void((char []){_klmb_defines_single_shader_setup<Idxs>(prog_counter, framework_data)...}); // who knows how this'll be optimised out ?
             // (and which compiler supports it...)
           }
 
         private:
           Textures textures;
-          typename Shaders::template program_t<> shader_prog;
+
+          // framework shader files
+          static constexpr neam::string_t main_frag = "data/klmb-framework/main.frag";
+
+          // the prog :)
+          using program_t = typename Shaders::template program_auto_merger
+          <
+            ct::pair<embed::GLenum<GL_FRAGMENT_SHADER>, auto_file_shader<main_frag>>
+          >::type;
+          program_t shader_prog;
 
           Variables variable_values;
 
           VarCtx vctx; // must be last (after the textures, after shader_prog and after the variable values)
           std::array<std::string, VarCtx::get_number_of_variables()> variable_strings;
       };
+      template<typename Shaders, typename Textures, typename VarCtx, typename Variables>
+      constexpr neam::string_t base_material<Shaders, Textures, VarCtx, Variables>::main_frag;
 
       namespace internal
       {
