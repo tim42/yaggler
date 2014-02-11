@@ -35,6 +35,22 @@ namespace neam
 {
   namespace ct
   {
+    // append or prepend a type to a tuple
+    template <typename Cr, typename Type> struct prepend_type {};
+    template <typename Cr, typename Type> struct append_type {};
+
+    template <typename Cr, typename ...Others>
+    struct prepend_type<Cr, cr::tuple<Others...>>
+    {
+      using type = cr::tuple<Cr, Others...>;
+    };
+    template <typename Cr, typename ...Others>
+    struct append_type<Cr, cr::tuple<Others...>>
+    {
+      using type = cr::tuple<Others..., Cr>;
+    };
+
+    // the merger
     template<typename Type1, typename Type2>
     struct merger {};
 
