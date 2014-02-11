@@ -42,8 +42,8 @@ namespace neam
   {
     namespace window_mode
     {
-      class fullscreen_t {} fullscreen;
-      class windowed_t {} windowed;
+      class fullscreen_t {} fullscreen __attribute__((unused));
+      class windowed_t {} windowed __attribute__((unused));
     } // namespace window_mode
 
     class glfw_window
