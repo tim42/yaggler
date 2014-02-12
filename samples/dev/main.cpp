@@ -19,7 +19,7 @@
 
 #include <setup.hpp>
 
-using opengl_version = neam::yaggler::setup::opengl<3, 1>;
+using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::opengl_profile::core, neam::yaggler::setup::opengl_context_flag::debug>;
 
 #include <yaggler.hpp>
 
@@ -83,8 +83,6 @@ int main(int argc, char **argv)
 
   prog.bind_attribute_location("in_position", 0);
 
-  std::cout << "[" << prog.get_shader_at_index<0>().get_preprocessor_value("RM_STEP") << "]" << std::endl;
-
   float rm_step = 55.;
   prog.get_shader_at_index<0>().append_to_additional_strings("#define RM_STEP " + static_cast<std::ostringstream&>(std::ostringstream() << rm_step).str()); // base define
 
@@ -98,8 +96,6 @@ int main(int argc, char **argv)
 
   my_test_texture.set_gl_parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   my_test_texture.set_gl_parameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  my_test_texture.generate_mipmaps();
 
 //   neam::yaggler::texture::texture < neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>,
 //        neam::yaggler::texture::options::ct_texture_init<GL_RGB, neam::ct::vector<4, 4>, GL_BGRA, GL_UNSIGNED_BYTE, neam::embed::uint32_ptr<image_4x4_data> >> my_fg_texture(1);
@@ -150,18 +146,6 @@ int main(int argc, char **argv)
                 << "  |  ms/f: " << std::setw(9) << std::left << chronos.get_accumulated_time() / frame_counter * 1000.f
                 << std::endl;
 
-      if (frame_counter / 2. < 40 && rm_step > 5)
-      {
-        rm_step -= 5;
-        prog.get_shader_at_index<0>().clear_additional_strings().append_to_additional_strings("#define RM_STEP " + static_cast<std::ostringstream &>(std::ostringstream() << rm_step).str() + ". "); // base define
-        prog.link();
-      }
-      else if (frame_counter / 2. > 50)
-      {
-        rm_step += 5;
-        prog.get_shader_at_index<0>().clear_additional_strings().append_to_additional_strings("#define RM_STEP " + static_cast<std::ostringstream&>(std::ostringstream() << rm_step).str() + ". "); // base define
-        prog.link();
-      }
       frame_counter = 0;
       chronos.reset();
     }
@@ -174,7 +158,7 @@ int main(int argc, char **argv)
 
 
     /* Set background colour to NOT BLACK */
-    glClearColor(0.30, 0.30, 0.30, 0.1);
+//     glClearColor(0.30, 0.30, 0.30, 0.1); // not fast on intel HD
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, neam::ct::conversion::to<GLint>(fixed_resolution.x), neam::ct::conversion::to<GLint>(fixed_resolution.y));
     /* Clear background with the NOT BLACK colour */

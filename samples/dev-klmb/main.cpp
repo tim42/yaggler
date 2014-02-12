@@ -19,7 +19,7 @@
 
 #include <setup.hpp>
 
-using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::opengl_profile::core, false, true>;
+using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::opengl_profile::core, neam::yaggler::setup::opengl_context_flag::debug>;
 
 #include <yaggler.hpp>
 
@@ -87,9 +87,6 @@ int main(int argc, char **argv)
     neam::klmb::yaggler::make_ctx_pair("myuniform", neam::klmb::yaggler::variable<int>(2))
   );
 
-  // some ops on the texture.
-  material.get_texture<0>().generate_mipmaps();
-
   // some ops on vars
   material.get_variable<0>() = 4;
 
@@ -131,7 +128,7 @@ int main(int argc, char **argv)
 
 
     /* Set background colour to NOT BLACK */
-    glClearColor(0.30, 0.30, 0.30, 0.1);
+//     glClearColor(0.30, 0.30, 0.30, 0.1);
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, neam::ct::conversion::to<GLint>(fixed_resolution.x), neam::ct::conversion::to<GLint>(fixed_resolution.y));
     /* Clear background with the NOT BLACK colour */

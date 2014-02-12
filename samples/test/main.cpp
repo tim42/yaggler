@@ -19,7 +19,7 @@
 
 #include <setup.hpp>
 
-using opengl_version = neam::yaggler::setup::opengl<3, 1>;
+using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::opengl_profile::core, neam::yaggler::setup::opengl_context_flag::debug>;
 
 #include <yaggler.hpp>
 
@@ -92,8 +92,6 @@ int main(int argc, char **argv)
   my_test_texture.set_gl_parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   my_test_texture.set_gl_parameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  my_test_texture.generate_mipmaps();
-
   // some vars
   neam::yaggler::shader::uniform_variable resolution_var = prog.get_uniform_variable("screen_resolution");
   neam::yaggler::shader::uniform_variable time_var = prog.get_uniform_variable("global_time");
@@ -145,7 +143,7 @@ int main(int argc, char **argv)
 
 
     /* Set background colour to NOT BLACK */
-    glClearColor(0.30, 0.30, 0.30, 0.1);
+//     glClearColor(0.30, 0.30, 0.30, 0.1); // not fast on intel HD
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, neam::ct::conversion::to<GLint>(fixed_resolution.x), neam::ct::conversion::to<GLint>(fixed_resolution.y));
     /* Clear background with the NOT BLACK colour */

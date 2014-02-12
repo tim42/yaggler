@@ -41,15 +41,21 @@ namespace neam
         core,
         compat
       };
+      enum class opengl_context_flag
+      {
+        none,
+        forward_compat,
+        debug,
+      };
 
-      template<size_t GlMajor, size_t GlMinor, opengl_profile Profile = opengl_profile::core, bool ForwardCompat = false, bool Debug = false>
+      template<size_t GlMajor, size_t GlMinor, opengl_profile Profile = opengl_profile::core, opengl_context_flag CtxFlags = opengl_context_flag::none>
       struct opengl
       {
         static constexpr size_t gl_major = GlMajor;
         static constexpr size_t gl_minor = GlMinor;
         static constexpr opengl_profile profile = Profile;
-        static constexpr bool forward_compat = ForwardCompat;
-        static constexpr bool debug = Debug;
+        static constexpr bool forward_compat = (int)CtxFlags & (int)opengl_context_flag::forward_compat;
+        static constexpr bool debug = (int)CtxFlags & (int)opengl_context_flag::debug;
       };
     } // namespace setup
   } // namespace yaggler

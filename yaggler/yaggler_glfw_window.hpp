@@ -88,13 +88,85 @@ namespace neam
           select();
 
           // init glew
-          glewExperimental = true;
+          glewExperimental = GL_TRUE;
           GLenum err = glewInit();
 
           throw_on_glerror<glew_exception>("GLEW INTERNAL ERROR (glewInit): ");
           if (err != GLEW_OK)
           {
             throw glew_exception(reinterpret_cast<const char *>(glewGetErrorString(err)));
+          }
+
+          if (::opengl_version::debug)
+          {
+            if (GLEW_ARB_debug_output)
+            {
+              glDebugMessageCallbackARB([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei, const char * message, void *) -> void
+              {
+                std::cerr << "OPENGL DEBUG OUTPUT: [";
+                switch (type)
+                {
+                  case GL_DEBUG_TYPE_ERROR_ARB:
+                    std::cerr << "ERROR";
+                    break;
+                  case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB:
+                    std::cerr << "DEPRECATED BEHAVIOUR";
+                    break;
+                  case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB:
+                    std::cerr << "UNDEFINED BEHAVIOUR";
+                    break;
+                  case GL_DEBUG_TYPE_PORTABILITY_ARB:
+                    std::cerr << "PORTABILITY ISSUE";
+                    break;
+                  case GL_DEBUG_TYPE_PERFORMANCE_ARB:
+                    std::cerr << "PERFORMANCE ISSUE";
+                    break;
+                  case GL_DEBUG_TYPE_OTHER_ARB:
+                    std::cerr << "OTHER";
+                }
+                std::cerr << "/";
+                switch (severity)
+                {
+                  case GL_DEBUG_SEVERITY_HIGH_ARB:
+                    std::cerr << "HIGH";
+                    break;
+                  case GL_DEBUG_SEVERITY_MEDIUM_ARB:
+                    std::cerr << "MEDIUM";
+                    break;
+                  case GL_DEBUG_SEVERITY_LOW_ARB:
+                    std::cerr << "LOW";
+                }
+                std::cerr << "] from [";
+                switch (source)
+                {
+                  case GL_DEBUG_SOURCE_API_ARB:
+                    std::cerr << "API";
+                    break;
+                  case GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB:
+                    std::cerr << "WINDOW SYSTEM";
+                    break;
+                  case GL_DEBUG_SOURCE_SHADER_COMPILER_ARB:
+                    std::cerr << "SHADER COMPILER";
+                    break;
+                  case GL_DEBUG_SOURCE_THIRD_PARTY_ARB:
+                    std::cerr << "THIRD PARTY";
+                    break;
+                  case GL_DEBUG_SOURCE_APPLICATION_ARB:
+                    std::cerr << "APPLICATION";
+                    break;
+                  case GL_DEBUG_SOURCE_OTHER_ARB:
+                    std::cerr << "OTHER";
+                }
+                std::cerr << "] (ID: " << id << "): '" << message << "'" << std::endl;
+              }, nullptr);
+
+              glEnable(GL_DEBUG_OUTPUT);
+              glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+
+              glDebugMessageControlARB(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW_ARB, 0, NULL, true);
+              glDebugMessageControlARB(GL_DEBUG_SOURCE_APPLICATION_ARB, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
+              glDebugMessageControlARB(GL_DEBUG_SOURCE_THIRD_PARTY_ARB, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
+            }
           }
         }
         glfw_window(window_mode::fullscreen_t, const std::string &title = "[ neam/yaggler")
@@ -132,13 +204,85 @@ namespace neam
           select();
 
           // init glew
-          glewExperimental = true;
+          glewExperimental = GL_TRUE;
           GLenum err = glewInit();
 
           throw_on_glerror<glew_exception>("GLEW INTERNAL ERROR (glewInit): ");
           if (err != GLEW_OK)
           {
             throw glew_exception(reinterpret_cast<const char *>(glewGetErrorString(err)));
+          }
+
+          if (::opengl_version::debug)
+          {
+            if (GLEW_ARB_debug_output)
+            {
+              glDebugMessageCallbackARB([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei, const char * message, void *) -> void
+              {
+                std::cerr << "OPENGL DEBUG OUTPUT: [";
+                switch (type)
+                {
+                  case GL_DEBUG_TYPE_ERROR_ARB:
+                    std::cerr << "ERROR";
+                    break;
+                  case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB:
+                    std::cerr << "DEPRECATED BEHAVIOUR";
+                    break;
+                  case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB:
+                    std::cerr << "UNDEFINED BEHAVIOUR";
+                    break;
+                  case GL_DEBUG_TYPE_PORTABILITY_ARB:
+                    std::cerr << "PORTABILITY ISSUE";
+                    break;
+                  case GL_DEBUG_TYPE_PERFORMANCE_ARB:
+                    std::cerr << "PERFORMANCE ISSUE";
+                    break;
+                  case GL_DEBUG_TYPE_OTHER_ARB:
+                    std::cerr << "OTHER";
+                }
+                std::cerr << "/";
+                switch (severity)
+                {
+                  case GL_DEBUG_SEVERITY_HIGH_ARB:
+                    std::cerr << "HIGH";
+                    break;
+                  case GL_DEBUG_SEVERITY_MEDIUM_ARB:
+                    std::cerr << "MEDIUM";
+                    break;
+                  case GL_DEBUG_SEVERITY_LOW_ARB:
+                    std::cerr << "LOW";
+                }
+                std::cerr << "] from [";
+                switch (source)
+                {
+                  case GL_DEBUG_SOURCE_API_ARB:
+                    std::cerr << "API";
+                    break;
+                  case GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB:
+                    std::cerr << "WINDOW SYSTEM";
+                    break;
+                  case GL_DEBUG_SOURCE_SHADER_COMPILER_ARB:
+                    std::cerr << "SHADER COMPILER";
+                    break;
+                  case GL_DEBUG_SOURCE_THIRD_PARTY_ARB:
+                    std::cerr << "THIRD PARTY";
+                    break;
+                  case GL_DEBUG_SOURCE_APPLICATION_ARB:
+                    std::cerr << "APPLICATION";
+                    break;
+                  case GL_DEBUG_SOURCE_OTHER_ARB:
+                    std::cerr << "OTHER";
+                }
+                std::cerr << "] (ID: " << id << "): '" << message << "'" << std::endl;
+              }, nullptr);
+
+              glEnable(GL_DEBUG_OUTPUT);
+              glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+
+              glDebugMessageControlARB(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW_ARB, 0, NULL, true);
+              glDebugMessageControlARB(GL_DEBUG_SOURCE_APPLICATION_ARB, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
+              glDebugMessageControlARB(GL_DEBUG_SOURCE_THIRD_PARTY_ARB, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
+            }
           }
         }
 
