@@ -51,7 +51,7 @@ void KLMB_MAIN_FUNCTION()
 
 out vec4 color_0;
 
-// output something _*red*_ :)
+// output something... _*red*_ :)
 void main()
 {
   color_0 = vec4(1., .0, .0, .0);
