@@ -131,6 +131,9 @@ namespace neam
             set_gl_parameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             set_gl_parameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+            // nvidia debug flood :)
+            set_gl_parameter(GL_TEXTURE_MAX_LEVEL, 0);
+
             __tpl_init();
           }
 
