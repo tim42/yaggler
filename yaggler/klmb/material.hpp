@@ -48,6 +48,11 @@ namespace neam
   {
     namespace yaggler
     {
+      namespace framework_files
+      {
+        constexpr neam::string_t main_frag = "data/klmb-framework/main.frag";
+      } // namespace framework
+
       // this is the very basic K:LMB/YägGLer base_material.
       //
       // Shaders is a list of shaders files (types),
@@ -188,8 +193,10 @@ namespace neam
             // setup klmb frmwk
             if (is_using_klmb)
               prog_counter += internal::setup_shader_framework<std::remove_reference<decltype(shader)>::type::shader_type>::setup(shader, prog_counter, framework_data);
-
-//             shader.recompile();
+#ifndef YAGGLER_NO_MESSAGES
+            else
+              std::cerr << "K:LMB/YAGGLER: WARNING: material: shader framework: shader '" << shader.get_source_name() << "' is not using K:LMB framework." << std::endl;
+#endif
 
             return 0;
           }
@@ -207,12 +214,11 @@ namespace neam
           Textures textures;
 
           // framework shader files
-          static constexpr neam::string_t main_frag = "data/klmb-framework/main.frag";
 
           // the prog :)
           using program_t = typename Shaders::template program_auto_merger
           <
-            ct::pair<embed::GLenum<GL_FRAGMENT_SHADER>, auto_file_shader<main_frag>>
+            ct::pair<embed::GLenum<GL_FRAGMENT_SHADER>, auto_file_shader<framework_files::main_frag>>
           >::type;
           program_t shader_prog;
 
@@ -221,8 +227,6 @@ namespace neam
           VarCtx vctx; // must be last (after the textures, after shader_prog and after the variable values)
           std::array<std::string, VarCtx::get_number_of_variables()> variable_strings;
       };
-      template<typename Shaders, typename Textures, typename VarCtx, typename Variables>
-      constexpr neam::string_t base_material<Shaders, Textures, VarCtx, Variables>::main_frag;
 
       namespace internal
       {
