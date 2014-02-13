@@ -30,7 +30,7 @@
 #include <tools/tuple.hpp>
 #include <tools/ct_list.hpp>
 #include <shader/context.hpp>
-#include <klmb/klmb_context_helper.hpp>
+#include <klmb/material/klmb_context_helper.hpp>
 
 namespace neam
 {

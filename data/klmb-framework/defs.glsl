@@ -19,6 +19,7 @@
 # define KLMB_CALL_MAIN_FUNCTION(x)             p ## x ## _klmb_main()
 # define KLMB_GET_PROG_SHARED(x, name)          p ## x ## _klmb_ ## name
 
+# define KLMB_OUTPUT_VAR                        out
 
 #else
 # define _KLMB_SHARED_BASE_NAME(pid, name)      p ## pid ## _klmb_ ## name
@@ -29,6 +30,8 @@
 
 # define KLMB_MAIN_FUNCTION                     _KLMB_MAIN_FUNCTION(KLMB_PROG_ID)
 # define KLMB_SHARED_NAME(name)                 _KLMB_SHARED_NAME(KLMB_PROG_ID, name)
+
+# define KLMB_OUTPUT_VAR
 
 #endif
 

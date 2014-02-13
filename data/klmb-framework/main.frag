@@ -8,10 +8,9 @@
 # error this file must be used with the k:lmb framework
 #endif
 
-#ifndef KLMB_IS_MAIN
-# error this file must be the 'main' file in the k:lmb framework
-#endif
-
+// test if the shader is the one with the main() function
+// (this won't be the case in shaders with only one fragment/...)
+#ifdef KLMB_IS_MAIN
 
 // // std k:lmb shader framework macros
 
@@ -29,7 +28,7 @@
 // // now this is some macro works :)
 
 // declare output buffers
-#define DECLARE_OUTPUT_BUFFER(n)                       out vec4 color_ ## n;
+#define DECLARE_OUTPUT_BUFFER(n)                       KLMB_OUTPUT_VAR vec4 color_ ## n;
 // declare shader output buffers
 #define DECLARE_SHADER_OUTPUT_BUFFER(s, b)             vec4 KLMB_GET_PROG_SHARED(s, color_ ## b);
 // declare shader main functions
@@ -41,7 +40,6 @@ KLMB_FOR_EACH_SHADER_AND_OUTPUT_BUFFER(DECLARE_SHADER_OUTPUT_BUFFER)
 KLMB_FOR_EACH_SHADER(DECLARE_SHADER_MAIN)
 
 
-// // (or simply 'main')
 void KLMB_MAIN_FUNCTION()
 {
   // call every main functions
@@ -60,3 +58,11 @@ void KLMB_MAIN_FUNCTION()
 # define REDUCE_OUTPUT_BUFFER(b)                        color_ ## b /= KLMB_TOTAL_PROG_NUMBER;
   KLMB_FOR_EACH_OUTPUT_BUFFER(REDUCE_OUTPUT_BUFFER);
 }
+
+#else
+
+// shader does not declare anything, fails on intelHD/mesa
+// this var is unused.
+bool KLMB_DO_NOT_TOUCH_THIS_VAR_1_23456213613641364136841651941355541684118648;
+
+#endif

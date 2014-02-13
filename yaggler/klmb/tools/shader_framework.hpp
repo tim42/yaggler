@@ -53,9 +53,19 @@ namespace neam
         // that ugly framework data structure...
         struct _shader_framework_data
         {
-          uint8_t fragment__output_buffers = 0;
-          uint8_t fragment__shader_number = 0;
-          bool    fragment__framework_registered = false;
+          // global stuff
+          uint8_t       fragment_shader_number = 0;
+          uint8_t       geometry_shader_number = 0;
+          uint8_t       tess_evaluation_shader_number = 0;
+          uint8_t       tess_control_shader_number = 0;
+          uint8_t       vertex_shader_number = 0;
+          uint8_t       compute_shader_number = 0;
+
+          // fragment stuff
+          uint8_t       fragment__output_buffers = 0;
+          uint8_t       fragment__shader_number = 0;
+          bool          fragment__framework_registered = false;
+          bool          fragment__main_registered = false;
         };
 
         // the basical one
@@ -95,9 +105,17 @@ namespace neam
             // setup / load defs
             std::string base_framework_defs = "#define KLMB_PROG_ID " + std::string(__KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.fragment__shader_number))) + '\n';
             base_framework_defs += "#define KLMB_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.fragment__shader_number)) + '\n';
-            if (is_framework_main)
+
+            // a simple opti for progs with only one shader for this stage
+            if ((is_framework_main || fdata.fragment_shader_number == 1) && !fdata.fragment__main_registered)
             {
               base_framework_defs += "#define KLMB_IS_MAIN\n";
+              fdata.fragment__main_registered = true;
+            }
+
+            // only for the framework main
+            if (is_framework_main)
+            {
               base_framework_defs += "#define KLMB_TOTAL_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.fragment__shader_number)) + '\n';
               base_framework_defs += "#define KLMB_TOTAL_OUTPUT_BUFFER_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.fragment__output_buffers)) + '\n';
             }

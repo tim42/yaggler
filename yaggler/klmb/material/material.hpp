@@ -32,8 +32,8 @@
 #include <klmb/tools/make_variable_tuple.hpp>
 #include <klmb/tools/shader_framework.hpp>
 
-#include <klmb/klmb_context_helper.hpp>
-#include <klmb/material_usings.hpp>
+#include <klmb/material/klmb_context_helper.hpp>
+#include <klmb/material/material_usings.hpp>
 
 #include <tools/ct_string.hpp>
 #include <tools/merge_pack.hpp>
@@ -50,7 +50,10 @@ namespace neam
     {
       namespace framework_files
       {
+        // in all the shader stages, there's (I believe) only two that you could easily
+        // have multiple outputs and combine them. (perhaps there's also tess-ctrl)
         constexpr neam::string_t main_frag = "data/klmb-framework/main.frag";
+        constexpr neam::string_t main_vert = "data/klmb-framework/main.vert";
       } // namespace framework
 
       // this is the very basic K:LMB/YägGLer base_material.
@@ -194,7 +197,7 @@ namespace neam
             if (is_using_klmb)
               prog_counter += internal::setup_shader_framework<std::remove_reference<decltype(shader)>::type::shader_type>::setup(shader, prog_counter, framework_data);
 #ifndef YAGGLER_NO_MESSAGES
-            else
+            else if (shader.shader_type == GL_FRAGMENT_SHADER || shader.shader_type == GL_VERTEX_SHADER)
               std::cerr << "K:LMB/YAGGLER: WARNING: material: shader framework: shader '" << shader.get_source_name() << "' is not using K:LMB framework." << std::endl;
 #endif
 
@@ -206,6 +209,15 @@ namespace neam
           {
             uint8_t prog_counter = 0;
             internal::_shader_framework_data framework_data;
+
+            // setup number of shaders
+            framework_data.fragment_shader_number = Shaders::fragment_shaders_t::size();
+            framework_data.geometry_shader_number = Shaders::geometry_shaders_t::size();
+            framework_data.tess_evaluation_shader_number = Shaders::tess_evaluation_shaders_t::size();
+            framework_data.tess_control_shader_number = Shaders::tess_control_shaders_t::size();
+            framework_data.vertex_shader_number = Shaders::vertex_shaders_t::size();
+            framework_data.compute_shader_number = Shaders::compute_shaders_t::size();
+
             void((char []){_klmb_defines_single_shader_setup<Idxs>(prog_counter, framework_data)...}); // who knows how this'll be optimised out ?
             // (and which compiler supports it...)
           }

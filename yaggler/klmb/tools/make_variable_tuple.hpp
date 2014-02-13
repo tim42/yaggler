@@ -31,7 +31,7 @@
 #include <tools/ct_list.hpp>
 #include <tools/merge_pack.hpp>
 #include <shader/context.hpp>
-#include <klmb/klmb_context_helper.hpp>
+#include <klmb/material/klmb_context_helper.hpp>
 
 namespace neam
 {

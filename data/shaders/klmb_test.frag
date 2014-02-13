@@ -22,7 +22,7 @@ in vec4  vertex_position;
 
 #ifdef USING_KLMB_FRAMEWORK
 
-vec4 KLMB_SHARED_NAME(color_0);
+KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_0);
 
 // // some mandatory K:LMB macros
 
