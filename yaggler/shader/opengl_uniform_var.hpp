@@ -28,7 +28,8 @@
 # define __N_4228199451929725216_1925374995__OPENGL_UNIFORM_VAR_HPP__
 
 #include <GLEW/glew.h>
-// #include <GL/gl.h>
+#include <glm/glm.hpp>
+
 #include <vector>
 #include <array>
 
@@ -230,6 +231,12 @@ namespace neam
             glUniform2f(id, neam::ct::conversion::to<float>(value.x), neam::ct::conversion::to<float>(value.y));
             return *this;
           }
+          inline uniform_variable &operator = (const glm::vec2 &value)
+          {
+            CHECK_ID;
+            glUniform2f(id, value.x, value.y);
+            return *this;
+          }
 
           // for fixed size arrays
           template<size_t Size>
@@ -256,6 +263,22 @@ namespace neam
             return *this;
           }
           template<size_t Size>
+          inline uniform_variable &operator = (const glm::vec2 (&value)[Size])
+          {
+            CHECK_ID;
+            GLfloat *tmp_value = new GLfloat[Size * 2];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 2 + 0] = value[i].x;
+              tmp_value[i * 2 + 1] = value[i].y;
+            }
+
+            glUniform2fv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
           inline uniform_variable &operator = (const std::array<float[2], Size> &value)
           {
             CHECK_ID;
@@ -272,6 +295,22 @@ namespace neam
             {
               tmp_value[i * 2 + 0] = neam::ct::conversion::to<float>(value[i].x);
               tmp_value[i * 2 + 1] = neam::ct::conversion::to<float>(value[i].y);
+            }
+
+            glUniform2fv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const std::array<glm::vec2, Size> &value)
+          {
+            CHECK_ID;
+            GLfloat *tmp_value = new GLfloat[Size * 2];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value[i].x);
+              tmp_value[i * 2 + 1] = (value[i].y);
             }
 
             glUniform2fv(id, Size, tmp_value);
@@ -303,6 +342,23 @@ namespace neam
             delete [] tmp_value;
             return *this;
           }
+          inline uniform_variable &operator = (const std::vector<glm::vec2> &value)
+          {
+            CHECK_ID;
+
+            const size_t size = value.size();
+            GLfloat *tmp_value = new GLfloat[size * 2];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value[i].x);
+              tmp_value[i * 2 + 1] = (value[i].y);
+            }
+
+            glUniform2fv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
 
           // for array wrappers
           inline uniform_variable &operator = (const array_wrapper<float[2]> &value)
@@ -327,14 +383,42 @@ namespace neam
             delete [] tmp_value;
             return *this;
           }
+          inline uniform_variable &operator = (const array_wrapper<glm::vec2> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size;
+            GLfloat *tmp_value = new GLfloat[size * 2];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value.array[i].x);
+              tmp_value[i * 2 + 1] = (value.array[i].y);
+            }
+
+            glUniform2fv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
 
           /// INT 2V ///
 
           // set the value
+          inline uniform_variable &operator = (const glm::ivec2 &value)
+          {
+            CHECK_ID;
+            glUniform2i(id, value.x, value.y);
+            return *this;
+          }
           inline uniform_variable &set_as_int(const ct::vector2 &value)
           {
             CHECK_ID;
             glUniform2i(id, neam::ct::conversion::to<GLint>(value.x), neam::ct::conversion::to<GLint>(value.y));
+            return *this;
+          }
+          inline uniform_variable &set_as_int(const glm::vec2 &value)
+          {
+            CHECK_ID;
+            glUniform2i(id, (value.x), (value.y));
             return *this;
           }
 
@@ -363,6 +447,38 @@ namespace neam
             return *this;
           }
           template<size_t Size>
+          inline uniform_variable &set_as_int(const glm::vec2 (&value)[Size])
+          {
+            CHECK_ID;
+            GLint *tmp_value = new GLint[Size * 2];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value[i].x);
+              tmp_value[i * 2 + 1] = (value[i].y);
+            }
+
+            glUniform2iv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator =(const glm::ivec2 (&value)[Size])
+          {
+            CHECK_ID;
+            GLint *tmp_value = new GLint[Size * 2];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value[i].x);
+              tmp_value[i * 2 + 1] = (value[i].y);
+            }
+
+            glUniform2iv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
           inline uniform_variable &operator = (const std::array<GLint[2], Size> &value)
           {
             CHECK_ID;
@@ -379,6 +495,38 @@ namespace neam
             {
               tmp_value[i * 2 + 0] = neam::ct::conversion::to<GLint>(value[i].x);
               tmp_value[i * 2 + 1] = neam::ct::conversion::to<GLint>(value[i].y);
+            }
+
+            glUniform2iv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &set_as_int(const std::array<glm::vec2, Size> &value)
+          {
+            CHECK_ID;
+            GLint *tmp_value = new GLint[Size * 2];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value[i].x);
+              tmp_value[i * 2 + 1] = (value[i].y);
+            }
+
+            glUniform2iv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const std::array<glm::ivec2, Size> &value)
+          {
+            CHECK_ID;
+            GLint *tmp_value = new GLint[Size * 2];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value[i].x);
+              tmp_value[i * 2 + 1] = (value[i].y);
             }
 
             glUniform2iv(id, Size, tmp_value);
@@ -410,6 +558,40 @@ namespace neam
             delete [] tmp_value;
             return *this;
           }
+          inline uniform_variable &set_as_int(const std::vector<glm::vec2> &value)
+          {
+            CHECK_ID;
+
+            const size_t size = value.size();
+            GLint *tmp_value = new GLint[size * 2];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value[i].x);
+              tmp_value[i * 2 + 1] = (value[i].y);
+            }
+
+            glUniform2iv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &operator = (const std::vector<glm::ivec2> &value)
+          {
+            CHECK_ID;
+
+            const size_t size = value.size();
+            GLint *tmp_value = new GLint[size * 2];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value[i].x);
+              tmp_value[i * 2 + 1] = (value[i].y);
+            }
+
+            glUniform2iv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
 
           // for array wrappers
           inline uniform_variable &operator = (const array_wrapper<GLint[2]> &value)
@@ -434,6 +616,38 @@ namespace neam
             delete [] tmp_value;
             return *this;
           }
+          inline uniform_variable &set_as_int(const array_wrapper<glm::vec2> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size;
+            GLint *tmp_value = new GLint[size * 2];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value.array[i].x);
+              tmp_value[i * 2 + 1] = (value.array[i].y);
+            }
+
+            glUniform2iv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &operator = (const array_wrapper<glm::ivec2> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size;
+            GLint *tmp_value = new GLint[size * 2];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value.array[i].x);
+              tmp_value[i * 2 + 1] = (value.array[i].y);
+            }
+
+            glUniform2iv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
 
           /// UNSIGNED INT 2V ///
 
@@ -442,6 +656,18 @@ namespace neam
           {
             CHECK_ID;
             glUniform2ui(id, neam::ct::conversion::to<GLuint>(value.x), neam::ct::conversion::to<GLuint>(value.y));
+            return *this;
+          }
+          inline uniform_variable &set_as_uint(const glm::vec2 &value)
+          {
+            CHECK_ID;
+            glUniform2ui(id, (value.x), (value.y));
+            return *this;
+          }
+          inline uniform_variable &operator = (const glm::uvec2 &value)
+          {
+            CHECK_ID;
+            glUniform2ui(id, (value.x), (value.y));
             return *this;
           }
 
@@ -470,6 +696,38 @@ namespace neam
             return *this;
           }
           template<size_t Size>
+          inline uniform_variable &set_as_uint(const glm::vec2 (&value)[Size])
+          {
+            CHECK_ID;
+            GLuint *tmp_value = new GLuint[Size * 2];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value[i].x);
+              tmp_value[i * 2 + 1] = (value[i].y);
+            }
+
+            glUniform2uiv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const glm::uvec2 (&value)[Size])
+          {
+            CHECK_ID;
+            GLuint *tmp_value = new GLuint[Size * 2];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value[i].x);
+              tmp_value[i * 2 + 1] = (value[i].y);
+            }
+
+            glUniform2uiv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
           inline uniform_variable &operator = (const std::array<GLuint[2], Size> &value)
           {
             CHECK_ID;
@@ -486,6 +744,38 @@ namespace neam
             {
               tmp_value[i * 2 + 0] = neam::ct::conversion::to<GLuint>(value[i].x);
               tmp_value[i * 2 + 1] = neam::ct::conversion::to<GLuint>(value[i].y);
+            }
+
+            glUniform2uiv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &set_as_uint(const std::array<glm::vec2, Size> &value)
+          {
+            CHECK_ID;
+            GLuint *tmp_value = new GLuint[Size * 2];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value[i].x);
+              tmp_value[i * 2 + 1] = (value[i].y);
+            }
+
+            glUniform2uiv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const std::array<glm::uvec2, Size> &value)
+          {
+            CHECK_ID;
+            GLuint *tmp_value = new GLuint[Size * 2];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value[i].x);
+              tmp_value[i * 2 + 1] = (value[i].y);
             }
 
             glUniform2uiv(id, Size, tmp_value);
@@ -517,6 +807,40 @@ namespace neam
             delete [] tmp_value;
             return *this;
           }
+          inline uniform_variable &set_as_uint(const std::vector<glm::vec2> &value)
+          {
+            CHECK_ID;
+
+            const size_t size = value.size();
+            GLuint *tmp_value = new GLuint[size * 2];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value[i].x);
+              tmp_value[i * 2 + 1] = (value[i].y);
+            }
+
+            glUniform2uiv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &operator = (const std::vector<glm::uvec2> &value)
+          {
+            CHECK_ID;
+
+            const size_t size = value.size();
+            GLuint *tmp_value = new GLuint[size * 2];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value[i].x);
+              tmp_value[i * 2 + 1] = (value[i].y);
+            }
+
+            glUniform2uiv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
 
           // for array wrappers
           inline uniform_variable &operator = (const array_wrapper<GLuint[2]> &value)
@@ -541,6 +865,38 @@ namespace neam
             delete [] tmp_value;
             return *this;
           }
+          inline uniform_variable &set_as_uint(const array_wrapper<glm::vec2> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size;
+            GLuint *tmp_value = new GLuint[size * 2];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value.array[i].x);
+              tmp_value[i * 2 + 1] = (value.array[i].y);
+            }
+
+            glUniform2uiv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &operator = (const array_wrapper<glm::uvec2> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size;
+            GLuint *tmp_value = new GLuint[size * 2];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 2 + 0] = (value.array[i].x);
+              tmp_value[i * 2 + 1] = (value.array[i].y);
+            }
+
+            glUniform2uiv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
 
           /// FLOAT 3V /// // (yes, I'll do this fucking copy-pasting for EVERY
           ///          /// //  FUCKING TYPES THAT OPENGL HAS. FUCK.)
@@ -550,6 +906,12 @@ namespace neam
           {
             CHECK_ID;
             glUniform3f(id, neam::ct::conversion::to<float>(value.x), neam::ct::conversion::to<float>(value.y), neam::ct::conversion::to<float>(value.z));
+            return *this;
+          }
+          inline uniform_variable &operator = (const glm::vec3 &value)
+          {
+            CHECK_ID;
+            glUniform3f(id, (value.x), (value.y), (value.z));
             return *this;
           }
 
@@ -572,6 +934,23 @@ namespace neam
               tmp_value[i * 3 + 0] = neam::ct::conversion::to<float>(value[i].x);
               tmp_value[i * 3 + 1] = neam::ct::conversion::to<float>(value[i].y);
               tmp_value[i * 3 + 2] = neam::ct::conversion::to<float>(value[i].z);
+            }
+
+            glUniform3fv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const glm::vec3 (&value)[Size])
+          {
+            CHECK_ID;
+            GLfloat *tmp_value = new GLfloat[Size * 3];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value[i].x);
+              tmp_value[i * 3 + 1] = (value[i].y);
+              tmp_value[i * 3 + 2] = (value[i].z);
             }
 
             glUniform3fv(id, Size, tmp_value);
@@ -602,6 +981,23 @@ namespace neam
             delete [] tmp_value;
             return *this;
           }
+          template<size_t Size>
+          inline uniform_variable &operator = (const std::array<glm::vec3, Size> &value)
+          {
+            CHECK_ID;
+            GLfloat *tmp_value = new GLfloat[Size * 3];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value[i].x);
+              tmp_value[i * 3 + 1] = (value[i].y);
+              tmp_value[i * 3 + 2] = (value[i].z);
+            }
+
+            glUniform3fv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
 
           // for vectors
           inline uniform_variable &operator = (const std::vector<float[3]> &value)
@@ -621,6 +1017,23 @@ namespace neam
               tmp_value[i * 3 + 0] = neam::ct::conversion::to<float>(value[i].x);
               tmp_value[i * 3 + 1] = neam::ct::conversion::to<float>(value[i].y);
               tmp_value[i * 3 + 2] = neam::ct::conversion::to<float>(value[i].z);
+            }
+
+            glUniform3fv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &operator = (const std::vector<glm::vec3> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size();
+            GLfloat *tmp_value = new GLfloat[size * 3];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value[i].x);
+              tmp_value[i * 3 + 1] = (value[i].y);
+              tmp_value[i * 3 + 2] = (value[i].z);
             }
 
             glUniform3fv(id, size, tmp_value);
@@ -653,6 +1066,24 @@ namespace neam
             delete [] tmp_value;
             return *this;
           }
+          inline uniform_variable &operator = (const array_wrapper<glm::vec3> &value)
+          {
+            CHECK_ID;
+
+            const size_t size = value.size;
+            GLfloat *tmp_value = new GLfloat[size * 3];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value.array[i].x);
+              tmp_value[i * 3 + 1] = (value.array[i].y);
+              tmp_value[i * 3 + 2] = (value.array[i].z);
+            }
+
+            glUniform3fv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
 
           /// INT 3V ///
 
@@ -661,6 +1092,18 @@ namespace neam
           {
             CHECK_ID;
             glUniform3i(id, neam::ct::conversion::to<GLint>(value.x), neam::ct::conversion::to<GLint>(value.y), neam::ct::conversion::to<GLint>(value.z));
+            return *this;
+          }
+          inline uniform_variable &set_as_int(const glm::vec3 &value)
+          {
+            CHECK_ID;
+            glUniform3i(id, (value.x), (value.y), (value.z));
+            return *this;
+          }
+          inline uniform_variable &operator = (const glm::ivec3 &value)
+          {
+            CHECK_ID;
+            glUniform3i(id, (value.x), (value.y), (value.z));
             return *this;
           }
 
@@ -690,6 +1133,40 @@ namespace neam
             return *this;
           }
           template<size_t Size>
+          inline uniform_variable &set_as_int(const glm::vec3 (&value)[Size])
+          {
+            CHECK_ID;
+            GLint *tmp_value = new GLint[Size * 3];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value[i].x);
+              tmp_value[i * 3 + 1] = (value[i].y);
+              tmp_value[i * 3 + 2] = (value[i].z);
+            }
+
+            glUniform3iv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const glm::ivec3 (&value)[Size])
+          {
+            CHECK_ID;
+            GLint *tmp_value = new GLint[Size * 3];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value[i].x);
+              tmp_value[i * 3 + 1] = (value[i].y);
+              tmp_value[i * 3 + 2] = (value[i].z);
+            }
+
+            glUniform3iv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
           inline uniform_variable &operator = (const std::array<GLint[3], Size> &value)
           {
             CHECK_ID;
@@ -707,6 +1184,40 @@ namespace neam
               tmp_value[i * 3 + 0] = neam::ct::conversion::to<GLint>(value[i].x);
               tmp_value[i * 3 + 1] = neam::ct::conversion::to<GLint>(value[i].y);
               tmp_value[i * 3 + 2] = neam::ct::conversion::to<GLint>(value[i].z);
+            }
+
+            glUniform3iv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &set_as_int(const std::array<glm::vec3, Size> &value)
+          {
+            CHECK_ID;
+            GLint *tmp_value = new GLint[Size * 3];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value[i].x);
+              tmp_value[i * 3 + 1] = (value[i].y);
+              tmp_value[i * 3 + 2] = (value[i].z);
+            }
+
+            glUniform3iv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const std::array<glm::ivec3, Size> &value)
+          {
+            CHECK_ID;
+            GLint *tmp_value = new GLint[Size * 3];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value[i].x);
+              tmp_value[i * 3 + 1] = (value[i].y);
+              tmp_value[i * 3 + 2] = (value[i].z);
             }
 
             glUniform3iv(id, Size, tmp_value);
@@ -738,6 +1249,40 @@ namespace neam
             delete [] tmp_value;
             return *this;
           }
+          inline uniform_variable &set_as_int(const std::vector<glm::vec3> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size();
+            GLint *tmp_value = new GLint[size * 3];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value[i].x);
+              tmp_value[i * 3 + 1] = (value[i].y);
+              tmp_value[i * 3 + 2] = (value[i].z);
+            }
+
+            glUniform3iv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &operator = (const std::vector<glm::ivec3> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size();
+            GLint *tmp_value = new GLint[size * 3];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value[i].x);
+              tmp_value[i * 3 + 1] = (value[i].y);
+              tmp_value[i * 3 + 2] = (value[i].z);
+            }
+
+            glUniform3iv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
 
           // for array wrappers
           inline uniform_variable &operator = (const array_wrapper<GLint[3]> &value)
@@ -763,6 +1308,40 @@ namespace neam
             delete [] tmp_value;
             return *this;
           }
+          inline uniform_variable &set_as_int(const array_wrapper<glm::vec3> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size;
+            GLint *tmp_value = new GLint[size * 3];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value.array[i].x);
+              tmp_value[i * 3 + 1] = (value.array[i].y);
+              tmp_value[i * 3 + 2] = (value.array[i].z);
+            }
+
+            glUniform3iv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &operator = (const array_wrapper<glm::ivec3> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size;
+            GLint *tmp_value = new GLint[size * 3];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value.array[i].x);
+              tmp_value[i * 3 + 1] = (value.array[i].y);
+              tmp_value[i * 3 + 2] = (value.array[i].z);
+            }
+
+            glUniform3iv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
 
           /// UNSIGNED INT 3V ///
 
@@ -771,6 +1350,18 @@ namespace neam
           {
             CHECK_ID;
             glUniform3ui(id, neam::ct::conversion::to<GLuint>(value.x), neam::ct::conversion::to<GLuint>(value.y), neam::ct::conversion::to<GLuint>(value.z));
+            return *this;
+          }
+          inline uniform_variable &set_as_uint(const glm::vec3 &value)
+          {
+            CHECK_ID;
+            glUniform3ui(id, (value.x), (value.y), (value.z));
+            return *this;
+          }
+          inline uniform_variable &operator = (const glm::uvec3 &value)
+          {
+            CHECK_ID;
+            glUniform3ui(id, (value.x), (value.y), (value.z));
             return *this;
           }
 
@@ -793,6 +1384,40 @@ namespace neam
               tmp_value[i * 3 + 0] = neam::ct::conversion::to<GLuint>(value[i].x);
               tmp_value[i * 3 + 1] = neam::ct::conversion::to<GLuint>(value[i].y);
               tmp_value[i * 3 + 2] = neam::ct::conversion::to<GLuint>(value[i].z);
+            }
+
+            glUniform3uiv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &set_as_uint(const glm::vec3 (&value)[Size])
+          {
+            CHECK_ID;
+            GLuint *tmp_value = new GLuint[Size * 3];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value[i].x);
+              tmp_value[i * 3 + 1] = (value[i].y);
+              tmp_value[i * 3 + 2] = (value[i].z);
+            }
+
+            glUniform3uiv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const glm::uvec3 (&value)[Size])
+          {
+            CHECK_ID;
+            GLuint *tmp_value = new GLuint[Size * 3];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value[i].x);
+              tmp_value[i * 3 + 1] = (value[i].y);
+              tmp_value[i * 3 + 2] = (value[i].z);
             }
 
             glUniform3uiv(id, Size, tmp_value);
@@ -823,6 +1448,40 @@ namespace neam
             delete [] tmp_value;
             return *this;
           }
+          template<size_t Size>
+          inline uniform_variable &set_as_uint(const std::array<glm::vec3, Size> &value)
+          {
+            CHECK_ID;
+            GLuint *tmp_value = new GLuint[Size * 3];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value[i].x);
+              tmp_value[i * 3 + 1] = (value[i].y);
+              tmp_value[i * 3 + 2] = (value[i].z);
+            }
+
+            glUniform3uiv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const std::array<glm::uvec3, Size> &value)
+          {
+            CHECK_ID;
+            GLuint *tmp_value = new GLuint[Size * 3];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value[i].x);
+              tmp_value[i * 3 + 1] = (value[i].y);
+              tmp_value[i * 3 + 2] = (value[i].z);
+            }
+
+            glUniform3uiv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
 
           // for vectors
           inline uniform_variable &operator = (const std::vector<GLuint[3]> &value)
@@ -842,6 +1501,40 @@ namespace neam
               tmp_value[i * 3 + 0] = neam::ct::conversion::to<GLuint>(value[i].x);
               tmp_value[i * 3 + 1] = neam::ct::conversion::to<GLuint>(value[i].y);
               tmp_value[i * 3 + 2] = neam::ct::conversion::to<GLuint>(value[i].z);
+            }
+
+            glUniform3uiv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &set_as_uint(const std::vector<glm::vec3> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size();
+            GLuint *tmp_value = new GLuint[size * 3];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value[i].x);
+              tmp_value[i * 3 + 1] = (value[i].y);
+              tmp_value[i * 3 + 2] = (value[i].z);
+            }
+
+            glUniform3uiv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &operator = (const std::vector<glm::uvec3> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size();
+            GLuint *tmp_value = new GLuint[size * 3];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value[i].x);
+              tmp_value[i * 3 + 1] = (value[i].y);
+              tmp_value[i * 3 + 2] = (value[i].z);
             }
 
             glUniform3uiv(id, size, tmp_value);
@@ -874,8 +1567,781 @@ namespace neam
             delete [] tmp_value;
             return *this;
           }
+          inline uniform_variable &set_as_uint(const array_wrapper<glm::vec3> &value)
+          {
+            CHECK_ID;
 
-          // TODO: 4v 4i 4ui
+            const size_t size = value.size;
+            GLuint *tmp_value = new GLuint[size * 3];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value.array[i].x);
+              tmp_value[i * 3 + 1] = (value.array[i].y);
+              tmp_value[i * 3 + 2] = (value.array[i].z);
+            }
+
+            glUniform3uiv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &operator = (const array_wrapper<glm::uvec3> &value)
+          {
+            CHECK_ID;
+
+            const size_t size = value.size;
+            GLuint *tmp_value = new GLuint[size * 3];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 3 + 0] = (value.array[i].x);
+              tmp_value[i * 3 + 1] = (value.array[i].y);
+              tmp_value[i * 3 + 2] = (value.array[i].z);
+            }
+
+            glUniform3uiv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+
+          /// FLOAT 4V /// // (yes, I'll do this fucking copy-pasting for EVERY
+          ///          /// //  FUCKING TYPES THAT OPENGL HAS. FUCK.)
+
+          // set the value
+          inline uniform_variable &operator = (const ct::vector4 &value)
+          {
+            CHECK_ID;
+            glUniform4f(id, neam::ct::conversion::to<float>(value.x), neam::ct::conversion::to<float>(value.y), neam::ct::conversion::to<float>(value.z), neam::ct::conversion::to<float>(value.w));
+            return *this;
+          }
+          inline uniform_variable &operator = (const glm::vec4 &value)
+          {
+            CHECK_ID;
+            glUniform4f(id, (value.x), (value.y), (value.z), (value.w));
+            return *this;
+          }
+
+          // for fixed size arrays
+          template<size_t Size>
+          inline uniform_variable &operator = (const float (&value)[Size][4])
+          {
+            CHECK_ID;
+            glUniform4fv(id, Size, value);
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const ct::vector4 (&value)[Size])
+          {
+            CHECK_ID;
+            GLfloat *tmp_value = new GLfloat[Size * 4];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 4 + 0] = neam::ct::conversion::to<float>(value[i].x);
+              tmp_value[i * 4 + 1] = neam::ct::conversion::to<float>(value[i].y);
+              tmp_value[i * 4 + 2] = neam::ct::conversion::to<float>(value[i].z);
+              tmp_value[i * 4 + 2] = neam::ct::conversion::to<float>(value[i].z);
+            }
+
+            glUniform4fv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const glm::vec4 (&value)[Size])
+          {
+            CHECK_ID;
+            GLfloat *tmp_value = new GLfloat[Size * 4];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value[i].x);
+              tmp_value[i * 4 + 1] = (value[i].y);
+              tmp_value[i * 4 + 2] = (value[i].z);
+              tmp_value[i * 4 + 3] = (value[i].w);
+            }
+
+            glUniform4fv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const std::array<float[4], Size> &value)
+          {
+            CHECK_ID;
+            glUniform4fv(id, Size, value.data());
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const std::array<ct::vector4, Size> &value)
+          {
+            CHECK_ID;
+            GLfloat *tmp_value = new GLfloat[Size * 4];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 4 + 0] = neam::ct::conversion::to<float>(value[i].x);
+              tmp_value[i * 4 + 1] = neam::ct::conversion::to<float>(value[i].y);
+              tmp_value[i * 4 + 2] = neam::ct::conversion::to<float>(value[i].z);
+              tmp_value[i * 4 + 3] = neam::ct::conversion::to<float>(value[i].w);
+            }
+
+            glUniform4fv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const std::array<glm::vec4, Size> &value)
+          {
+            CHECK_ID;
+            GLfloat *tmp_value = new GLfloat[Size * 4];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value[i].x);
+              tmp_value[i * 4 + 1] = (value[i].y);
+              tmp_value[i * 4 + 2] = (value[i].z);
+              tmp_value[i * 4 + 3] = (value[i].w);
+            }
+
+            glUniform4fv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+
+          // for vectors
+          inline uniform_variable &operator = (const std::vector<float[4]> &value)
+          {
+            CHECK_ID;
+            glUniform4fv(id, value.size(), reinterpret_cast<const GLfloat *>(value.data()));
+            return *this;
+          }
+          inline uniform_variable &operator = (const std::vector<ct::vector4> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size();
+            GLfloat *tmp_value = new GLfloat[size * 4];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 4 + 0] = neam::ct::conversion::to<float>(value[i].x);
+              tmp_value[i * 4 + 1] = neam::ct::conversion::to<float>(value[i].y);
+              tmp_value[i * 4 + 2] = neam::ct::conversion::to<float>(value[i].z);
+              tmp_value[i * 4 + 3] = neam::ct::conversion::to<float>(value[i].w);
+            }
+
+            glUniform4fv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &operator = (const std::vector<glm::vec4> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size();
+            GLfloat *tmp_value = new GLfloat[size * 4];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value[i].x);
+              tmp_value[i * 4 + 1] = (value[i].y);
+              tmp_value[i * 4 + 2] = (value[i].z);
+              tmp_value[i * 4 + 3] = (value[i].w);
+            }
+
+            glUniform4fv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+
+          // for array wrappers
+          inline uniform_variable &operator = (const array_wrapper<float[4]> &value)
+          {
+            CHECK_ID;
+            glUniform4fv(id, value.size, reinterpret_cast<const GLfloat *>(value.array));
+            return *this;
+          }
+          inline uniform_variable &operator = (const array_wrapper<ct::vector4> &value)
+          {
+            CHECK_ID;
+
+            const size_t size = value.size;
+            GLfloat *tmp_value = new GLfloat[size * 4];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 4 + 0] = neam::ct::conversion::to<float>(value.array[i].x);
+              tmp_value[i * 4 + 1] = neam::ct::conversion::to<float>(value.array[i].y);
+              tmp_value[i * 4 + 2] = neam::ct::conversion::to<float>(value.array[i].z);
+              tmp_value[i * 4 + 3] = neam::ct::conversion::to<float>(value.array[i].w);
+            }
+
+            glUniform4fv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &operator = (const array_wrapper<glm::vec4> &value)
+          {
+            CHECK_ID;
+
+            const size_t size = value.size;
+            GLfloat *tmp_value = new GLfloat[size * 4];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value.array[i].x);
+              tmp_value[i * 4 + 1] = (value.array[i].y);
+              tmp_value[i * 4 + 2] = (value.array[i].z);
+              tmp_value[i * 4 + 3] = (value.array[i].w);
+            }
+
+            glUniform4fv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+
+          /// INT 3V ///
+
+          // set the value
+          inline uniform_variable &set_as_int(const ct::vector4 &value)
+          {
+            CHECK_ID;
+            glUniform4i(id, neam::ct::conversion::to<GLint>(value.x), neam::ct::conversion::to<GLint>(value.y), neam::ct::conversion::to<GLint>(value.z), neam::ct::conversion::to<GLint>(value.w));
+            return *this;
+          }
+          inline uniform_variable &set_as_int(const glm::vec4 &value)
+          {
+            CHECK_ID;
+            glUniform4i(id, (value.x), (value.y), (value.z), (value.w));
+            return *this;
+          }
+          inline uniform_variable &operator = (const glm::ivec4 &value)
+          {
+            CHECK_ID;
+            glUniform4i(id, (value.x), (value.y), (value.z), (value.w));
+            return *this;
+          }
+
+          // for fixed size arrays
+          template<size_t Size>
+          inline uniform_variable &operator = (const GLint (&value)[Size][4])
+          {
+            CHECK_ID;
+            glUniform4iv(id, Size, value);
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &set_as_int(const ct::vector4 (&value)[Size])
+          {
+            CHECK_ID;
+            GLint *tmp_value = new GLint[Size * 4];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 4 + 0] = neam::ct::conversion::to<GLint>(value[i].x);
+              tmp_value[i * 4 + 1] = neam::ct::conversion::to<GLint>(value[i].y);
+              tmp_value[i * 4 + 2] = neam::ct::conversion::to<GLint>(value[i].z);
+              tmp_value[i * 4 + 3] = neam::ct::conversion::to<GLint>(value[i].w);
+            }
+
+            glUniform4iv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &set_as_int(const glm::vec4 (&value)[Size])
+          {
+            CHECK_ID;
+            GLint *tmp_value = new GLint[Size * 4];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value[i].x);
+              tmp_value[i * 4 + 1] = (value[i].y);
+              tmp_value[i * 4 + 2] = (value[i].z);
+              tmp_value[i * 4 + 3] = (value[i].w);
+            }
+
+            glUniform4iv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const glm::ivec4 (&value)[Size])
+          {
+            CHECK_ID;
+            GLint *tmp_value = new GLint[Size * 4];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value[i].x);
+              tmp_value[i * 4 + 1] = (value[i].y);
+              tmp_value[i * 4 + 2] = (value[i].z);
+              tmp_value[i * 4 + 3] = (value[i].w);
+            }
+
+            glUniform4iv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const std::array<GLint[4], Size> &value)
+          {
+            CHECK_ID;
+            glUniform4iv(id, Size, value.data());
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &set_as_int(const std::array<ct::vector4, Size> &value)
+          {
+            CHECK_ID;
+            GLint *tmp_value = new GLint[Size * 4];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 4 + 0] = neam::ct::conversion::to<GLint>(value[i].x);
+              tmp_value[i * 4 + 1] = neam::ct::conversion::to<GLint>(value[i].y);
+              tmp_value[i * 4 + 2] = neam::ct::conversion::to<GLint>(value[i].z);
+              tmp_value[i * 4 + 3] = neam::ct::conversion::to<GLint>(value[i].w);
+            }
+
+            glUniform4iv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &set_as_int(const std::array<glm::vec4, Size> &value)
+          {
+            CHECK_ID;
+            GLint *tmp_value = new GLint[Size * 4];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value[i].x);
+              tmp_value[i * 4 + 1] = (value[i].y);
+              tmp_value[i * 4 + 2] = (value[i].z);
+              tmp_value[i * 4 + 3] = (value[i].w);
+            }
+
+            glUniform4iv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const std::array<glm::ivec4, Size> &value)
+          {
+            CHECK_ID;
+            GLint *tmp_value = new GLint[Size * 4];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value[i].x);
+              tmp_value[i * 4 + 1] = (value[i].y);
+              tmp_value[i * 4 + 2] = (value[i].z);
+              tmp_value[i * 4 + 3] = (value[i].w);
+            }
+
+            glUniform4iv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+
+          // for vectors
+          inline uniform_variable &operator = (const std::vector<GLint[4]> &value)
+          {
+            CHECK_ID;
+            glUniform4iv(id, value.size(), reinterpret_cast<const GLint *>(value.data()));
+            return *this;
+          }
+          inline uniform_variable &set_as_int(const std::vector<ct::vector4> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size();
+            GLint *tmp_value = new GLint[size * 4];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 4 + 0] = neam::ct::conversion::to<GLint>(value[i].x);
+              tmp_value[i * 4 + 1] = neam::ct::conversion::to<GLint>(value[i].y);
+              tmp_value[i * 4 + 2] = neam::ct::conversion::to<GLint>(value[i].z);
+              tmp_value[i * 4 + 3] = neam::ct::conversion::to<GLint>(value[i].w);
+            }
+
+            glUniform4iv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &set_as_int(const std::vector<glm::vec4> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size();
+            GLint *tmp_value = new GLint[size * 4];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value[i].x);
+              tmp_value[i * 4 + 1] = (value[i].y);
+              tmp_value[i * 4 + 2] = (value[i].z);
+              tmp_value[i * 4 + 3] = (value[i].w);
+            }
+
+            glUniform4iv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &operator = (const std::vector<glm::ivec4> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size();
+            GLint *tmp_value = new GLint[size * 4];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value[i].x);
+              tmp_value[i * 4 + 1] = (value[i].y);
+              tmp_value[i * 4 + 2] = (value[i].z);
+              tmp_value[i * 4 + 3] = (value[i].w);
+            }
+
+            glUniform4iv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+
+          // for array wrappers
+          inline uniform_variable &operator = (const array_wrapper<GLint[4]> &value)
+          {
+            CHECK_ID;
+            glUniform4iv(id, value.size, reinterpret_cast<const GLint *>(value.array));
+            return *this;
+          }
+          inline uniform_variable &set_as_int(const array_wrapper<ct::vector4> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size;
+            GLint *tmp_value = new GLint[size * 4];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 4 + 0] = neam::ct::conversion::to<GLint>(value.array[i].x);
+              tmp_value[i * 4 + 1] = neam::ct::conversion::to<GLint>(value.array[i].y);
+              tmp_value[i * 4 + 2] = neam::ct::conversion::to<GLint>(value.array[i].z);
+              tmp_value[i * 4 + 3] = neam::ct::conversion::to<GLint>(value.array[i].w);
+            }
+
+            glUniform4iv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &set_as_int(const array_wrapper<glm::vec4> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size;
+            GLint *tmp_value = new GLint[size * 4];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value.array[i].x);
+              tmp_value[i * 4 + 1] = (value.array[i].y);
+              tmp_value[i * 4 + 2] = (value.array[i].z);
+              tmp_value[i * 4 + 3] = (value.array[i].w);
+            }
+
+            glUniform4iv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &operator = (const array_wrapper<glm::ivec4> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size;
+            GLint *tmp_value = new GLint[size * 4];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value.array[i].x);
+              tmp_value[i * 4 + 1] = (value.array[i].y);
+              tmp_value[i * 4 + 2] = (value.array[i].z);
+              tmp_value[i * 4 + 3] = (value.array[i].w);
+            }
+
+            glUniform4iv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+
+          /// UNSIGNED INT 3V ///
+
+          // set the value
+          inline uniform_variable &set_as_uint(const ct::vector4 &value)
+          {
+            CHECK_ID;
+            glUniform4ui(id, neam::ct::conversion::to<GLuint>(value.x), neam::ct::conversion::to<GLuint>(value.y), neam::ct::conversion::to<GLuint>(value.z), neam::ct::conversion::to<GLuint>(value.w));
+            return *this;
+          }
+          inline uniform_variable &set_as_uint(const glm::vec4 &value)
+          {
+            CHECK_ID;
+            glUniform4ui(id, (value.x), (value.y), (value.z), (value.w));
+            return *this;
+          }
+          inline uniform_variable &operator = (const glm::uvec4 &value)
+          {
+            CHECK_ID;
+            glUniform4ui(id, (value.x), (value.y), (value.z), (value.w));
+            return *this;
+          }
+
+          // for fixed size arrays
+          template<size_t Size>
+          inline uniform_variable &operator = (const GLuint (&value)[Size][4])
+          {
+            CHECK_ID;
+            glUniform4uiv(id, Size, value);
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &set_as_uint(const ct::vector4 (&value)[Size])
+          {
+            CHECK_ID;
+            GLuint *tmp_value = new GLuint[Size * 4];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 4 + 0] = neam::ct::conversion::to<GLuint>(value[i].x);
+              tmp_value[i * 4 + 1] = neam::ct::conversion::to<GLuint>(value[i].y);
+              tmp_value[i * 4 + 2] = neam::ct::conversion::to<GLuint>(value[i].z);
+              tmp_value[i * 4 + 3] = neam::ct::conversion::to<GLuint>(value[i].w);
+            }
+
+            glUniform4uiv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &set_as_uint(const glm::vec4 (&value)[Size])
+          {
+            CHECK_ID;
+            GLuint *tmp_value = new GLuint[Size * 4];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value[i].x);
+              tmp_value[i * 4 + 1] = (value[i].y);
+              tmp_value[i * 4 + 2] = (value[i].z);
+              tmp_value[i * 4 + 3] = (value[i].w);
+            }
+
+            glUniform4uiv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const glm::uvec4 (&value)[Size])
+          {
+            CHECK_ID;
+            GLuint *tmp_value = new GLuint[Size * 4];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value[i].x);
+              tmp_value[i * 4 + 1] = (value[i].y);
+              tmp_value[i * 4 + 2] = (value[i].z);
+              tmp_value[i * 4 + 3] = (value[i].w);
+            }
+
+            glUniform4uiv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const std::array<GLuint[4], Size> &value)
+          {
+            CHECK_ID;
+            glUniform4uiv(id, Size, value.data());
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &set_as_uint(const std::array<ct::vector4, Size> &value)
+          {
+            CHECK_ID;
+            GLuint *tmp_value = new GLuint[Size * 4];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 4 + 0] = neam::ct::conversion::to<GLuint>(value[i].x);
+              tmp_value[i * 4 + 1] = neam::ct::conversion::to<GLuint>(value[i].y);
+              tmp_value[i * 4 + 2] = neam::ct::conversion::to<GLuint>(value[i].z);
+              tmp_value[i * 4 + 3] = neam::ct::conversion::to<GLuint>(value[i].w);
+            }
+
+            glUniform4uiv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &set_as_uint(const std::array<glm::vec4, Size> &value)
+          {
+            CHECK_ID;
+            GLuint *tmp_value = new GLuint[Size * 4];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value[i].x);
+              tmp_value[i * 4 + 1] = (value[i].y);
+              tmp_value[i * 4 + 2] = (value[i].z);
+              tmp_value[i * 4 + 3] = (value[i].w);
+            }
+
+            glUniform4uiv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          template<size_t Size>
+          inline uniform_variable &operator = (const std::array<glm::uvec4, Size> &value)
+          {
+            CHECK_ID;
+            GLuint *tmp_value = new GLuint[Size * 4];
+
+            for (unsigned int i = 0; i < Size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value[i].x);
+              tmp_value[i * 4 + 1] = (value[i].y);
+              tmp_value[i * 4 + 2] = (value[i].z);
+              tmp_value[i * 4 + 3] = (value[i].w);
+            }
+
+            glUniform4uiv(id, Size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+
+          // for vectors
+          inline uniform_variable &operator = (const std::vector<GLuint[4]> &value)
+          {
+            CHECK_ID;
+            glUniform4uiv(id, value.size(), reinterpret_cast<const GLuint *>(value.data()));
+            return *this;
+          }
+          inline uniform_variable &set_as_uint(const std::vector<ct::vector4> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size();
+            GLuint *tmp_value = new GLuint[size * 4];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 4 + 0] = neam::ct::conversion::to<GLuint>(value[i].x);
+              tmp_value[i * 4 + 1] = neam::ct::conversion::to<GLuint>(value[i].y);
+              tmp_value[i * 4 + 2] = neam::ct::conversion::to<GLuint>(value[i].z);
+              tmp_value[i * 4 + 3] = neam::ct::conversion::to<GLuint>(value[i].w);
+            }
+
+            glUniform4uiv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &set_as_uint(const std::vector<glm::vec4> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size();
+            GLuint *tmp_value = new GLuint[size * 4];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value[i].x);
+              tmp_value[i * 4 + 1] = (value[i].y);
+              tmp_value[i * 4 + 2] = (value[i].z);
+              tmp_value[i * 4 + 3] = (value[i].w);
+            }
+
+            glUniform4uiv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &operator = (const std::vector<glm::uvec4> &value)
+          {
+            CHECK_ID;
+            const size_t size = value.size();
+            GLuint *tmp_value = new GLuint[size * 4];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value[i].x);
+              tmp_value[i * 4 + 1] = (value[i].y);
+              tmp_value[i * 4 + 2] = (value[i].z);
+              tmp_value[i * 4 + 3] = (value[i].w);
+            }
+
+            glUniform4uiv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+
+          // for array wrappers
+          inline uniform_variable &operator = (const array_wrapper<GLuint[4]> &value)
+          {
+            CHECK_ID;
+            glUniform4uiv(id, value.size, reinterpret_cast<const GLuint *>(value.array));
+            return *this;
+          }
+          inline uniform_variable &set_as_uint(const array_wrapper<ct::vector4> &value)
+          {
+            CHECK_ID;
+
+            const size_t size = value.size;
+            GLuint *tmp_value = new GLuint[size * 4];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 4 + 0] = neam::ct::conversion::to<GLuint>(value.array[i].x);
+              tmp_value[i * 4 + 1] = neam::ct::conversion::to<GLuint>(value.array[i].y);
+              tmp_value[i * 4 + 2] = neam::ct::conversion::to<GLuint>(value.array[i].z);
+              tmp_value[i * 4 + 3] = neam::ct::conversion::to<GLuint>(value.array[i].w);
+            }
+
+            glUniform4uiv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &set_as_uint(const array_wrapper<glm::vec4> &value)
+          {
+            CHECK_ID;
+
+            const size_t size = value.size;
+            GLuint *tmp_value = new GLuint[size * 4];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value.array[i].x);
+              tmp_value[i * 4 + 1] = (value.array[i].y);
+              tmp_value[i * 4 + 2] = (value.array[i].z);
+              tmp_value[i * 4 + 3] = (value.array[i].w);
+            }
+
+            glUniform4uiv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+          inline uniform_variable &operator = (const array_wrapper<glm::uvec4> &value)
+          {
+            CHECK_ID;
+
+            const size_t size = value.size;
+            GLuint *tmp_value = new GLuint[size * 4];
+
+            for (unsigned int i = 0; i < size; ++i)
+            {
+              tmp_value[i * 4 + 0] = (value.array[i].x);
+              tmp_value[i * 4 + 1] = (value.array[i].y);
+              tmp_value[i * 4 + 2] = (value.array[i].z);
+              tmp_value[i * 4 + 3] = (value.array[i].w);
+            }
+
+            glUniform4uiv(id, size, tmp_value);
+            delete [] tmp_value;
+            return *this;
+          }
+
           // TODO: mat2 mat3 mat4
           // TODO: mat2x3 mat3x2 mat3x2 mat2x3 mat2x4 mat4x2 mat3x4 mat4x3
 
