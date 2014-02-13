@@ -51,8 +51,10 @@
 // GL, glew and other external things (see the third_party folder)
 #include <GLEW/glew.h>
 #include <GLFW/glfw3.h>
-// #include <GL/gl.h>
+
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 // init and window
 #include "yaggler_except.hpp"

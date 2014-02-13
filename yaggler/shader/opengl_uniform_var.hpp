@@ -29,6 +29,7 @@
 
 #include <GLEW/glew.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <vector>
 #include <array>
@@ -2342,7 +2343,34 @@ namespace neam
             return *this;
           }
 
-          // TODO: mat2 mat3 mat4
+          /// MAT   2  /// // (yes, I'll do this fucking copy-pasting for EVERY
+          ///          /// //  FUCKING TYPES THAT OPENGL HAS. FUCK.)
+
+          inline uniform_variable &operator = (const glm::mat2 &mat)
+          {
+            glUniformMatrix2fv(id, 1, GL_FALSE, glm::value_ptr(mat));
+            return *this;
+          }
+
+          /// MAT   3  /// // (yes, I'll do this fucking copy-pasting for EVERY
+          ///          /// //  FUCKING TYPES THAT OPENGL HAS. FUCK.)
+
+          inline uniform_variable &operator = (const glm::mat3 &mat)
+          {
+            glUniformMatrix3fv(id, 1, GL_FALSE, glm::value_ptr(mat));
+            return *this;
+          }
+
+          /// MAT   4  /// // (yes, I'll do this fucking copy-pasting for EVERY
+          ///          /// //  FUCKING TYPES THAT OPENGL HAS. FUCK.)
+
+          inline uniform_variable &operator = (const glm::mat4 &mat)
+          {
+            glUniformMatrix4fv(id, 1, GL_FALSE, glm::value_ptr(mat));
+            return *this;
+          }
+
+          // TODO: mat2 mat3 mat4 arrays, vectors and array wrappers
           // TODO: mat2x3 mat3x2 mat3x2 mat2x3 mat2x4 mat4x2 mat3x4 mat4x3
 
           /// OPERATORS ///
