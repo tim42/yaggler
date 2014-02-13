@@ -44,7 +44,7 @@
 // disable the print of the init message, and png loading messages
 // #define YAGGLER_NO_MESSAGES
 
-// avoid some checks at ct. (notably in the texture code)
+// avoid some checks at ct. (notably in the texture code and uniform tests)
 // #define YAGGLER_NO_FUCKING_TESTS
 
 

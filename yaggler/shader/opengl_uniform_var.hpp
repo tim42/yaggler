@@ -44,7 +44,13 @@ namespace neam
   {
     namespace shader
     {
+
+#ifndef YAGGLER_NO_FUCKING_TESTS
 #define CHECK_ID        if (id == -1)return *this
+#else
+#define CHECK_ID
+#endif
+
       class uniform_variable
       {
         public:
@@ -2348,6 +2354,7 @@ namespace neam
 
           inline uniform_variable &operator = (const glm::mat2 &mat)
           {
+            CHECK_ID;
             glUniformMatrix2fv(id, 1, GL_FALSE, glm::value_ptr(mat));
             return *this;
           }
@@ -2357,6 +2364,7 @@ namespace neam
 
           inline uniform_variable &operator = (const glm::mat3 &mat)
           {
+            CHECK_ID;
             glUniformMatrix3fv(id, 1, GL_FALSE, glm::value_ptr(mat));
             return *this;
           }
@@ -2366,6 +2374,7 @@ namespace neam
 
           inline uniform_variable &operator = (const glm::mat4 &mat)
           {
+            CHECK_ID;
             glUniformMatrix4fv(id, 1, GL_FALSE, glm::value_ptr(mat));
             return *this;
           }
