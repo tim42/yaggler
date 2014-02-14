@@ -1,9 +1,9 @@
 //
-// file : klmb.hpp
-// in : file:///home/tim/projects/yaggler/yaggler/klmb/klmb.hpp
+// file : object.hpp
+// in : file:///home/tim/projects/yaggler/yaggler/klmb/object/object.hpp
 //
 // created by : Timothée Feuillet on linux-coincoin.tim
-// date: 25/01/2014 11:01:45
+// date: 13/02/2014 16:40:11
 //
 //
 // Copyright (C) 2014 Timothée Feuillet
@@ -23,24 +23,8 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 
-#ifndef __N_16694418701490889448_861129517__KLMB_HPP__
-# define __N_16694418701490889448_861129517__KLMB_HPP__
-
-// K:
-//
-// ok, lets start with klmb, the "usable" YägGLer.
-
-// materials
-#include <klmb/material/klmb_context_helper.hpp>
-#include <klmb/material/material_usings.hpp>
-#include <klmb/material/material.hpp>
-
-// cam
-#include <klmb/camera/camera.hpp>
-#include <klmb/camera/camera_holder.hpp>
-
-// objects
-#include <klmb/object/object.hpp>
+#ifndef __N_115111457392076053_1707192587__OBJECT_HPP__
+# define __N_115111457392076053_1707192587__OBJECT_HPP__
 
 namespace neam
 {
@@ -48,11 +32,12 @@ namespace neam
   {
     namespace yaggler
     {
+      
     } // namespace yaggler
   } // namespace klmb
 } // namespace neam
 
-#endif /*__N_16694418701490889448_861129517__KLMB_HPP__*/
+#endif /*__N_115111457392076053_1707192587__OBJECT_HPP__*/
 
 // kate: indent-mode cstyle; indent-width 2; replace-tabs on; 
 

@@ -1,9 +1,9 @@
 //
-// file : klmb.hpp
-// in : file:///home/tim/projects/yaggler/yaggler/klmb/klmb.hpp
+// file : camera_holder.hpp
+// in : file:///home/tim/projects/yaggler/yaggler/klmb/camera/camera_holder.hpp
 //
 // created by : Timothée Feuillet on linux-coincoin.tim
-// date: 25/01/2014 11:01:45
+// date: 13/02/2014 18:13:51
 //
 //
 // Copyright (C) 2014 Timothée Feuillet
@@ -23,24 +23,10 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 
-#ifndef __N_16694418701490889448_861129517__KLMB_HPP__
-# define __N_16694418701490889448_861129517__KLMB_HPP__
+#ifndef __N_21431251471359755128_1526022208__CAMERA_HOLDER_HPP__
+# define __N_21431251471359755128_1526022208__CAMERA_HOLDER_HPP__
 
-// K:
-//
-// ok, lets start with klmb, the "usable" YägGLer.
-
-// materials
-#include <klmb/material/klmb_context_helper.hpp>
-#include <klmb/material/material_usings.hpp>
-#include <klmb/material/material.hpp>
-
-// cam
 #include <klmb/camera/camera.hpp>
-#include <klmb/camera/camera_holder.hpp>
-
-// objects
-#include <klmb/object/object.hpp>
 
 namespace neam
 {
@@ -48,11 +34,23 @@ namespace neam
   {
     namespace yaggler
     {
+      // a 'placeholder' camera man,
+      // allow mainly to switch camera on the fly
+      struct camera_holder
+      {
+        const glm::mat4 *vp_matrix = nullptr; // yep, that's it.
+
+        template<typename CamType>
+        void use_camera(const CamType &cam)
+        {
+          vp_matrix = &(cam.vp_matrix);
+        }
+      };
     } // namespace yaggler
   } // namespace klmb
 } // namespace neam
 
-#endif /*__N_16694418701490889448_861129517__KLMB_HPP__*/
+#endif /*__N_21431251471359755128_1526022208__CAMERA_HOLDER_HPP__*/
 
 // kate: indent-mode cstyle; indent-width 2; replace-tabs on; 
 

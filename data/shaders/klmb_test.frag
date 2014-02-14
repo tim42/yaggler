@@ -45,6 +45,9 @@ void KLMB_MAIN_FUNCTION()
   KLMB_SHARED_NAME(color_0) = (vec4(0.5 * abs(cos(stime * n_coord.y * n_coord.x)) * 0.25 * abs(sin(stime / n_coord.x* n_coord.y * 10)), 0., 0., 0.));
   KLMB_SHARED_NAME(color_0) = KLMB_SHARED_NAME(color_0).xxxw * 8. - vec4((tex_color.rgb * tex_color.a).rgb, 1.);
   KLMB_SHARED_NAME(color_0) = KLMB_SHARED_NAME(color_0).xxxw * 4. * vec4((tex_color.rgb * tex_color.a).rgb, 1.);
+//   KLMB_SHARED_NAME(color_0).r = vertex_position.z + 1.0 / 4.0;
+//   KLMB_SHARED_NAME(color_0).g = vertex_position.x + 1.0 / 2.0;
+//   KLMB_SHARED_NAME(color_0).b = vertex_position.y + 1.0 / 2.0;
 }
 
 #else

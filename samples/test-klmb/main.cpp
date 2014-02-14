@@ -29,7 +29,7 @@ using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::
 #include <iostream>
 #include <iomanip>
 
-constexpr neam::string_t vert = "data/shaders/shader_test.vert";
+constexpr neam::string_t vert = "data/shaders/klmb_test.vert";
 constexpr neam::string_t frag = "data/shaders/klmb_test.frag";
 
 constexpr neam::string_t yaggler_white_logo = "data/textures/yaggler-w.png";
@@ -43,6 +43,44 @@ GLfloat fs_quad_data [] =
   -1.0f,  1.0f, 0.0f,
   1.0f, -1.0f, 0.0f,
   1.0f,  1.0f, 0.0f,
+};
+GLfloat g_vertex_buffer_data[] = {
+  -1.0f,-1.0f,-1.0f, // triangle 1 : begin
+  -1.0f,-1.0f, 1.0f,
+  -1.0f, 1.0f, 1.0f, // triangle 1 : end
+  1.0f, 1.0f,-1.0f, // triangle 2 : begin
+  -1.0f,-1.0f,-1.0f,
+  -1.0f, 1.0f,-1.0f, // triangle 2 : end
+  1.0f,-1.0f, 1.0f,
+  -1.0f,-1.0f,-1.0f,
+  1.0f,-1.0f,-1.0f,
+  1.0f, 1.0f,-1.0f,
+  1.0f,-1.0f,-1.0f,
+  -1.0f,-1.0f,-1.0f,
+  -1.0f,-1.0f,-1.0f,
+  -1.0f, 1.0f, 1.0f,
+  -1.0f, 1.0f,-1.0f,
+  1.0f,-1.0f, 1.0f,
+  -1.0f,-1.0f, 1.0f,
+  -1.0f,-1.0f,-1.0f,
+  -1.0f, 1.0f, 1.0f,
+  -1.0f,-1.0f, 1.0f,
+  1.0f,-1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f,
+  1.0f,-1.0f,-1.0f,
+  1.0f, 1.0f,-1.0f,
+  1.0f,-1.0f,-1.0f,
+  1.0f, 1.0f, 1.0f,
+  1.0f,-1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f,
+  1.0f, 1.0f,-1.0f,
+  -1.0f, 1.0f,-1.0f,
+  1.0f, 1.0f, 1.0f,
+  -1.0f, 1.0f,-1.0f,
+  -1.0f, 1.0f, 1.0f,
+  1.0f, 1.0f, 1.0f,
+  -1.0f, 1.0f, 1.0f,
+  1.0f,-1.0f, 1.0f
 };
 
 int main(int argc, char **argv)
@@ -62,6 +100,20 @@ int main(int argc, char **argv)
   win.set_position({0, 0});
 
 
+  // camera stuff
+  neam::klmb::yaggler::camera cam;
+  neam::klmb::yaggler::camera_holder cam_holder;
+  cam_holder.use_camera(cam);
+
+  // init cam
+  cam.position = glm::vec3(4., 3., 9.);
+  cam.look_at = glm::vec3(0., 0., 0.);
+
+  cam.aspect = 1.;
+  cam.recompute_matrices();
+
+  // object stuff
+  glm::mat4 model_matrix(1.0f);
 
   // the material
   // (much easier than using only the vanilla YägGLer, isn't it ?? ;) )
@@ -84,7 +136,10 @@ int main(int argc, char **argv)
     neam::klmb::yaggler::make_ctx_pair("screen_resolution", neam::cr::make_const_ref(fixed_resolution)),
     neam::klmb::yaggler::make_ctx_pair("global_time", &neam::cr::chrono::now_relative),
     neam::klmb::yaggler::make_ctx_pair("texture", neam::klmb::yaggler::reference_to_texture<0>()),
-    neam::klmb::yaggler::make_ctx_pair("myuniform", neam::klmb::yaggler::variable<int>(2))
+    neam::klmb::yaggler::make_ctx_pair("myuniform", neam::klmb::yaggler::variable<int>(2)),
+
+    neam::klmb::yaggler::make_ctx_pair("vp_matrix", neam::cr::make_ref(cam_holder.vp_matrix)), // auto switch camera
+    neam::klmb::yaggler::make_ctx_pair("object_matrix", neam::cr::make_ref(model_matrix))
   );
 
   // some ops on vars
@@ -95,7 +150,7 @@ int main(int argc, char **argv)
   neam::yaggler::geometry::vao < neam::yaggler::type::opengl, neam::yaggler::geometry::options::ct_vao_init
   <
        neam::yaggler::geometry::buffer < neam::yaggler::type::opengl, neam::embed::GLenum<GL_ARRAY_BUFFER>,
-       neam::yaggler::geometry::options::ct_buffer_init<neam::embed::GLfloat_array(fs_quad_data), GL_STATIC_DRAW >> ,
+       neam::yaggler::geometry::options::ct_buffer_init<neam::embed::GLfloat_array(g_vertex_buffer_data), GL_STATIC_DRAW >> ,
        neam::yaggler::geometry::buffer_view < neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>,
        neam::yaggler::geometry::options::ct_buffer_view_init<0, 3, GL_FLOAT, 0, 0, false >>
   >> fs_vao;
@@ -106,18 +161,26 @@ int main(int argc, char **argv)
 
   std::cout << "YAGGLER: [starting the render loop]" << std::endl;
 
+  // yay: gl calls :D
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
+
   // 4 3V32 (at least, as the windows is open)
+  float time_accumulator = 0;
   while (!win.should_close())
   {
+    float delta = chronos.delta();
+    time_accumulator += delta;
     ++frame_counter;
-    if (chronos.get_accumulated_time() >= 2)
+
+    if (time_accumulator >= 2)
     {
-      std::cout << "f/s: "       << std::setw(9) << std::left <<  frame_counter / chronos.get_accumulated_time()
-                << "  |  ms/f: " << std::setw(9) << std::left << chronos.get_accumulated_time() / frame_counter * 1000.f
+      std::cout << "f/s: "       << std::setw(9) << std::left <<  frame_counter / time_accumulator
+                << "  |  ms/f: " << std::setw(9) << std::left << time_accumulator / frame_counter * 1000.f
                 << std::endl;
 
       frame_counter = 0;
-      chronos.reset();
+      time_accumulator = 0;
     }
 
     glfwPollEvents();
@@ -126,9 +189,14 @@ int main(int argc, char **argv)
     // this will be automatically bound to the shader (via the neam::cr::make_const_ref(fixed_resolution) in the autobinder).
     fixed_resolution = win.get_framebuffer_size().convert_to_fixed();
 
+    cam.aspect = static_cast<float>(win.get_framebuffer_size().x) / static_cast<float>(win.get_framebuffer_size().y);
+    cam.recompute_matrices();
+
+    model_matrix = glm::rotate(model_matrix, (float)(M_PI / 5. * delta), glm::vec3(0, 1, 0));
+    model_matrix = glm::rotate(model_matrix, (float)(M_PI / 2. * delta), glm::vec3(1, 1, 0));
 
     /* Set background colour to NOT BLACK */
-//     glClearColor(0.30, 0.30, 0.30, 0.1); // not fast on intel HD
+    glClearColor(0.30, 0.30, 0.30, 0.1); // not fast on intel HD
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, neam::ct::conversion::to<GLint>(fixed_resolution.x), neam::ct::conversion::to<GLint>(fixed_resolution.y));
     /* Clear background with the NOT BLACK colour */
@@ -143,7 +211,7 @@ int main(int argc, char **argv)
     fs_vao.use();
 
     // Draw the triangles !
-    glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+    glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 2*3 indices starting at 0 -> 2 triangles
 
     win.swap_buffers();
   }
