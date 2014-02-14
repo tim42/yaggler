@@ -32,7 +32,9 @@ namespace neam
   {
     namespace yaggler
     {
+      // an object simply holds a VAO + a material + a ref to a mat4 (located in the transformation tree)
       
+
     } // namespace yaggler
   } // namespace klmb
 } // namespace neam

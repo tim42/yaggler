@@ -101,19 +101,26 @@ int main(int argc, char **argv)
 
 
   // camera stuff
-  neam::klmb::yaggler::camera cam;
+  neam::klmb::yaggler::camera cam[2];
   neam::klmb::yaggler::camera_holder cam_holder;
-  cam_holder.use_camera(cam);
+  cam_holder.use_camera(cam[0]);
 
   // init cam
-  cam.position = glm::vec3(4., 3., 9.);
-  cam.look_at = glm::vec3(0., 0., 0.);
+  cam[0].position = glm::vec3(0., 0., 5.);
+  cam[0].look_at = glm::vec3(0., 0., 0.);
 
-  cam.aspect = 1.;
-  cam.recompute_matrices();
+  cam[0].aspect = 1.;
+  cam[0].recompute_matrices();
+
+  cam[1].position = glm::vec3(0., 0., -15.);
+  cam[1].look_at = glm::vec3(0., 0., 0.);
+
+  cam[1].aspect = 1.;
+  cam[1].recompute_matrices();
+
 
   // object stuff
-  glm::mat4 model_matrix(1.0f);
+  glm::mat4 object_matrix(1.0f);
 
   // the material
   // (much easier than using only the vanilla YägGLer, isn't it ?? ;) )
@@ -138,8 +145,8 @@ int main(int argc, char **argv)
     neam::klmb::yaggler::make_ctx_pair("texture", neam::klmb::yaggler::reference_to_texture<0>()),
     neam::klmb::yaggler::make_ctx_pair("myuniform", neam::klmb::yaggler::variable<int>(2)),
 
-    neam::klmb::yaggler::make_ctx_pair("vp_matrix", neam::cr::make_ref(cam_holder.vp_matrix)), // auto switch camera
-    neam::klmb::yaggler::make_ctx_pair("object_matrix", neam::cr::make_ref(model_matrix))
+    neam::klmb::yaggler::make_ctx_pair("vp_matrix", neam::cr::make_ref(cam_holder.vp_matrix)), // allow camera switchs
+    neam::klmb::yaggler::make_ctx_pair("object_matrix", neam::cr::make_ref(object_matrix))
   );
 
   // some ops on vars
@@ -167,6 +174,7 @@ int main(int argc, char **argv)
 
   // 4 3V32 (at least, as the windows is open)
   float time_accumulator = 0;
+  int camid = 0;
   while (!win.should_close())
   {
     float delta = chronos.delta();
@@ -181,6 +189,10 @@ int main(int argc, char **argv)
 
       frame_counter = 0;
       time_accumulator = 0;
+
+      // switch cam:
+      camid = (camid + 1) % 2;
+      cam_holder.use_camera(cam[camid]);
     }
 
     glfwPollEvents();
@@ -189,11 +201,12 @@ int main(int argc, char **argv)
     // this will be automatically bound to the shader (via the neam::cr::make_const_ref(fixed_resolution) in the autobinder).
     fixed_resolution = win.get_framebuffer_size().convert_to_fixed();
 
-    cam.aspect = static_cast<float>(win.get_framebuffer_size().x) / static_cast<float>(win.get_framebuffer_size().y);
-    cam.recompute_matrices();
+    // should be done 'on demand'
+    cam[camid].aspect = static_cast<float>(win.get_framebuffer_size().x) / static_cast<float>(win.get_framebuffer_size().y);
+    cam[camid].recompute_proj_and_vp_matrices();
 
-    model_matrix = glm::rotate(model_matrix, (float)(M_PI / 5. * delta), glm::vec3(0, 1, 0));
-    model_matrix = glm::rotate(model_matrix, (float)(M_PI / 2. * delta), glm::vec3(1, 1, 0));
+    object_matrix = glm::rotate(object_matrix, (float)(M_PI / 8. * delta), glm::vec3(0, 1, 0));
+    object_matrix = glm::rotate(object_matrix, (float)(M_PI / 10. * delta), glm::vec3(1, 1, 0));
 
     /* Set background colour to NOT BLACK */
     glClearColor(0.30, 0.30, 0.30, 0.1); // not fast on intel HD

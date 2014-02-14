@@ -47,23 +47,6 @@ namespace neam
 
       Type &value;
     };
-    // ref from a pointer
-    template<typename Type>
-    struct ref<Type *>
-    {
-      constexpr ref(Type *_value) : value(*_value) {}
-
-      operator Type& ()
-      {
-        return value;
-      }
-      operator const Type& () const
-      {
-        return value;
-      }
-
-      Type &value;
-    };
 
     // helpers
     template<typename RefType>

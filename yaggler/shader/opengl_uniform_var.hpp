@@ -84,6 +84,12 @@ namespace neam
             *this = t.value;
             return *this;
           }
+          template<typename Etype>
+          inline uniform_variable &operator = (const neam::cr::ref<Etype *> &t)
+          {
+            *this = *t.value;
+            return *this;
+          }
 
           /// FLOAT 1V ///
 
