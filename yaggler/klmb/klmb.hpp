@@ -40,7 +40,9 @@
 #include <klmb/camera/camera_holder.hpp>
 
 // objects
+#include <klmb/object/transformation_tree.hpp>
 #include <klmb/object/object.hpp>
+
 
 namespace neam
 {

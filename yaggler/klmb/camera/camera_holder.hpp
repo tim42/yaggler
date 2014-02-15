@@ -34,8 +34,8 @@ namespace neam
   {
     namespace yaggler
     {
-      // a 'placeholder' camera man,
-      // allow mainly to switch camera on the fly
+      // a 'placeholder' camera 'man',
+      // allow mainly to switch camera on the fly, without bothering about resetting refs in every shaders.
       struct camera_holder
       {
         const glm::mat4 *vp_matrix = nullptr; // yep, that's it.

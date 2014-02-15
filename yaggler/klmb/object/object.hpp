@@ -25,6 +25,7 @@
 
 #ifndef __N_115111457392076053_1707192587__OBJECT_HPP__
 # define __N_115111457392076053_1707192587__OBJECT_HPP__
+#include <geometry/opengl_vao.hpp>
 
 namespace neam
 {
@@ -32,8 +33,16 @@ namespace neam
   {
     namespace yaggler
     {
-      // an object simply holds a VAO + a material + a ref to a mat4 (located in the transformation tree)
-      
+      // an object simply holds a VAO + a ref to a mat4 (located in the transformation tree)
+      // there's no material here. It simply holds the geom / transform of the object
+      struct object
+      {
+        // could be simply a link-vao
+        neam::yaggler::geometry::vao<neam::yaggler::type::opengl> vao;
+
+        // a link to the world_matrix's member of the transform_tree's node
+        glm::mat4 *world_matrix;
+      };
 
     } // namespace yaggler
   } // namespace klmb

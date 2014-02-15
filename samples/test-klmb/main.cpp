@@ -19,7 +19,7 @@
 
 #include <setup.hpp>
 
-using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::opengl_profile::core, neam::yaggler::setup::opengl_context_flag::debug>;
+using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::opengl_profile::core/*, neam::yaggler::setup::opengl_context_flag::debug*/>;
 
 #include <yaggler.hpp>
 
@@ -29,8 +29,9 @@ using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::
 #include <iostream>
 #include <iomanip>
 
-constexpr neam::string_t vert = "data/shaders/klmb_test.vert";
-constexpr neam::string_t frag = "data/shaders/klmb_test.frag";
+constexpr neam::string_t vert = "data/shaders/dragon/dragon.vert";
+constexpr neam::string_t frag = "data/shaders/dragon/dragon.frag";
+constexpr neam::string_t geom = "data/shaders/dragon/dragon.geom";
 
 constexpr neam::string_t yaggler_white_logo = "data/textures/yaggler-w.png";
 
@@ -83,6 +84,82 @@ GLfloat g_vertex_buffer_data[] = {
   1.0f,-1.0f, 1.0f
 };
 
+// load a model from ply file
+// (fuckingly simple loader)
+neam::yaggler::geometry::vao<neam::yaggler::type::opengl> load_model(const std::string &filename, long &tris)
+{
+  std::ifstream file(filename);
+
+  std::string line;
+  std::getline(file, line);
+
+  // filetype
+  if (line != "ply")
+    throw neam::yaggler::yaggler_exception("bad model format: not ply");
+
+  // 'parse' header
+  long vert_count = 0;
+  long tri_count = 0;
+
+  while (std::getline(file, line))
+  {
+    if (line.substr(0, 15) == "element vertex ")
+      vert_count = atol(line.substr(15).data());
+    if (line.substr(0, 13) == "element face ")
+      tri_count = atol(line.substr(13).data());
+    if (line == "end_header")
+      break;
+  }
+
+  // allocate the arrays
+  glm::vec3 *vertex = new glm::vec3[vert_count];
+  GLuint *idxs = new GLuint[tri_count * 3];
+
+  long i = 0;
+  std::istringstream is;
+  while (i < vert_count && std::getline(file, line))
+  {
+    is.clear();
+    is.str(line);
+    is >> vertex[i].x >> vertex[i].y >> vertex[i].z;
+    ++i;
+  }
+
+  i = 0;
+  while (i < tri_count && std::getline(file, line))
+  {
+    int d;
+    is.clear();
+    is.str(line);
+    is >> d >> idxs[i * 3 + 0] >> idxs[i * 3 + 1] >> idxs[i * 3 + 2];
+    ++i;
+  }
+
+  tris = tri_count;
+
+  // YägGLer stuff
+  neam::yaggler::geometry::buffer<neam::yaggler::type::opengl, neam::embed::GLenum<GL_ARRAY_BUFFER>> vbo;
+  neam::yaggler::geometry::buffer<neam::yaggler::type::opengl, neam::embed::GLenum<GL_ELEMENT_ARRAY_BUFFER>> ibo;
+
+  vbo.set_data(neam::array_wrapper<glm::vec3>(vertex, vert_count));
+  ibo.set_data(neam::array_wrapper<GLuint>(idxs, tri_count * 3));
+
+  neam::yaggler::geometry::vao<neam::yaggler::type::opengl> tmp;
+
+  // add buffers to vao
+  tmp.use();
+  tmp.add_buffer(vbo, neam::yaggler::geometry::buffer_view<neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>>
+                 (0, 3, GL_FLOAT, 0, 0));
+  tmp.use();
+  ibo.use();
+
+  vbo.give_up_ownership();
+  ibo.give_up_ownership();
+
+  return neam::yaggler::geometry::vao<neam::yaggler::type::opengl>(tmp, neam::stole_ownership);
+}
+
+
 int main(int argc, char **argv)
 {
   (void)argc;
@@ -106,21 +183,32 @@ int main(int argc, char **argv)
   cam_holder.use_camera(cam[0]);
 
   // init cam
-  cam[0].position = glm::vec3(0., 0., 5.);
+  cam[0].position = glm::vec3(0., 0., 10.);
   cam[0].look_at = glm::vec3(0., 0., 0.);
 
   cam[0].aspect = 1.;
   cam[0].recompute_matrices();
 
-  cam[1].position = glm::vec3(0., 0., -15.);
+  cam[1].position = glm::vec3(0., 25., 0.);
   cam[1].look_at = glm::vec3(0., 0., 0.);
+  cam[1].up_vector = glm::vec3(0., 0., 1.);
 
   cam[1].aspect = 1.;
   cam[1].recompute_matrices();
 
 
   // object stuff
-  glm::mat4 object_matrix(1.0f);
+
+  neam::klmb::yaggler::transformation_tree<neam::klmb::yaggler::transformation_node::default_node> trtree;
+
+  auto &parent_node = trtree.root.create_child();
+  auto &object_node = parent_node.create_child();
+
+  object_node.node.position = glm::vec3(0, -4, -0.);
+  object_node.node.scale = glm::vec3(30.);
+  object_node.node.dirty = true;
+
+  parent_node.recompute_matrices();
 
   // the material
   // (much easier than using only the vanilla YägGLer, isn't it ?? ;) )
@@ -130,7 +218,8 @@ int main(int argc, char **argv)
     neam::klmb::yaggler::shader_list
     <
       neam::klmb::yaggler::auto_file_shader<frag>,
-      neam::klmb::yaggler::auto_file_shader<vert>
+      neam::klmb::yaggler::auto_file_shader<vert>,
+      neam::klmb::yaggler::auto_file_shader<geom>
     >,
     // TEXTURES
     neam::klmb::yaggler::rgba_png_2d_texture_list
@@ -146,7 +235,7 @@ int main(int argc, char **argv)
     neam::klmb::yaggler::make_ctx_pair("myuniform", neam::klmb::yaggler::variable<int>(2)),
 
     neam::klmb::yaggler::make_ctx_pair("vp_matrix", neam::cr::make_ref(cam_holder.vp_matrix)), // allow camera switchs
-    neam::klmb::yaggler::make_ctx_pair("object_matrix", neam::cr::make_ref(object_matrix))
+    neam::klmb::yaggler::make_ctx_pair("object_matrix", neam::cr::make_ref(object_node.world_matrix))
   );
 
   // some ops on vars
@@ -154,14 +243,16 @@ int main(int argc, char **argv)
 
 
   // the FS quad vao
-  neam::yaggler::geometry::vao < neam::yaggler::type::opengl, neam::yaggler::geometry::options::ct_vao_init
+  /*neam::yaggler::geometry::vao < neam::yaggler::type::opengl, neam::yaggler::geometry::options::ct_vao_init
   <
        neam::yaggler::geometry::buffer < neam::yaggler::type::opengl, neam::embed::GLenum<GL_ARRAY_BUFFER>,
        neam::yaggler::geometry::options::ct_buffer_init<neam::embed::GLfloat_array(g_vertex_buffer_data), GL_STATIC_DRAW >> ,
        neam::yaggler::geometry::buffer_view < neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>,
        neam::yaggler::geometry::options::ct_buffer_view_init<0, 3, GL_FLOAT, 0, 0, false >>
-  >> fs_vao;
+  >> fs_vao;*/
 
+  long tris;
+  neam::yaggler::geometry::vao < neam::yaggler::type::opengl > vao = load_model("./data/models/dragon_vrip_res4.ply", tris);
 
   neam::cr::chrono chronos;
   int frame_counter = 0;
@@ -191,8 +282,8 @@ int main(int argc, char **argv)
       time_accumulator = 0;
 
       // switch cam:
-      camid = (camid + 1) % 2;
-      cam_holder.use_camera(cam[camid]);
+//       camid = (camid + 1) % 2;
+//       cam_holder.use_camera(cam[camid]);
     }
 
     glfwPollEvents();
@@ -205,8 +296,15 @@ int main(int argc, char **argv)
     cam[camid].aspect = static_cast<float>(win.get_framebuffer_size().x) / static_cast<float>(win.get_framebuffer_size().y);
     cam[camid].recompute_proj_and_vp_matrices();
 
-    object_matrix = glm::rotate(object_matrix, (float)(M_PI / 8. * delta), glm::vec3(0, 1, 0));
-    object_matrix = glm::rotate(object_matrix, (float)(M_PI / 10. * delta), glm::vec3(1, 1, 0));
+    // move the cube
+//     parent_node.node.rotation = glm::rotate(parent_node.node.rotation, (float)(M_PI / 8. * delta), glm::vec3(0, 1, 0));
+//     parent_node.node.dirty = 1;
+
+    object_node.node.rotation = glm::rotate(object_node.node.rotation, (float)(M_PI / 27.5 * delta), glm::vec3(0, 1, 0));
+    object_node.node.dirty = 1;
+
+    // hu :D (just to test)
+    parent_node.recompute_matrices();
 
     /* Set background colour to NOT BLACK */
     glClearColor(0.30, 0.30, 0.30, 0.1); // not fast on intel HD
@@ -221,10 +319,10 @@ int main(int argc, char **argv)
     material.use();
 
     // the geom
-    fs_vao.use();
-
     // Draw the triangles !
-    glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 2*3 indices starting at 0 -> 2 triangles
+    vao.use();
+//     glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
+    glDrawElements(GL_TRIANGLES, tris * 3, GL_UNSIGNED_INT, nullptr);
 
     win.swap_buffers();
   }
