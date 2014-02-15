@@ -152,6 +152,11 @@ namespace neam
           {
           }
 
+          buffer_view(GLuint _attribute, GLuint _size, GLenum _type, GLuint _stride, GLuint _offset, GLint _normalized = false)
+            : attribute(_attribute), size(_size), type(_type), stride(_stride), offset(_offset), normalized(_normalized)
+          {
+          }
+
           ~buffer_view()
           {
           }

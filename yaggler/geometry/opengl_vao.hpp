@@ -45,12 +45,11 @@ namespace neam
       class vao<type::opengl, Init...>
       {
         private: // helpers
-          // init from <views/vbo>, <view/vbo>, ...
+          // init from <views/vbo>, <views/vbo>, ...
           template<size_t Idx, typename Opt>
           char __init_single(size_t)
           {
-            ct_buffers_views.template get<Idx>().buffer.use();
-            ct_buffers_views.template get<Idx>().view.use();
+            ct_buffers_views.template get<Idx>().init();
             return 0;
           }
 
@@ -86,7 +85,7 @@ namespace neam
 
           template<typename... OInit>
           vao(vao<type::opengl, OInit...> &o, stole_ownership_t)
-            : id(o.get_id()), link(o.get_link())
+            : id(o.get_id()), link(o.is_link())
           {
             o.give_up_ownership();
             bind();
@@ -94,7 +93,7 @@ namespace neam
           }
           template<typename... OInit>
           vao(vao<type::opengl, OInit...> && o)
-            : id(o.get_id()), link(o.get_link())
+            : id(o.get_id()), link(o.is_link())
           {
             o.give_up_ownership();
             bind();
@@ -183,6 +182,18 @@ namespace neam
             glBindVertexArray(id);
           }
 
+          // add buffer / views to the vao
+          template<typename Buffer, typename... Views>
+          void add_buffer(const Buffer &b, const Views &... vs)
+          {
+            static_assert(sizeof...(Views) != 0, "a vao::add_buffer call must have at least one view");
+
+            use();
+            b.use();
+            void((char []){(vs.use(), 5)...}); // who knows how this'll be optimised out ?
+            // (and which compiler supports it...)
+          }
+
           // create a link to a more generic texture.
           // no inheritance involved. This cast will create a 'link' program shader object.
           operator vao<type::opengl> ()
@@ -201,14 +212,21 @@ namespace neam
             return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get<Idx>());
           }
 
+          // simply return a ref to the buffer
+          template<size_t Idx>
+          auto get_buffer() -> typename ct::type_at_index<Idx, Init...>::type &
+          {
+            return (ct_buffers_views.template get_ref<Idx>());
+          }
+
           // see stole_ownership_t
           // COULD ONLY WORK ONE TIME for a given buffer (else throw)
           template<size_t Idx, GLenum GeomType>
           buffer<type::opengl, neam::embed::GLenum<GeomType>> stole_buffer()
           {
             if (ct_buffers_views.template get<Idx>().is_link())
-              throw yaggler_exception("n/y::geometry::vao::stole_buffer(): unable to stole owneship: ownership has already been stolen.");
-            return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get<Idx>(), stole_ownership);
+              throw yaggler_exception("n/y::geometry::vao::stole_buffer(): unable to stole owneship: ownership has already been 'stolen'.");
+            return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get_ref<Idx>(), stole_ownership);
           }
 
         private:

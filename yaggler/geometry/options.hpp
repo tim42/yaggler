@@ -80,20 +80,46 @@ namespace neam
 
         // ct vao init
         // (and here, you can see the powa of those ct inits :) )
-        template<typename Buffer, typename View>
+        template<typename Buffer, typename... Views>
         struct ct_vao_init
         {
-          using buffer_type = Buffer;
-          using view_type = View;
+          public:
+            static_assert(sizeof...(Views) != 0, "a ct_vao_init must have at least one view");
 
-//           ct_vao_init() : buffer() {}
+            using buffer_type = Buffer;
 
-          Buffer buffer = Buffer();
-          static constexpr View view = View();
+            Buffer buffer = Buffer();
+            static constexpr cr::tuple<Views...> views = cr::tuple<Views...>(Views()...);
+
+            void init() const
+            {
+              buffer.use();
+              _use_views();
+            }
+
+            static void _use_views()
+            {
+              _it_use_views(cr::gen_seq<sizeof...(Views)>());
+            }
+
+          private:
+            template<size_t Idx>
+            static int8_t _it_use_view_single()
+            {
+              views.template get<Idx>().use();
+              return 0;
+            }
+
+            template<size_t... Idxs>
+            static void _it_use_views(neam::cr::seq<Idxs...>)
+            {
+              void((char []){_it_use_view_single<Idxs>()...}); // who knows how this'll be optimised out ?
+              // (and which compiler supports it...)
+            }
         };
 
-        template<typename Buffer, typename View>
-        constexpr View ct_vao_init<Buffer, View>::view;
+        template<typename Buffer, typename... Views>
+        constexpr cr::tuple<Views...>  ct_vao_init<Buffer, Views...>::views;
 
       } // namespace options
 #undef NYG_UNUSABLE_OPTION_CLASS
