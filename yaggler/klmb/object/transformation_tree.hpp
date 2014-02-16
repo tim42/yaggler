@@ -38,30 +38,7 @@ namespace neam
   {
     namespace yaggler
     {
-
-      namespace transformation_node
-      {
-        // a node MUST have: local_matrix, compute_object_matrix(void) and dirty
-
-        // the default node
-        struct default_node
-        {
-          glm::vec3 position = glm::vec3(0., 0., 0.);
-          glm::vec3 scale = glm::vec3(1., 1., 1.);
-          glm::quat rotation = glm::quat();
-
-          bool dirty = false;
-          glm::mat4 local_matrix = glm::mat4(1.); // the local transformation
-
-          void compute_local_matrix()
-          {
-            local_matrix = glm::translate(position) * glm::mat4_cast(rotation) * glm::scale(scale);
-            dirty = false;
-          }
-        };
-      } // namespace transformation_node
-
-      template<typename Node = transformation_node::default_node>
+      template<typename Node>
       class transformation_tree
       {
         public:
@@ -71,7 +48,7 @@ namespace neam
               using child_container = std::deque<node_holder>;
 
             public:
-              Node node;
+              Node *node;
               glm::mat4 world_matrix = glm::mat4(1.); // the one that the shader will receive (the world transformation)
 
               child_container &childs;
@@ -79,12 +56,14 @@ namespace neam
               node_holder *parent = nullptr;
 
               // create a child
-              node_holder &create_child(const Node &node = Node())
+              node_holder &create_child(const Node &_node = Node())
               {
-                childs_cont.emplace_back(node, tree);
+                Node *node_ptr = new (tree->node_pool) Node(_node);
+
+                childs_cont.emplace_back(node_ptr, tree);
                 node_holder &ret = childs_cont.back();
                 ret.parent = this;
-                ret.world_matrix = world_matrix * ret.node.local_matrix;
+                ret.world_matrix = world_matrix * ret.node->local_matrix;
                 return ret;
               }
 
@@ -92,13 +71,13 @@ namespace neam
               // NOTE: non recursive.
               void recompute_matrices()
               {
-                if (node.dirty)
-                  node.compute_local_matrix();
+                if (node->dirty)
+                  node->compute_local_matrix();
 
                 if (parent)
-                  world_matrix = parent->world_matrix * node.local_matrix;
+                  world_matrix = parent->world_matrix * node->local_matrix;
                 else
-                  world_matrix = node.local_matrix;
+                  world_matrix = node->local_matrix;
 
                 std::vector<size_t> idxs;
                 idxs.reserve(100);
@@ -112,10 +91,10 @@ namespace neam
 
                   while (*current < hldr->childs_cont.size())
                   {
-                    if (hldr->childs_cont[*current].node.dirty)
-                      hldr->childs_cont[*current].node.compute_local_matrix();
+                    if (hldr->childs_cont[*current].node->dirty)
+                      hldr->childs_cont[*current].node->compute_local_matrix();
 
-                    hldr->childs_cont[*current].world_matrix = hldr->world_matrix * hldr->childs_cont[*current].node.local_matrix;
+                    hldr->childs_cont[*current].world_matrix = hldr->world_matrix * hldr->childs_cont[*current].node->local_matrix;
 
                     if (hldr->childs_cont[*current].childs_cont.size())
                     {
@@ -135,9 +114,23 @@ namespace neam
               }
 
               // DO NOT USE DIRECTLY.
-              node_holder(const Node &_node, transformation_tree *_tree) : node(_node), childs(childs_cont), tree(_tree) {}
+              node_holder(Node *_node, transformation_tree *_tree) : node(_node), childs(childs_cont), tree(_tree)
+              {
+                node->holder = this;
+              }
+
+              ~node_holder()
+              {
+                tree->node_pool.destroy(node);
+                tree->node_pool.deallocate(node);
+              }
+
             private:
-              node_holder(transformation_tree *_tree) : childs(childs_cont), tree(_tree) {}
+              node_holder(transformation_tree *_tree) : childs(childs_cont), tree(_tree)
+              {
+                node = new (tree->node_pool) Node;
+                node->holder = this;
+              }
 
             private:
               transformation_tree *tree;
@@ -151,8 +144,37 @@ namespace neam
         public:
           transformation_tree() : root(this) {}
 
+
+          cr::memory_pool<Node> node_pool;
+
           node_holder root;
       };
+
+      namespace transformation_node
+      {
+        // a node MUST have: local_matrix, compute_object_matrix(void) and dirty
+
+        // the default node
+        struct default_node
+        {
+          transformation_tree<default_node>::node_holder *holder = nullptr;
+
+          glm::vec3 position = glm::vec3(0., 0., 0.);
+          glm::vec3 scale = glm::vec3(1., 1., 1.);
+          glm::quat rotation = glm::quat();
+
+          bool dirty = false;
+          glm::mat4 local_matrix = glm::mat4(1.); // the local transformation
+
+          void compute_local_matrix()
+          {
+            local_matrix = glm::translate(position) * glm::mat4_cast(rotation) * glm::scale(scale);
+            dirty = false;
+          }
+
+        };
+      } // namespace transformation_node
+
     } // namespace yaggler
   } // namespace klmb
 } // namespace neam

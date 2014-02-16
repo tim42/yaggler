@@ -45,6 +45,8 @@ namespace neam
       {
         glm::mat4 vp_matrix; // the result (to be passed as ref<> to shaders / objects /...)
 
+        glm::mat4 *world_matrix = nullptr; // link this to any node_holder worl mat'.
+
         // some controls vars
         float fov = M_PI / 4.;
         float aspect = 4. / 3.;
@@ -67,6 +69,7 @@ namespace neam
           _recompute_proj_matrix();
           _recompute_view_matrix();
           _recompute_vp_matrix();
+
         }
         void recompute_proj_and_vp_matrices()
         {
@@ -86,7 +89,13 @@ namespace neam
         }
         void _recompute_view_matrix()
         {
-          view_matrix = glm::lookAt(position, look_at, up_vector);
+          if (world_matrix)
+          {
+            glm::vec4 tpos = ((*world_matrix) * glm::vec4(position, 1));
+            view_matrix = glm::lookAt(glm::vec3(tpos.x, tpos.y, tpos.z), look_at, up_vector);
+          }
+          else
+            view_matrix = glm::lookAt(position, look_at, up_vector);
         }
         void _recompute_proj_matrix()
         {
@@ -98,6 +107,39 @@ namespace neam
 
         // constructor.
         camera()
+        {
+          recompute_matrices();
+        }
+      };
+
+      // an camera with ortho' params
+      struct ortho_camera
+      {
+        glm::mat4 vp_matrix; // the result (to be passed as ref<> to shaders / objects /...)
+
+        // some controls vars
+        glm::vec2 min = glm::vec2(0, 0);
+        glm::vec2 max = glm::vec2(1, 1);
+
+        float near = 0;
+        float far = 10000;
+
+        // recompute matrices
+        void recompute_matrices()
+        {
+          vp_matrix = glm::ortho(min.x, min.y, max.x, max.y, near, far);
+        }
+        void recompute_proj_and_vp_matrices()
+        {
+          recompute_matrices();
+        }
+        void recompute_view_and_vp_matrices()
+        {
+          recompute_matrices();
+        }
+
+        // constructor.
+        ortho_camera()
         {
           recompute_matrices();
         }
