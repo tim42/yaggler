@@ -34,7 +34,7 @@ namespace neam
   namespace cr
   {
     // ObjectCount is the number of object per chunk.
-    template<typename ObjectType, size_t ObjectCount = 4200>
+    template<typename ObjectType, size_t ObjectCount = 420>
     class memory_pool
     {
       private: // helpers
@@ -79,7 +79,6 @@ namespace neam
           mp.object_count = 0;
           mp.chunk_count = 0;
           mp.first_chunk = nullptr;
-          mp.last_chunk = nullptr;
           mp.first_free = nullptr;
         }
 
@@ -140,6 +139,11 @@ namespace neam
           return p;
         }
 
+        void destroy(ObjectType *p)
+        {
+          p->~ObjectType();
+        }
+
         // allocate an object (do not call the constructor)
         ObjectType *allocate()
         {
@@ -177,6 +181,7 @@ namespace neam
             first_chunk = chk;
             ++chunk_count;
           }
+
           allocation_slot *slot = first_free;
           first_free = slot->next;
 
@@ -192,9 +197,6 @@ namespace neam
         {
           if (p)
           {
-            // call destructor
-            p->~ObjectType();
-
             // get slot and chunk
             allocation_slot *slot = allocation_slot::get_slot(p);
 
