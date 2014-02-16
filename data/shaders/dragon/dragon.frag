@@ -40,6 +40,7 @@ in vec3 tri_distance;
 
 #define BORDER          0.02
 
+
 float amplify(float d, float scale, float offset)
 {
     d = scale * d + offset;
@@ -52,9 +53,7 @@ void KLMB_MAIN_FUNCTION()
 {
   float d1 = min(min(tri_distance.x, tri_distance.y), tri_distance.z);
   d1 = amplify(d1, 10, 0.0);
-  KLMB_SHARED_NAME(color_0).rgb = clamp(d1 , 0, 100) * (1 - vertex_position.z / 25.5) * abs(vec3(1, 1, 1)/*vertex_position.xyz*/) * length(normal.xy);
-//   KLMB_SHARED_NAME(color_0).g = (length(tri_distance));
-//   KLMB_SHARED_NAME(color_0).b = (length(tri_distance));
+  KLMB_SHARED_NAME(color_0).rgb = clamp(d1 , 0, 100) * (1 - vertex_position.z / 25.5) * (vec3(0.5, 0.9, 1.70)/*vertex_position.xyz*/) * length(normal.xy);
 }
 
 #else
