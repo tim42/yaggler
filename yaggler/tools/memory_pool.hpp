@@ -65,7 +65,7 @@ namespace neam
           chunk *next = nullptr;
           chunk *prev = nullptr;
 
-          allocation_slot data[];
+          allocation_slot data[0]; // clang doesn't likes the '[]' array... :/
         };
 
       public:
