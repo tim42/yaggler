@@ -72,6 +72,37 @@ namespace neam
         neam::yaggler::shader::opengl::file, neam::embed::string<Filename>,
         neam::embed::shader::option<neam::yaggler::shader::shader_option::one_shot_compilation>
       >;
+      // shader from a constexpr string
+      template<GLenum ShaderType, const char *CTString>
+      using ct_string_shader = neam::yaggler::shader::shader
+      <
+        neam::yaggler::type::opengl, neam::embed::GLenum<ShaderType>,
+        neam::yaggler::shader::opengl::constexpr_string, neam::embed::string<CTString>,
+        neam::embed::shader::option<neam::yaggler::shader::shader_option::one_shot_compilation>
+      >;
+      // shader from a string
+      template<GLenum ShaderType, const char *CTString>
+      using string_shader = neam::yaggler::shader::shader
+      <
+        neam::yaggler::type::opengl, neam::embed::GLenum<ShaderType>,
+        neam::yaggler::shader::opengl::dyn_string, neam::embed::string<CTString>,
+        neam::embed::shader::option<neam::yaggler::shader::shader_option::one_shot_compilation>
+      >;
+      // shader from a function call
+      template<GLenum ShaderType, const char *(*Function)()>
+      using shader_from_function_call_char = neam::yaggler::shader::shader
+      <
+        neam::yaggler::type::opengl, neam::embed::GLenum<ShaderType>,
+        neam::yaggler::shader::opengl::function, neam::embed::shader::function_ptr_char<Function>,
+        neam::embed::shader::option<neam::yaggler::shader::shader_option::one_shot_compilation>
+      >;
+      template<GLenum ShaderType, std::string (*Function)()>
+      using shader_from_function_call_string = neam::yaggler::shader::shader
+      <
+        neam::yaggler::type::opengl, neam::embed::GLenum<ShaderType>,
+        neam::yaggler::shader::opengl::function, neam::embed::shader::function_ptr_string<Function>,
+        neam::embed::shader::option<neam::yaggler::shader::shader_option::one_shot_compilation>
+      >;
 
       // shader from a file, compiled only one time (no FS watcher)
       // shader type is deduced from file extension at compile time.
