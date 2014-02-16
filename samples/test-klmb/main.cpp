@@ -37,55 +37,6 @@ constexpr neam::string_t geom = "data/shaders/dragon/dragon.geom";
 
 constexpr neam::string_t yaggler_white_logo = "data/textures/yaggler-w.png";
 
-// The fullscreen quad's FBO
-GLfloat fs_quad_data [] =
-{
-  -1.0f, -1.f, 0.0f,
-  1.0f, -1.0f, 0.0f,
-  -1.0f,  1.0f, 0.0f,
-  -1.0f,  1.0f, 0.0f,
-  1.0f, -1.0f, 0.0f,
-  1.0f,  1.0f, 0.0f,
-};
-GLfloat g_vertex_buffer_data[] = {
-  -1.0f,-1.0f,-1.0f, // triangle 1 : begin
-  -1.0f,-1.0f, 1.0f,
-  -1.0f, 1.0f, 1.0f, // triangle 1 : end
-  1.0f, 1.0f,-1.0f, // triangle 2 : begin
-  -1.0f,-1.0f,-1.0f,
-  -1.0f, 1.0f,-1.0f, // triangle 2 : end
-  1.0f,-1.0f, 1.0f,
-  -1.0f,-1.0f,-1.0f,
-  1.0f,-1.0f,-1.0f,
-  1.0f, 1.0f,-1.0f,
-  1.0f,-1.0f,-1.0f,
-  -1.0f,-1.0f,-1.0f,
-  -1.0f,-1.0f,-1.0f,
-  -1.0f, 1.0f, 1.0f,
-  -1.0f, 1.0f,-1.0f,
-  1.0f,-1.0f, 1.0f,
-  -1.0f,-1.0f, 1.0f,
-  -1.0f,-1.0f,-1.0f,
-  -1.0f, 1.0f, 1.0f,
-  -1.0f,-1.0f, 1.0f,
-  1.0f,-1.0f, 1.0f,
-  1.0f, 1.0f, 1.0f,
-  1.0f,-1.0f,-1.0f,
-  1.0f, 1.0f,-1.0f,
-  1.0f,-1.0f,-1.0f,
-  1.0f, 1.0f, 1.0f,
-  1.0f,-1.0f, 1.0f,
-  1.0f, 1.0f, 1.0f,
-  1.0f, 1.0f,-1.0f,
-  -1.0f, 1.0f,-1.0f,
-  1.0f, 1.0f, 1.0f,
-  -1.0f, 1.0f,-1.0f,
-  -1.0f, 1.0f, 1.0f,
-  1.0f, 1.0f, 1.0f,
-  -1.0f, 1.0f, 1.0f,
-  1.0f,-1.0f, 1.0f
-};
-
 int main(int argc, char **argv)
 {
   (void)argc;
@@ -109,9 +60,6 @@ int main(int argc, char **argv)
   cam_holder.use_camera(cam[0]);
 
   // init cam
-  cam[0].position = glm::vec3(0., 0., 10.);
-  cam[0].look_at = glm::vec3(0., 0., 0.);
-
   cam[0].aspect = 1.;
   cam[0].recompute_matrices();
 
@@ -124,17 +72,30 @@ int main(int argc, char **argv)
 
 
   // object stuff
-
   neam::klmb::yaggler::transformation_tree<neam::klmb::yaggler::transformation_node::default_node> trtree;
 
   auto &parent_node = trtree.root.create_child();
   auto &object_node = parent_node.create_child();
 
-  object_node.node.position = glm::vec3(0, -3, -0.);
-  object_node.node.scale = glm::vec3(20.);
-  object_node.node.dirty = true;
+  object_node.node->position = glm::vec3(0, -3, -0.);
+  object_node.node->scale = glm::vec3(25.);
+  object_node.node->dirty = true;
 
-  parent_node.recompute_matrices();
+  // camera stuff.
+  auto &parent_camera_node = trtree.root.create_child();
+  auto &camera_node = parent_camera_node.create_child();
+
+  camera_node.node->position = glm::vec3(0., 0., -10.);
+
+  parent_camera_node.node->dirty = true;
+  camera_node.node->dirty = true;
+
+  // make the link.
+  cam[0].world_matrix = &camera_node.world_matrix;
+
+  // recompute every mats'
+  trtree.root.recompute_matrices();
+
 
   // the material
   // (much easier than using only the vanilla YägGLer, isn't it ?? ;) )
@@ -143,9 +104,9 @@ int main(int argc, char **argv)
     // SHADERS
     neam::klmb::yaggler::shader_list
     <
-      neam::klmb::yaggler::auto_file_shader<frag>,
       neam::klmb::yaggler::auto_file_shader<vert>,
-      neam::klmb::yaggler::auto_file_shader<geom>
+      neam::klmb::yaggler::auto_file_shader<geom>,
+      neam::klmb::yaggler::auto_file_shader<frag>
     >,
     // TEXTURES
     neam::klmb::yaggler::rgba_png_2d_texture_list
@@ -168,16 +129,8 @@ int main(int argc, char **argv)
   material.get_variable<0>() = 4;
 
 
-  // the FS quad vao
-  /*neam::yaggler::geometry::vao < neam::yaggler::type::opengl, neam::yaggler::geometry::options::ct_vao_init
-  <
-       neam::yaggler::geometry::buffer < neam::yaggler::type::opengl, neam::embed::GLenum<GL_ARRAY_BUFFER>,
-       neam::yaggler::geometry::options::ct_buffer_init<neam::embed::GLfloat_array(g_vertex_buffer_data), GL_STATIC_DRAW >> ,
-       neam::yaggler::geometry::buffer_view < neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>,
-       neam::yaggler::geometry::options::ct_buffer_view_init<0, 3, GL_FLOAT, 0, 0, false >>
-  >> fs_vao;*/
-
   auto object = neam::klmb::sample::load_model("./data/models/dragon_vrip_res3.ply");
+
 
   neam::cr::chrono chronos;
   int frame_counter = 0;
@@ -207,8 +160,8 @@ int main(int argc, char **argv)
       time_accumulator = 0;
 
       // switch cam:
-      camid = (camid + 1) % 2;
-      cam_holder.use_camera(cam[camid]);
+//       camid = (camid + 1) % 2;
+//       cam_holder.use_camera(cam[camid]);
     }
 
     glfwPollEvents();
@@ -219,18 +172,19 @@ int main(int argc, char **argv)
 
     // should be done 'on demand'
     cam[camid].aspect = static_cast<float>(win.get_framebuffer_size().x) / static_cast<float>(win.get_framebuffer_size().y);
-    cam[camid].recompute_proj_and_vp_matrices();
+    cam[camid].recompute_matrices();
 
-    // move the cube
-//     parent_node.node.rotation = glm::rotate(parent_node.node.rotation, (float)(M_PI / 8. * delta), glm::vec3(0, 1, 0));
-//     parent_node.node.dirty = 1;
+    // move the object
+    parent_camera_node.node->rotation = glm::rotate(parent_camera_node.node->rotation, (float)(M_PI / -15. * delta), glm::vec3(0, 1, 0));
+    parent_camera_node.node->dirty = 1;
 
-    object_node.node.rotation = glm::rotate(object_node.node.rotation, (float)(M_PI / 5.5 * delta), glm::vec3(0, 1, 0));
-//     object_node.node.rotation = glm::rotate(object_node.node.rotation, (float)(M_PI / 15.5 * delta), glm::vec3(0, 1, 1));
-    object_node.node.dirty = 1;
+//     object_node.node->rotation = glm::rotate(object_node.node->rotation, (float)(M_PI / 5.5 * delta), glm::vec3(0, 1, 0));
+//     object_node.node->rotation = glm::rotate(object_node.node->rotation, (float)(M_PI / 15.5 * delta), glm::vec3(0, 1, 1));
+//     object_node.node->dirty = 1;
 
     // hu :D (just to test)
-    parent_node.recompute_matrices();
+//     parent_node.recompute_matrices();
+    parent_camera_node.recompute_matrices();
 
     /* Set background colour to NOT BLACK */
     glClearColor(0.30, 0.30, 0.30, 0.1); // not fast on intel HD
