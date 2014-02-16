@@ -6,11 +6,11 @@ set(YAGGLER_FLAGS "-fno-rtti -march=native -mtune=native")
 
 # general flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(YAGGLER_FLAGS "-O0 -g3")
+  set(YAGGLER_FLAGS "${YAGGLER_FLAGS} -O0 -g3")
 else(CMAKE_BUILD_TYPE STREQUAL "Release")
-  set(YAGGLER_FLAGS "-DNDEBUG -fmerge-all-constants")
+  set(YAGGLER_FLAGS "${YAGGLER_FLAGS} -DNDEBUG -fmerge-all-constants")
 else(CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
-  set(YAGGLER_FLAGS "-fno-rtti -DNDEBUG -fmerge-all-constants")
+  set(YAGGLER_FLAGS "${YAGGLER_FLAGS} -fno-rtti -DNDEBUG -fmerge-all-constants")
 endif()
 
 # some gcc/clang flags
