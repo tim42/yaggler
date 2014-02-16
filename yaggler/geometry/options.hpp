@@ -84,8 +84,6 @@ namespace neam
         struct ct_vao_init
         {
           public:
-            static_assert(sizeof...(Views) != 0, "a ct_vao_init must have at least one view");
-
             using buffer_type = Buffer;
 
             Buffer buffer = Buffer();

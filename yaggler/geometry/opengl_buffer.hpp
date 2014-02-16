@@ -125,7 +125,9 @@ namespace neam
           ~buffer()
           {
             if (!link)
+            {
               glDeleteBuffers(1, &id);
+            }
           }
 
           // give up the buffer WITHOUT DELETING IT

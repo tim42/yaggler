@@ -140,14 +140,14 @@ namespace neam
 
               link = t.is_link();
               id = t.get_id();
-              t.give_up();
+              t.give_up_ownership();
             }
             return *this;
           }
 
           // create a simple link
           template<typename... OInit>
-          vao &link_to(vao<type::opengl, OInit...> &t)
+          vao &link_to(const vao<type::opengl, OInit...> &t)
           {
             if (&t != this)
             {
@@ -186,11 +186,9 @@ namespace neam
           template<typename Buffer, typename... Views>
           void add_buffer(const Buffer &b, const Views &... vs)
           {
-            static_assert(sizeof...(Views) != 0, "a vao::add_buffer call must have at least one view");
-
             use();
             b.use();
-            void((char []){(vs.use(), 5)...}); // who knows how this'll be optimised out ?
+            void((int []){(vs.use(), 5)...}); // who knows how this'll be optimised out ?
             // (and which compiler supports it...)
           }
 

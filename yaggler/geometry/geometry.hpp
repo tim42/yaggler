@@ -34,6 +34,8 @@
 
 #include "geometry/opengl_vao.hpp"
 
+#include "geometry/opengl_draw_state.hpp"
+
 #endif /*__N_302503673843070490_1235359853__GEOMETRY_HPP__*/
 
 // kate: indent-mode cstyle; indent-width 2; replace-tabs on; 
