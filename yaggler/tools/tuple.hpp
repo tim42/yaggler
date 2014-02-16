@@ -39,7 +39,27 @@ namespace neam
 {
   namespace cr
   {
-    // a (motherfucking) constexpr tuple
+    // some tuple utilities
+
+    // when passed as argument to the constructor, the argument will be moved.
+    template<typename Type>
+    struct move
+    {
+      move(const move &o) : value(std::move(o.value)) {}
+      move(move &&o) : value(std::move(o.value)) {}
+      move(Type && o) : value(std::move(o)) {}
+      move(Type &o) : value(std::move(o)) {}
+
+      Type &&value;
+    };
+
+    template<typename Type>
+    move<Type> make_move(Type &t)
+    {
+      return move<Type>(t);
+    }
+
+    // a constexpr tuple
     template<typename... Types>
     class tuple
     {
@@ -81,8 +101,8 @@ namespace neam
           constexpr store() : value(), next() {}
 
           constexpr store(ThisType o, OtherTypes...ot) : value(o), next(ot...) {}
-//           constexpr store(const ThisType &o, const OtherTypes &...ot) : value(o), next(ot...) {}
-//           constexpr store(const ThisType &&o, const OtherTypes &&...ot) : value(o), next(ot...) {}
+          template<typename... ConstructOtherTypes>
+          constexpr store(move<ThisType> &o, ConstructOtherTypes...ot) : value(std::move(o.value)), next(ot...) {}
 
           template<uint64_t Index, typename RetType>
           constexpr auto get() const -> typename std::enable_if<Index != 0, const RetType &>::type
@@ -116,9 +136,7 @@ namespace neam
           constexpr store() : value() {}
 
           constexpr store(ThisType o) : value(o) {}
-//           constexpr store(const ThisType &o) : value(o) {}
-//           constexpr store(const ThisType &&o) : value(o) {}
-
+          constexpr store(move<ThisType> &o) : value(std::move(o.value)) {}
 
           template<uint64_t Index, typename RetType>
           constexpr auto get() const -> typename std::enable_if<Index, const ThisType &>::type
@@ -162,8 +180,6 @@ namespace neam
 
         template<typename... OtherTypes>
         constexpr tuple(OtherTypes... t) : storage(t...) {}
-//         constexpr tuple(const Types &... t) : storage(t...) {}
-//         constexpr tuple(const Types &&... t) : storage(t...) {}
 
         template<uint64_t Index>
         constexpr auto get() const -> const typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::type>::type &
@@ -217,7 +233,7 @@ namespace neam
     template<typename... Args>
     tuple<Args...> make_tuple(Args... _args)
     {
-      return tuple<typename std::remove_reference<Args>::type...>(_args...);
+      return tuple<typename std::remove_reference<Args>::type...>((_args)...);
     }
 
   } // namespace cr

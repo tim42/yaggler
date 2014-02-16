@@ -31,6 +31,7 @@ namespace neam
 {
   namespace cr
   {
+    // a reference struct
     template<typename Type>
     struct ref
     {
