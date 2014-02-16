@@ -99,9 +99,6 @@ namespace neam
         object.ct_buffers.get_ref<0>().set_data(neam::array_wrapper<glm::vec3>(vertex, vert_count));
         object.ct_buffers.get_ref<1>().set_data(neam::array_wrapper<GLuint>(idxs, tri_count * 3));
 
-//         object.ct_buffers.get_ref<0>().give_up_ownership();
-//         object.ct_buffers.get_ref<1>().give_up_ownership();
-
         // add buffers to vao
         object.vao.add_buffer(object.ct_buffers.get_ref<0>(), neam::yaggler::geometry::buffer_view<neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>>
                        (0, 3, GL_FLOAT, 0, 0));
