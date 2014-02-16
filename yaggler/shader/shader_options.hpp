@@ -48,6 +48,10 @@ namespace neam
     namespace shader
     {
       N_EMBED_USING(option, yaggler::shader::shader_option);
+      using cchar_function_type = const char *(*)();
+      using string_function_type = std::string (*)();
+      N_EMBED_USING(function_ptr_char, cchar_function_type);
+      N_EMBED_USING(function_ptr_string, string_function_type);
     } // namespace shader
   } // namespace embed
 } // namespace neam

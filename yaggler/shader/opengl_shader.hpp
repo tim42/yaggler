@@ -59,7 +59,7 @@ namespace neam
       // template types:
       //        shadertype:             neam::embed::GLenum
       //        ShaderSourceType:       [...] (see shader/shader_type.hpp)
-      //        ShaderSource:           neam::embed::string or neam::yaggler::shader::opengl::function_ptr (see shader/shader_type.hpp)
+      //        ShaderSource:           neam::embed::string or neam::yaggler::embed::shader::function_ptr_* (see shader/shader_type.hpp)
       //        ShaderOption:           neam::embed::shader::option
       //
       // (not) thread safe !!! (no spinlock & cpu burns)
