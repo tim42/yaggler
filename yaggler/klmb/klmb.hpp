@@ -43,6 +43,8 @@
 #include <klmb/object/transformation_tree.hpp>
 #include <klmb/object/object.hpp>
 
+#include <klmb/object/default_objects.hpp>
+
 namespace neam
 {
   namespace klmb
