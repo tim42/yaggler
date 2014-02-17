@@ -40,7 +40,7 @@ namespace neam
     {
       // load a model from ply file
       // (fuckingly simple loader)
-      neam::klmb::yaggler::object<neam::yaggler::geometry::draw_type::indexed, GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER> load_model(const std::string &filename)
+      neam::klmb::yaggler::object<GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER> load_model(const std::string &filename)
       {
         std::ifstream file(filename);
 
@@ -90,8 +90,9 @@ namespace neam
         }
 
         // setup object
-        neam::klmb::yaggler::object<neam::yaggler::geometry::draw_type::indexed, GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER> object;
+        neam::klmb::yaggler::object<GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER> object;
         // setup drawer
+        object.drawer.set_draw_method(neam::yaggler::geometry::draw_method::indexed);
         object.drawer.set_draw_triangles(tri_count);
         object.drawer.set_index_type(GL_UNSIGNED_INT);
 

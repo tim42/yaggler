@@ -28,6 +28,7 @@
 
 #include <yaggler_type.hpp>
 #include <geometry/draw_state_base.hpp>
+#include <GLEW/glew.h>
 
 namespace neam
 {
@@ -35,27 +36,20 @@ namespace neam
   {
     namespace geometry
     {
-      namespace draw_type
+      enum class draw_method
       {
-        class normal {};
-        class indexed {};
-        class instanced {};
-        class indexed_instanced {};
-      } // namespace draw_type
-
-
-      template<typename DrawType, typename... Args>
-      class draw_state<type::opengl, DrawType, Args...>
-      {
-        static_assert(!(sizeof...(Args) + 1), "This draw state draw_type doesn't exist or is not valid.");
+        normal,
+        indexed,
+        instanced,
+        indexed_instanced
       };
 
       template<>
-      class draw_state<type::opengl, draw_type::indexed>
+      class draw_state<type::opengl>
       {
         public:
-          draw_state()
-            : mode(0), count(0), type(GL_UNSIGNED_INT), start_index(0)
+          draw_state(draw_method _method = draw_method::normal)
+            : method(_method), mode(0), count(0), type(GL_UNSIGNED_INT), start_index(0), prim_count(1)
           {
           }
 
@@ -81,213 +75,14 @@ namespace neam
             count = _count;
           }
 
-          void set_index_type(GLenum _type)
+          void set_draw_method(draw_method _method)
           {
-            type = _type;
+            method = _method;
           }
 
-          void set_start_index(size_t _index)
+          draw_method get_draw_method() const
           {
-            start_index = _index;
-          }
-
-          GLenum get_mode() const
-          {
-            return mode;
-          }
-
-          size_t get_count() const
-          {
-            return count;
-          }
-
-          GLenum get_index_type() const
-          {
-            return type;
-          }
-
-          size_t get_start_index() const
-          {
-            return start_index;
-          }
-
-          void draw() const
-          {
-            glDrawElements(mode, count, type, reinterpret_cast<GLvoid *>(start_index));
-          }
-
-        public:
-          GLenum mode;
-          size_t count;
-          GLenum type;
-          size_t start_index;
-      };
-
-      template<>
-      class draw_state<type::opengl, draw_type::normal>
-      {
-        public:
-          draw_state()
-            : mode(0), start_index(0), count(0)
-          {
-          }
-
-          void set_draw_triangles(size_t triangle_count)
-          {
-            mode = GL_TRIANGLES;
-            count = triangle_count * 3;
-          }
-          void set_draw_lines(size_t line_count)
-          {
-            mode = GL_LINE;
-            count = line_count * 2;
-          }
-          void set_draw_points(size_t point_count)
-          {
-            mode = GL_POINTS;
-            count = point_count;
-          }
-
-          void set_draw(GLenum _mode, size_t _count)
-          {
-            mode = _mode;
-            count = _count;
-          }
-
-          void set_start_index(size_t _index)
-          {
-            start_index = _index;
-          }
-
-          GLenum get_mode() const
-          {
-            return mode;
-          }
-
-          size_t get_count() const
-          {
-            return count;
-          }
-
-          size_t get_start_index() const
-          {
-            return start_index;
-          }
-
-          void draw() const
-          {
-            glDrawArrays(mode, start_index, count);
-          }
-
-        public:
-          GLenum mode;
-          size_t start_index;
-          size_t count;
-      };
-
-
-      template<>
-      class draw_state<type::opengl, draw_type::instanced>
-      {
-        public:
-          draw_state()
-            : mode(0), count(0), start_index(0), prim_count(1)
-          {
-          }
-
-          void set_draw_triangles(size_t triangle_count)
-          {
-            mode = GL_TRIANGLES;
-            count = triangle_count * 3;
-          }
-          void set_draw_lines(size_t line_count)
-          {
-            mode = GL_LINE;
-            count = line_count * 2;
-          }
-          void set_draw_points(size_t point_count)
-          {
-            mode = GL_POINTS;
-            count = point_count;
-          }
-
-          void set_draw(GLenum _mode, size_t _count)
-          {
-            mode = _mode;
-            count = _count;
-          }
-
-          void set_start_index(size_t _index)
-          {
-            start_index = _index;
-          }
-
-          void set_primitive_count(size_t _prim_count)
-          {
-            prim_count = _prim_count;
-          }
-
-          GLenum get_mode() const
-          {
-            return mode;
-          }
-
-          size_t get_count() const
-          {
-            return count;
-          }
-
-          size_t get_primitive_count() const
-          {
-            return prim_count;
-          }
-
-          size_t get_start_index() const
-          {
-            return start_index;
-          }
-
-          void draw() const
-          {
-            glDrawArraysInstanced(mode, start_index, count, prim_count);
-          }
-
-        public:
-          GLenum mode;
-          size_t count;
-          size_t start_index;
-          size_t prim_count;
-      };
-
-            template<>
-      class draw_state<type::opengl, draw_type::indexed_instanced>
-      {
-        public:
-          draw_state()
-            : mode(0), count(0), type(GL_UNSIGNED_INT), start_index(0), prim_count(1)
-          {
-          }
-
-          void set_draw_triangles(size_t triangle_count)
-          {
-            mode = GL_TRIANGLES;
-            count = triangle_count * 3;
-          }
-          void set_draw_lines(size_t line_count)
-          {
-            mode = GL_LINE;
-            count = line_count * 2;
-          }
-          void set_draw_points(size_t point_count)
-          {
-            mode = GL_POINTS;
-            count = point_count;
-          }
-
-          void set_draw(GLenum _mode, size_t _count)
-          {
-            mode = _mode;
-            count = _count;
+            return method;
           }
 
           void set_index_type(GLenum _type)
@@ -332,10 +127,25 @@ namespace neam
 
           void draw() const
           {
-            glDrawElementsInstanced(mode, count, type, reinterpret_cast<GLvoid *>(start_index), prim_count);
+            switch (method)
+            {
+              case draw_method::normal:
+                glDrawArrays(mode, start_index, type);
+                break;
+              case draw_method::indexed:
+                glDrawElements(mode, count, type, reinterpret_cast<GLvoid *>(start_index));
+                break;
+              case draw_method::instanced:
+                glDrawArraysInstanced(mode, start_index, type, prim_count);
+                break;
+              case draw_method::indexed_instanced:
+                glDrawElementsInstanced(mode, count, type, reinterpret_cast<GLvoid *>(start_index), prim_count);
+                break;
+            }
           }
 
         public:
+          draw_method method;
           GLenum mode;
           size_t count;
           GLenum type;

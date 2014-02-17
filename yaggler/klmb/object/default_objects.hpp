@@ -51,10 +51,11 @@ namespace neam
 
       // non indexed data
       template<size_t Size>
-      object<neam::yaggler::geometry::draw_type::normal, GL_ARRAY_BUFFER> create_object_from_object_data(const GLfloat (&data)[Size])
+      object<GL_ARRAY_BUFFER> create_object_from_object_data(const GLfloat (&data)[Size])
       {
-        object<neam::yaggler::geometry::draw_type::normal, GL_ARRAY_BUFFER> fsquad;
+        object<GL_ARRAY_BUFFER> fsquad;
 
+        fsquad.drawer.set_draw_method(neam::yaggler::geometry::draw_method::normal);
         fsquad.drawer.set_draw_triangles(Size / 3);
 
         fsquad.ct_buffers.get_ref<0>().set_data(data);
@@ -67,10 +68,11 @@ namespace neam
 
       // indexed data
       template<size_t VertexArraySize, size_t IndexArraySize>
-      object<neam::yaggler::geometry::draw_type::indexed, GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER> create_object_from_object_data(const GLfloat (&vertex)[VertexArraySize], const GLuint (&indices)[IndexArraySize])
+      object<GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER> create_object_from_object_data(const GLfloat (&vertex)[VertexArraySize], const GLuint (&indices)[IndexArraySize])
       {
-        object<neam::yaggler::geometry::draw_type::indexed, GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER> fsquad;
+        object<GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER> fsquad;
 
+        fsquad.drawer.set_draw_method(neam::yaggler::geometry::draw_method::indexed);
         fsquad.drawer.set_draw_triangles(VertexArraySize / 3);
         fsquad.drawer.set_index_type(GL_UNSIGNED_INT);
 

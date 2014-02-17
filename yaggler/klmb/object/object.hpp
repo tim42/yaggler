@@ -40,7 +40,7 @@ namespace neam
     {
       // an object simply holds a VAO + buffers + drawer
       // there's no material here/position/... . It simply holds the geom / drawer
-      template<typename DrawType, GLenum... CTBufferTypes>
+      template<GLenum... CTBufferTypes>
       struct object
       {
         public:
@@ -48,7 +48,7 @@ namespace neam
           neam::yaggler::geometry::vao<neam::yaggler::type::opengl> vao;
 
           // the drawer
-          neam::yaggler::geometry::draw_state<neam::yaggler::type::opengl, DrawType> drawer;
+          neam::yaggler::geometry::draw_state<neam::yaggler::type::opengl> drawer;
 
           // the ct buffers
           cr::tuple<neam::yaggler::geometry::buffer<neam::yaggler::type::opengl, embed::GLenum<CTBufferTypes>>...> ct_buffers;
