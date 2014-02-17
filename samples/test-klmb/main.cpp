@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 
   // the material
   // (much easier than using only the vanilla YägGLer, isn't it ?? ;) )
-  auto material = neam::klmb::yaggler::create_base_material
+  auto material = neam::klmb::yaggler::create_material
   <
     // SHADERS
     neam::klmb::yaggler::shader_list
@@ -118,15 +118,12 @@ int main(int argc, char **argv)
   (
     neam::klmb::yaggler::make_ctx_pair("screen_resolution", neam::cr::make_const_ref(fixed_resolution)),
     neam::klmb::yaggler::make_ctx_pair("global_time", &neam::cr::chrono::now_relative),
-    neam::klmb::yaggler::make_ctx_pair("texture", neam::klmb::yaggler::reference_to_texture<0>()),
-    neam::klmb::yaggler::make_ctx_pair("myuniform", neam::klmb::yaggler::variable<int>(2)),
-
-    neam::klmb::yaggler::make_ctx_pair("vp_matrix", neam::cr::make_ref(cam_holder.vp_matrix)), // allow camera switchs
-    neam::klmb::yaggler::make_ctx_pair("object_matrix", neam::cr::make_ref(object_node.world_matrix))
+    neam::klmb::yaggler::make_ctx_pair("texture", neam::klmb::yaggler::reference_to_texture<0>())
   );
 
   // some ops on vars
-  material.get_variable<0>() = 4;
+  material.get_variable<neam::klmb::yaggler::variable_indexes::vp_matrix>() = cam_holder.vp_matrix;
+  material.get_variable<neam::klmb::yaggler::variable_indexes::object_matrix>() = &object_node.world_matrix;
 
 
   neam::klmb::yaggler::object<> object = neam::klmb::sample::load_model("./data/models/dragon_vrip_res3.ply").convert_to_generic();
