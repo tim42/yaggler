@@ -87,7 +87,8 @@ namespace neam
           template<typename Etype>
           inline uniform_variable &operator = (const neam::cr::ref<Etype *> &t)
           {
-            *this = *t.value;
+            if (t.value)
+              *this = *t.value;
             return *this;
           }
 

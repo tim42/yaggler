@@ -35,6 +35,8 @@
 #include <klmb/material/material_usings.hpp>
 #include <klmb/material/material.hpp>
 
+#include <klmb/material/generic_material.hpp>
+
 // cam
 #include <klmb/camera/camera.hpp>
 #include <klmb/camera/camera_holder.hpp>
@@ -44,6 +46,9 @@
 #include <klmb/object/object.hpp>
 
 #include <klmb/object/default_objects.hpp>
+
+// models
+#include <klmb/model/model.hpp>
 
 namespace neam
 {

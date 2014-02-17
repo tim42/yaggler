@@ -268,6 +268,37 @@ namespace neam
                typename internal::variable_indexer<VarCtxPairs...>::tuple >::create_base_material(std::move(vctx)...);
       }
 
+      // C++ 1y anyone ?? :)
+      template<typename Shaders, typename Textures, typename... VarCtxPairs>
+      auto create_material(VarCtxPairs... vctx)
+      -> decltype(create_base_material<Shaders, Textures>
+                  (
+                    neam::klmb::yaggler::make_ctx_pair(nullptr, neam::klmb::yaggler::variable<const glm::mat4 *>(nullptr)), // allow camera switchs
+                    neam::klmb::yaggler::make_ctx_pair(nullptr, neam::klmb::yaggler::variable<const glm::mat4 *>(nullptr)),
+                    std::move(vctx)...
+                  ))
+      {
+        return create_base_material<Shaders, Textures>
+               (
+                 neam::klmb::yaggler::make_ctx_pair("vp_matrix", neam::klmb::yaggler::variable<const glm::mat4 *>(nullptr)), // allow camera switchs
+                 neam::klmb::yaggler::make_ctx_pair("object_matrix", neam::klmb::yaggler::variable<const glm::mat4 *>(nullptr)),
+                 std::move(vctx)...
+               );
+      }
+
+
+      namespace variable_indexes
+      {
+        enum variable_indexes
+        {
+          vp_matrix = 0,
+          object_matrix = 1,
+
+          // last
+          count = 2
+        };
+      } // namespace variable_indexes
+
     } // namespace yaggler
   } // namespace klmb
 } // namespace neam
