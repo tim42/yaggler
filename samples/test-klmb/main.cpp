@@ -19,7 +19,7 @@
 
 #include <setup.hpp>
 
-using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::opengl_profile::core/*, neam::yaggler::setup::opengl_context_flag::debug*/>;
+using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::opengl_profile::core, neam::yaggler::setup::opengl_context_flag::debug>;
 
 #include <yaggler.hpp>
 
@@ -129,8 +129,7 @@ int main(int argc, char **argv)
   material.get_variable<0>() = 4;
 
 
-  auto object = neam::klmb::sample::load_model("./data/models/dragon_vrip_res3.ply");
-
+  neam::klmb::yaggler::object<> object = neam::klmb::sample::load_model("./data/models/dragon_vrip_res3.ply").convert_to_generic();
 
   neam::cr::chrono chronos;
   int frame_counter = 0;
@@ -199,7 +198,7 @@ int main(int argc, char **argv)
 
     // the geom
     // Draw the triangles !
-    object.drawer.draw();
+    object.draw();
 
     win.swap_buffers();
   }

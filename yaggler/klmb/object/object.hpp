@@ -77,27 +77,20 @@ namespace neam
           // 13: GL_UNIFORM_BUFFER
           _container_tuple<GL_ARRAY_BUFFER, GL_ATOMIC_COUNTER_BUFFER, GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, GL_DRAW_INDIRECT_BUFFER, GL_DISPATCH_INDIRECT_BUFFER, GL_ELEMENT_ARRAY_BUFFER, GL_PIXEL_PACK_BUFFER, GL_PIXEL_UNPACK_BUFFER, GL_QUERY_BUFFER, GL_SHADER_STORAGE_BUFFER, GL_TEXTURE_BUFFER, GL_TRANSFORM_FEEDBACK_BUFFER, GL_UNIFORM_BUFFER> buffers;
 
+          static constexpr GLenum __indexes_container[] = {GL_ARRAY_BUFFER, GL_ATOMIC_COUNTER_BUFFER, GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, GL_DRAW_INDIRECT_BUFFER, GL_DISPATCH_INDIRECT_BUFFER, GL_ELEMENT_ARRAY_BUFFER, GL_PIXEL_PACK_BUFFER, GL_PIXEL_UNPACK_BUFFER, GL_QUERY_BUFFER, GL_SHADER_STORAGE_BUFFER, GL_TEXTURE_BUFFER, GL_TRANSFORM_FEEDBACK_BUFFER, GL_UNIFORM_BUFFER};
+
           // to help with indexes
-          static constexpr size_t array_buffer_index = 0;
-          static constexpr size_t atomic_counter_buffer_index = 1;
-          static constexpr size_t copy_read_buffer_index = 2;
-          static constexpr size_t copy_write_buffer_index = 3;
-          static constexpr size_t draw_indirect_buffer_index = 4;
-          static constexpr size_t dispatch_indirect_buffer_index = 5;
-          static constexpr size_t element_array_buffer_index = 6;
-          static constexpr size_t pixel_pack_buffer_index = 7;
-          static constexpr size_t pixel_unpack_buffer_index = 8;
-          static constexpr size_t query_buffer_index = 9;
-          static constexpr size_t shader_storage_buffer_index = 10;
-          static constexpr size_t texture_buffer_index = 11;
-          static constexpr size_t transform_feedback_buffer_index = 12;
-          static constexpr size_t uniform_buffer_index = 13;
+          static constexpr size_t get_index_for_enum(GLenum val)
+          {
+            return _rec_get_index_for_enum(val, 0, sizeof(__indexes_container) / sizeof(__indexes_container[0]));
+          }
 
         public:
           using rt_idxs_gen_seq = cr::gen_seq<14>;
 
           // constructors
           object() {}
+          explicit object(neam::yaggler::geometry::vao<neam::yaggler::type::opengl> &&_vao) : vao(std::move(_vao)) {}
           // create a link
           object(const object &o)
             : vao(o.vao), drawer(o.drawer), ct_buffers(o.ct_buffers), buffers(o.buffers)
@@ -145,7 +138,52 @@ namespace neam
             return *this;
           }
 
+          // draw the object
+          void draw() const
+          {
+            vao.use();
+            drawer.draw();
+          }
+
+          // this function is soooo cool... :)
+          // NOTE: the returned object will be the owner of the vao and buffers
+          object<> convert_to_generic()
+          {
+            return std::move(_convert_to_generic(cr::gen_seq<sizeof...(CTBufferTypes)>()));
+          }
+
         private: // helpers
+          static constexpr size_t _rec_get_index_for_enum(GLenum val, size_t idx, size_t max_idx)
+          {
+            return __indexes_container[idx] == val ? idx : (idx + 1 < max_idx ? _rec_get_index_for_enum(val, idx + 1, max_idx) : max_idx + 1);
+          }
+
+          template<size_t... CTIdxs>
+          object<> _convert_to_generic(cr::seq<CTIdxs...>)
+          {
+            object<> gen(std::move(vao));
+
+            gen.drawer = drawer;
+
+            // copy 'runtime' buffers
+            gen.___gen_buffers_stole(*this, rt_idxs_gen_seq());
+
+            // move 'ct' buffers to 'runtime' (non-ct) buffers
+            void((int []){(gen.buffers.template get_ref<get_index_for_enum(CTBufferTypes)>().emplace_back( std::move(ct_buffers.template get_ref<CTIdxs>())), 5)...});
+
+            return std::move(gen);
+          }
+
+        public:
+          template<GLenum... CTArgs, size_t... Idxs>
+          void ___gen_buffers_stole(object<CTArgs...> &o, cr::seq<Idxs...>)
+          {
+            void((int []){((buffers.template get_ref<Idxs>() = std::move(o.buffers.template get_ref<Idxs>())), 5)...}); // who knows how this'll be optimised out ?
+            // (and which compiler supports it...)
+          }
+
+        private:
+
           // ownership thief
           template<size_t... CTIdxs, size_t... RTIdxs>
           object(object && o, cr::seq<CTIdxs...>, cr::seq<RTIdxs...>)
