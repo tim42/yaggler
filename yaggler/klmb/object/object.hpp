@@ -90,7 +90,11 @@ namespace neam
 
           // constructors
           object() {}
+
+          // do not use those two.
           explicit object(neam::yaggler::geometry::vao<neam::yaggler::type::opengl> &&_vao) : vao(std::move(_vao)) {}
+          explicit object(const neam::yaggler::geometry::vao<neam::yaggler::type::opengl> &_vao) : vao((_vao)) {}
+
           // create a link
           object(const object &o)
             : vao(o.vao), drawer(o.drawer), ct_buffers(o.ct_buffers), buffers(o.buffers)
@@ -149,7 +153,13 @@ namespace neam
           // NOTE: the returned object will be the owner of the vao and buffers
           object<> convert_to_generic()
           {
-            return std::move(_convert_to_generic(cr::gen_seq<sizeof...(CTBufferTypes)>()));
+            return _convert_to_generic(cr::gen_seq<sizeof...(CTBufferTypes)>());
+          }
+
+          // NOTE: the returned object will be the owner of the vao and buffers
+          object<> create_generic_link() const
+          {
+            return _create_generic_link(cr::gen_seq<sizeof...(CTBufferTypes)>());
           }
 
         private: // helpers
@@ -171,7 +181,22 @@ namespace neam
             // move 'ct' buffers to 'runtime' (non-ct) buffers
             void((int []){(gen.buffers.template get_ref<get_index_for_enum(CTBufferTypes)>().emplace_back( std::move(ct_buffers.template get_ref<CTIdxs>())), 5)...});
 
-            return std::move(gen);
+            return gen;
+          }
+          template<size_t... CTIdxs>
+          object<> _create_generic_link(cr::seq<CTIdxs...>) const
+          {
+            object<> gen((vao));
+
+            gen.drawer = drawer;
+
+            // 'link' 'runtime' buffers
+            gen.___gen_buffers_link(*this, rt_idxs_gen_seq());
+
+            // 'link' 'ct' buffers as 'runtime' (non-ct) buffers
+            void((int []){(gen.buffers.template get_ref<get_index_for_enum(CTBufferTypes)>().emplace_back((ct_buffers.template get<CTIdxs>())), 5)...});
+
+            return gen;
           }
 
         public:
@@ -181,8 +206,28 @@ namespace neam
             void((int []){((buffers.template get_ref<Idxs>() = std::move(o.buffers.template get_ref<Idxs>())), 5)...}); // who knows how this'll be optimised out ?
             // (and which compiler supports it...)
           }
+          template<GLenum... CTArgs, size_t... Idxs>
+          void ___gen_buffers_link(const object<CTArgs...> &o, cr::seq<Idxs...>)
+          {
+            void((int []){((___gen_buffers_link_sub<Idxs>(o)), 5)...}); // who knows how this'll be optimised out ?
+            // (and which compiler supports it...)
+          }
 
         private:
+          template<size_t Idx, GLenum... CTArgs>
+          void ___gen_buffers_link_sub(const object<CTArgs...> &o)
+          {
+            auto &ref = buffers.get_ref<Idx>();
+            const auto &oref = o.buffers.template get<Idx>();
+
+            ref.clear();
+            // ref.reserve(oref.size());
+            for (const auto &it : oref)
+            {
+              ref.push_back(it);
+            }
+          }
+
 
           // ownership thief
           template<size_t... CTIdxs, size_t... RTIdxs>
