@@ -36,8 +36,8 @@ endif ()
 if (${CMAKE_CURRENT_BINARY_DIR} STREQUAL ${PROJECT_SOURCE_DIR})
   # And this screw up users.
   # YAY :D
-  message(STATUS "when checking: '${CMAKE_CURRENT_BINARY_DIR}' is the same as '${PROJECT_SOURCE_DIR}'")
-  message(FATAL_ERROR "you must create a build folder in order to build ${PROJ_APP} !!!")
+  message(WARNING "when checking: '${CMAKE_CURRENT_BINARY_DIR}' is the same as '${PROJECT_SOURCE_DIR}'")
+  message(WARNING "you must create a build folder in order to build ${PROJ_APP} !!!")
 endif()
 
 # deps check
