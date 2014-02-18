@@ -90,6 +90,13 @@ namespace neam
             link_shader();
           }
 
+          base_material(base_material &&mt)
+            : textures(std::move(mt.textures)), shader_prog(std::move(mt.shader_prog)),
+              variable_values(std::move(mt.variable_values)),
+              vctx(std::move(mt.vctx)), variable_strings(std::move(mt.variable_strings))
+          {
+          }
+
           void use()
           {
             shader_prog.use();
@@ -106,9 +113,9 @@ namespace neam
 
           // some getters
           template<size_t Index>
-          auto get_variable() -> decltype(Variables().template get_ref<Index>())
+          auto get_variable() ->  decltype(Variables().template get<Index>())
           {
-            return variable_values.template get_ref<Index>();
+            return variable_values.template get<Index>();
           }
           template<size_t Index>
           auto get_variable() const -> decltype(Variables().template get<Index>())
@@ -140,7 +147,7 @@ namespace neam
           template<size_t Index>
           typename Textures::template get_type<Index> &get_texture()
           {
-            return textures.instance.template get_ref<Index>();
+            return textures.instance.template get<Index>();
           }
           template<size_t Index>
           const typename Textures::template get_type<Index> &get_texture() const
@@ -252,9 +259,13 @@ namespace neam
         template<typename MaterialType, typename... VarCtxPairs>
         struct material_creator<MaterialType, cr::tuple<VarCtxPairs...>>
         {
-          static MaterialType create_base_material( VarCtxPairs && ... vctx)
+          static MaterialType create_base_material(VarCtxPairs && ... vctx)
           {
             return MaterialType(std::move(vctx)...);
+          }
+          static MaterialType *create_base_material_ptr(VarCtxPairs && ... vctx)
+          {
+            return new MaterialType(std::move(vctx)...);
           }
         };
       } // namespace internal
@@ -268,20 +279,44 @@ namespace neam
                typename internal::variable_indexer<VarCtxPairs...>::tuple >::create_base_material(std::move(vctx)...);
       }
 
+      template<typename Shaders, typename Textures, typename... VarCtxPairs>
+      base_material<Shaders, Textures, typename internal::template context_t<Textures, VarCtxPairs...>, typename internal::variable_filter<VarCtxPairs...>::tuple> *create_base_material_ptr(VarCtxPairs... vctx)
+      {
+        return internal::material_creator<base_material<Shaders, Textures, typename internal::template context_t<Textures, VarCtxPairs...>, typename internal::variable_filter<VarCtxPairs...>::tuple>,
+        typename internal::variable_indexer<VarCtxPairs...>::tuple >::create_base_material_ptr(std::move(vctx)...);
+      }
+
       // C++ 1y anyone ?? :)
       template<typename Shaders, typename Textures, typename... VarCtxPairs>
       auto create_material(VarCtxPairs... vctx)
       -> decltype(create_base_material<Shaders, Textures>
                   (
-                    neam::klmb::yaggler::make_ctx_pair(nullptr, neam::klmb::yaggler::variable<const glm::mat4 *>(nullptr)), // allow camera switchs
-                    neam::klmb::yaggler::make_ctx_pair(nullptr, neam::klmb::yaggler::variable<const glm::mat4 *>(nullptr)),
+                    neam::klmb::yaggler::make_ctx_pair(nullptr, neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)), // allow camera switchs
+                    neam::klmb::yaggler::make_ctx_pair(nullptr, neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)),
                     std::move(vctx)...
                   ))
       {
         return create_base_material<Shaders, Textures>
                (
-                 neam::klmb::yaggler::make_ctx_pair("vp_matrix", neam::klmb::yaggler::variable<const glm::mat4 *>(nullptr)), // allow camera switchs
-                 neam::klmb::yaggler::make_ctx_pair("object_matrix", neam::klmb::yaggler::variable<const glm::mat4 *>(nullptr)),
+                 neam::klmb::yaggler::make_ctx_pair("vp_matrix", neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)), // allow camera switchs
+                 neam::klmb::yaggler::make_ctx_pair("object_matrix", neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)),
+                 std::move(vctx)...
+               );
+      }
+      // C++ 1y anyone ?? :)
+      template<typename Shaders, typename Textures, typename... VarCtxPairs>
+      auto create_material_ptr(VarCtxPairs... vctx)
+      -> decltype(create_base_material_ptr<Shaders, Textures>
+                  (
+                    neam::klmb::yaggler::make_ctx_pair(nullptr, neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)), // allow camera switchs
+                    neam::klmb::yaggler::make_ctx_pair(nullptr, neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)),
+                    std::move(vctx)...
+                  ))
+      {
+        return create_base_material_ptr<Shaders, Textures>
+               (
+                 neam::klmb::yaggler::make_ctx_pair("vp_matrix", neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)), // allow camera switchs
+                 neam::klmb::yaggler::make_ctx_pair("object_matrix", neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)),
                  std::move(vctx)...
                );
       }
