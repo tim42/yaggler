@@ -28,6 +28,7 @@
 
 #include <glm/glm.hpp>
 #include <yaggler_except.hpp>
+#include <tools/ownership.hpp>
 
 namespace neam
 {
@@ -48,6 +49,12 @@ namespace neam
 
           template<typename MaterialType>
           material_wrapper(MaterialType *mt) : wrapper(new spec_wrapper<MaterialType>(mt)) {}
+
+          template<typename MaterialType>
+          material_wrapper(MaterialType *mt, assume_ownership_t) : wrapper(new spec_wrapper<MaterialType>(mt, assume_ownership)) {}
+
+          template<typename MaterialType>
+          material_wrapper(MaterialType &&mt) : wrapper(new spec_wrapper<MaterialType>(new MaterialType(std::move(mt)), assume_ownership)) {}
 
           material_wrapper(const material_wrapper &mw) : wrapper(mw.wrapper ? mw.wrapper->clone() : nullptr) {}
           material_wrapper(material_wrapper &&mw) : wrapper(mw.wrapper)
@@ -76,22 +83,30 @@ namespace neam
             return *this;
           }
 
+          bool is_empty() const
+          {
+            return !wrapper;
+          }
+
           void use() const
           {
             if (wrapper)
               wrapper->use();
           }
+
           void link_shader()
           {
             if (wrapper)
               wrapper->link_shader();
           }
+
           glm::mat4 *& get_vp_matrix()
           {
             if (!wrapper)
               throw neam::yaggler::yaggler_exception("get_vp_matrix on empty material wrapper");
             return wrapper->get_vp_matrix();
           }
+
           glm::mat4 *& get_object_matrix()
           {
             if (!wrapper)
@@ -118,7 +133,17 @@ namespace neam
           template<typename MaterialType>
           struct spec_wrapper : base_wrapper
           {
+            spec_wrapper(MaterialType *_matptr) : matptr(_matptr), ownership(false) {}
+            spec_wrapper(MaterialType *_matptr, assume_ownership_t) : matptr(_matptr), ownership(true) {}
+
+            virtual ~spec_wrapper()
+            {
+              if (ownership)
+                delete matptr;
+            }
+
             MaterialType *matptr;
+            bool ownership;
 
             virtual base_wrapper *clone() const
             {
@@ -143,7 +168,6 @@ namespace neam
             {
               return matptr->template get_variable<variable_indexes::vp_matrix>();
             }
-
           };
       };
 
