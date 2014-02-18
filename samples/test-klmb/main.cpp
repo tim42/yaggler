@@ -19,7 +19,7 @@
 
 #include <setup.hpp>
 
-using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::opengl_profile::core, neam::yaggler::setup::opengl_context_flag::debug>;
+using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::opengl_profile::core/*, neam::yaggler::setup::opengl_context_flag::debug*/>;
 
 #include <yaggler.hpp>
 
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 
   // create a window
 //   neam::yaggler::glfw_window win(neam::yaggler::window_mode::fullscreen);
-  neam::yaggler::glfw_window win(neam::yaggler::window_mode::windowed, {100, 100}, "[ :) / K: / Y: ]");
+  neam::yaggler::glfw_window win(neam::yaggler::window_mode::windowed, {1000, 1000}, "[ :) / K: / Y: ]");
   win.set_position({0, 0});
 
 
@@ -120,6 +120,8 @@ int main(int argc, char **argv)
     neam::klmb::yaggler::make_ctx_pair("global_time", &neam::cr::chrono::now_relative),
     neam::klmb::yaggler::make_ctx_pair("texture", neam::klmb::yaggler::reference_to_texture<0>())
   );
+
+  material.assume_ownership();
 
   // create the model
   neam::klmb::yaggler::model model(neam::klmb::sample::load_model("./data/models/dragon_vrip_res3.ply").convert_to_generic(), &cam_holder.vp_matrix, &object_node.world_matrix, material);
