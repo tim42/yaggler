@@ -38,10 +38,10 @@ namespace neam
       // allow mainly to switch camera on the fly, without bothering about resetting refs in every shaders.
       struct camera_holder
       {
-        const glm::mat4 *vp_matrix = nullptr; // yep, that's it.
+        glm::mat4 *vp_matrix = nullptr; // yep, that's it.
 
         template<typename CamType>
-        void use_camera(const CamType &cam)
+        void use_camera(CamType &cam)
         {
           vp_matrix = &(cam.vp_matrix);
         }
