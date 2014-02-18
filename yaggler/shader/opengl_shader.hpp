@@ -93,7 +93,6 @@ namespace neam
               }
             }
             else */
-            std::cout << "shader: construct" << std::endl;
 
             if (!(shader_id = glCreateShader(ShaderType::value)))
             {
