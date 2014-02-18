@@ -69,8 +69,7 @@ namespace neam
         struct out_of_range_check_type
         {
           static_assert(Index < sizeof...(Types), "index is out of range");
-          using type = const Type &;
-          using nc_type = Type &;
+          using type = Type;
         };
         template<uint64_t Index>
         class out_of_range_check
@@ -83,15 +82,13 @@ namespace neam
         struct get_type_at_index
         {
           out_of_range_check<Index> __oorc;
-          using type = const typename get_type_at_index<Index - 1, OtherTypes...>::type &;
-          using nc_type = typename get_type_at_index<Index - 1, OtherTypes...>::nc_type &;
+          using type = typename get_type_at_index<Index - 1, OtherTypes...>::type;
         };
         template<typename ThisType, typename... OtherTypes>
         struct get_type_at_index<0, ThisType, OtherTypes...>
         {
           out_of_range_check<0> __oorc;
-          using type = const ThisType &;
-          using nc_type = ThisType &;
+          using type = ThisType;
         };
 
         // 'recursively' store values
@@ -99,8 +96,10 @@ namespace neam
         struct store
         {
           constexpr store() : value(), next() {}
+          constexpr store(const store &o) : value((o.value)), next((o.next)) {}
+          constexpr store(store &&o) : value(std::move(o.value)), next(std::move(o.next)) {}
 
-          constexpr store(ThisType o, OtherTypes...ot) : value(o), next(ot...) {}
+          constexpr store(ThisType o, OtherTypes... ot) : value(o), next(ot...) {}
           template<typename... ConstructOtherTypes>
           constexpr store(move<ThisType> &o, ConstructOtherTypes...ot) : value(std::move(o.value)), next(ot...) {}
 
@@ -116,12 +115,12 @@ namespace neam
           }
 
           template<uint64_t Index, typename RetType>
-          auto get_ref() -> typename std::enable_if<Index != 0, RetType &>::type
+          auto get() -> typename std::enable_if<Index != 0, RetType &>::type
           {
-            return (next.template get_ref<Index - 1, RetType>());
+            return (next.template get<Index - 1, RetType>());
           }
           template<uint64_t Index, typename RetType>
-          auto get_ref() -> typename std::enable_if<Index == 0, RetType &>::type
+          auto get() -> typename std::enable_if<Index == 0, RetType &>::type
           {
             return value;
           }
@@ -134,6 +133,8 @@ namespace neam
         struct store<ThisType>
         {
           constexpr store() : value() {}
+          constexpr store(const store &o) : value((o.value)) {}
+          constexpr store(store &&o) : value(std::move(o.value)) {}
 
           constexpr store(ThisType o) : value(o) {}
           constexpr store(move<ThisType> &o) : value(std::move(o.value)) {}
@@ -151,13 +152,13 @@ namespace neam
           }
 
           template<uint64_t Index, typename RetType>
-          auto get_ref() -> typename std::enable_if<Index, ThisType &>::type
+          auto get() -> typename std::enable_if<Index, ThisType &>::type
           {
             static_assert(!Index, "index is out of range : BAD USAGE OF neam::cr::tuple !!!");
             return *(void *)0; // clang complain... but this won't seg anyway, as the code won't be built.
           }
           template<uint64_t Index, typename RetType>
-          auto get_ref() -> typename std::enable_if<!Index, ThisType &>::type
+          auto get() -> typename std::enable_if<!Index, ThisType &>::type
           {
             return value;
           }
@@ -165,32 +166,31 @@ namespace neam
           ThisType value;
         };
 
-      private: // constructors
-        template<uint64_t... Idx>
-        tuple(const tuple &o, seq<Idx...>) : storage(o.get<Idx>()...) {}
-
       public:
         constexpr tuple()
           : storage()
         {
         }
 
-        template<typename... OtherTypes>
-        constexpr tuple(const tuple &o) : tuple(o, gen_seq<sizeof...(Types)>()) {}
+        template<uint64_t... Idx>
+        constexpr tuple(const tuple &o) : storage(o.storage) {}
+
+        template<uint64_t... Idx>
+        constexpr tuple(tuple &&o) : storage(std::move(o.storage)) {}
 
         template<typename... OtherTypes>
-        constexpr tuple(OtherTypes... t) : storage(t...) {}
+        explicit constexpr tuple(OtherTypes... t) : storage(t...) {}
 
         template<uint64_t Index>
         constexpr auto get() const -> const typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::type>::type &
         {
-          return storage.template get<Index, typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::type>::type>();
+          return storage.template get<Index, const typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::type>::type &>();
         }
 
         template<uint64_t Index>
-        auto get_ref() -> typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::nc_type>::nc_type
+        auto get() -> typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::type>::type &
         {
-          return storage.template get_ref<Index, typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::nc_type>::nc_type>();
+          return storage.template get<Index, typename out_of_range_check_type<Index, typename get_type_at_index<Index, Types...>::type>::type &>();
         }
 
         constexpr static size_t size()
@@ -209,17 +209,12 @@ namespace neam
       public:
         constexpr tuple() {}
         constexpr tuple(const tuple &) {}
+        constexpr tuple(tuple &&) {}
 
         template<size_t Index>
         constexpr cr::bad_type get() const
         {
           static_assert(!(Index + 1), "tuple<>::get() on an empty tuple.");
-          return cr::bad_type(cr::bad_type::construct_from_return);
-        }
-        template<size_t Index>
-        constexpr cr::bad_type get_ref() const
-        {
-          static_assert(!(Index + 1), "tuple<>::get_ref() on an empty tuple.");
           return cr::bad_type(cr::bad_type::construct_from_return);
         }
 
