@@ -179,7 +179,7 @@ namespace neam
             gen.___gen_buffers_stole(*this, rt_idxs_gen_seq());
 
             // move 'ct' buffers to 'runtime' (non-ct) buffers
-            void((int []){(gen.buffers.template get_ref<get_index_for_enum(CTBufferTypes)>().emplace_back( std::move(ct_buffers.template get_ref<CTIdxs>())), 5)...});
+            void((int []){(gen.buffers.template get<get_index_for_enum(CTBufferTypes)>().emplace_back( std::move(ct_buffers.template get<CTIdxs>())), 5)...});
 
             return gen;
           }
@@ -194,7 +194,7 @@ namespace neam
             gen.___gen_buffers_link(*this, rt_idxs_gen_seq());
 
             // 'link' 'ct' buffers as 'runtime' (non-ct) buffers
-            void((int []){(gen.buffers.template get_ref<get_index_for_enum(CTBufferTypes)>().emplace_back((ct_buffers.template get<CTIdxs>())), 5)...});
+            void((int []){(gen.buffers.template get<get_index_for_enum(CTBufferTypes)>().emplace_back((ct_buffers.template get<CTIdxs>())), 5)...});
 
             return gen;
           }
@@ -203,7 +203,7 @@ namespace neam
           template<GLenum... CTArgs, size_t... Idxs>
           void ___gen_buffers_stole(object<CTArgs...> &o, cr::seq<Idxs...>)
           {
-            void((int []){((buffers.template get_ref<Idxs>() = std::move(o.buffers.template get_ref<Idxs>())), 5)...}); // who knows how this'll be optimised out ?
+            void((int []){((buffers.template get<Idxs>() = std::move(o.buffers.template get<Idxs>())), 5)...}); // who knows how this'll be optimised out ?
             // (and which compiler supports it...)
           }
           template<GLenum... CTArgs, size_t... Idxs>
@@ -217,7 +217,7 @@ namespace neam
           template<size_t Idx, GLenum... CTArgs>
           void ___gen_buffers_link_sub(const object<CTArgs...> &o)
           {
-            auto &ref = buffers.get_ref<Idx>();
+            auto &ref = buffers.get<Idx>();
             const auto &oref = o.buffers.template get<Idx>();
 
             ref.clear();
@@ -233,33 +233,33 @@ namespace neam
           template<size_t... CTIdxs, size_t... RTIdxs>
           object(object && o, cr::seq<CTIdxs...>, cr::seq<RTIdxs...>)
             : vao(o.vao, stole_ownership), drawer(o.drawer),
-              ct_buffers(cr::make_move((o.ct_buffers.template get_ref<CTIdxs>()))...),
-              buffers(cr::make_move(o.buffers.template get_ref<RTIdxs>())...)
+              ct_buffers(cr::make_move((o.ct_buffers.template get<CTIdxs>()))...),
+              buffers(cr::make_move(o.buffers.template get<RTIdxs>())...)
           {
           }
 
           template<size_t... Idxs>
           void ct_buffers_give_up_ownership(cr::seq<Idxs...>)
           {
-            void((int []){(ct_buffers.template get_ref<Idxs>().give_up_ownership(), 5)...}); // who knows how this'll be optimised out ?
+            void((int []){(ct_buffers.template get<Idxs>().give_up_ownership(), 5)...}); // who knows how this'll be optimised out ?
             // (and which compiler supports it...)
           }
           template<size_t... Idxs>
           void ct_buffers_assume_ownership(cr::seq<Idxs...>)
           {
-            void((int []){(ct_buffers.template get_ref<Idxs>().assume_ownership(), 5)...}); // who knows how this'll be optimised out ?
+            void((int []){(ct_buffers.template get<Idxs>().assume_ownership(), 5)...}); // who knows how this'll be optimised out ?
             // (and which compiler supports it...)
           }
           template<size_t... Idxs>
           void ct_buffers_stole(object &o, cr::seq<Idxs...>)
           {
-            void((int []){(ct_buffers.template get_ref<Idxs>().stole(o.ct_buffers.template get_ref<Idxs>()), 5)...}); // who knows how this'll be optimised out ?
+            void((int []){(ct_buffers.template get<Idxs>().stole(o.ct_buffers.template get<Idxs>()), 5)...}); // who knows how this'll be optimised out ?
             // (and which compiler supports it...)
           }
           template<size_t... Idxs>
           void ct_buffers_link_to(const object &o, cr::seq<Idxs...>)
           {
-            void((int []){(ct_buffers.template get_ref<Idxs>().link_to(o.ct_buffers.template get<Idxs>()), 5)...}); // who knows how this'll be optimised out ?
+            void((int []){(ct_buffers.template get<Idxs>().link_to(o.ct_buffers.template get<Idxs>()), 5)...}); // who knows how this'll be optimised out ?
             // (and which compiler supports it...)
           }
 
@@ -272,7 +272,7 @@ namespace neam
           template<size_t Idx>
           void sub_buffers_give_up_ownership()
           {
-            auto &ref = buffers.get_ref<Idx>();
+            auto &ref = buffers.get<Idx>();
             for (auto &it : ref)
               it.give_up_ownership();
           }
@@ -286,7 +286,7 @@ namespace neam
           template<size_t Idx>
           void sub_buffers_assume_ownership()
           {
-            auto &ref = buffers.get_ref<Idx>();
+            auto &ref = buffers.get<Idx>();
             for (auto &it : ref)
               it.assume_ownership();
           }
@@ -294,7 +294,7 @@ namespace neam
           template<size_t... Idxs>
           void buffers_stole(object &o, cr::seq<Idxs...>)
           {
-            void((int []){((buffers.template get_ref<Idxs>() = std::move(o.buffers.template get_ref<Idxs>())), 5)...}); // who knows how this'll be optimised out ?
+            void((int []){((buffers.template get<Idxs>() = std::move(o.buffers.template get<Idxs>())), 5)...}); // who knows how this'll be optimised out ?
             // (and which compiler supports it...)
           }
           template<size_t... Idxs>
@@ -306,7 +306,7 @@ namespace neam
           template<size_t Idx>
           void sub_buffers_link_to(const object &o)
           {
-            auto &ref = buffers.get_ref<Idx>();
+            auto &ref = buffers.get<Idx>();
             const auto &oref = o.buffers.template get<Idx>();
 
             ref.clear();
