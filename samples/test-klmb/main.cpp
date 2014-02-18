@@ -154,8 +154,8 @@ int main(int argc, char **argv)
       time_accumulator = 0;
 
       // switch cam:
-//       camid = (camid + 1) % 2;
-//       cam_holder.use_camera(cam[camid]);
+      camid = (camid + 1) % 2;
+      cam_holder.use_camera(cam[camid]);
     }
 
     glfwPollEvents();
