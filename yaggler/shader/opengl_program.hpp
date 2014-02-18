@@ -66,7 +66,7 @@ namespace neam
           template<uint64_t... Idx>
           inline void it_over_cts_attach(cr::seq<Idx...>)
           {
-            int _[] __attribute__((unused)) = {_it_attach_cts_inner(shaders.template get_ref<Idx>())...}; // gcc may be enought intelligent to ignore this array ;)
+            int _[] __attribute__((unused)) = {_it_attach_cts_inner(shaders.template get<Idx>())...}; // gcc may be enought intelligent to ignore this array ;)
           }
 
           template<typename Shader>
@@ -82,7 +82,7 @@ namespace neam
           inline void it_over_cts_recompile(cr::seq<Idx...>)
           {
             failed = false;
-            int _[] __attribute__((unused)) = {_it_recompile_cts_inner(shaders.template get_ref<Idx>())...}; // gcc may be enought intelligent to ignore this array ;)
+            int _[] __attribute__((unused)) = {_it_recompile_cts_inner(shaders.template get<Idx>())...}; // gcc may be enought intelligent to ignore this array ;)
           }
 
         private: // constructor
@@ -99,7 +99,6 @@ namespace neam
           : shaders(), pg_id(_pg_id), symlink(false)
           {
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
-//             link();
           }
 
           program()
@@ -114,23 +113,41 @@ namespace neam
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
           }
 
+          program(program &p, stole_ownership_t)
+          : shaders(p.shaders), pg_id(p.get_id()), symlink(p.is_link())
+          {
+            p.give_up_ownership();
+          }
           template<typename... OCTShaders>
           program(program<type::opengl, OCTShaders...> &p, stole_ownership_t)
-          : shaders(), pg_id(p.get_id()), symlink(p.is_link())
+            : shaders(), pg_id(p.get_id()), symlink(p.is_link())
           {
             p.give_up_ownership();
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
           }
-          template<typename... OCTShaders>
-          program(program<type::opengl, OCTShaders...> &&p)
-          : shaders(), pg_id(p.get_id()), symlink(p.is_link())
+
+          program(program &&p)
+            : shaders(std::move(p.shaders)), pg_id(p.get_id()), symlink(p.is_link())
           {
+            std::cout << "GOOD prgm: move" << std::endl;
+            p.give_up_ownership();
+          }
+          template<typename... OCTShaders>
+          program(program<type::opengl, OCTShaders...> && p)
+            : shaders(), pg_id(p.get_id()), symlink(p.is_link())
+          {
+            std::cout << "prgm: move" << std::endl;
             p.give_up_ownership();
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
+          }
+
+          program(const program &p)
+            : shaders(p.shaders), pg_id(p.get_id()), symlink(true)
+          {
           }
           template<typename... OCTShaders>
           program(const program<type::opengl, OCTShaders...> &p)
-          : shaders(), pg_id(p.get_id()), symlink(true)
+            : shaders(), pg_id(p.get_id()), symlink(true)
           {
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
           }
@@ -314,7 +331,7 @@ namespace neam
           auto get_shader_at_index()
           -> typename ct::type_at_index<Index, CTShaders..., cr::bad_type>::type &
           {
-            return shaders.template get_ref<Index>();
+            return shaders.template get<Index>();
           }
           template<size_t Index>
           auto get_shader_at_index() const

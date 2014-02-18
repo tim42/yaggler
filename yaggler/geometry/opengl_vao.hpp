@@ -214,7 +214,7 @@ namespace neam
           template<size_t Idx>
           auto get_buffer() -> typename ct::type_at_index<Idx, Init...>::type &
           {
-            return (ct_buffers_views.template get_ref<Idx>());
+            return (ct_buffers_views.template get<Idx>());
           }
 
           // see stole_ownership_t
@@ -224,7 +224,7 @@ namespace neam
           {
             if (ct_buffers_views.template get<Idx>().is_link())
               throw yaggler_exception("n/y::geometry::vao::stole_buffer(): unable to stole owneship: ownership has already been 'stolen'.");
-            return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get_ref<Idx>(), stole_ownership);
+            return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get<Idx>(), stole_ownership);
           }
 
         private:

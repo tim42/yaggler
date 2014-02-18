@@ -147,6 +147,11 @@ namespace neam
             __tpl_init();
           }
 
+          texture(const texture &o)
+          : link(true), id(o.get_id()), spl_idx(o.get_texture_sampler())
+          {
+            __tpl_init();
+          }
           template<typename... TArgs>
           texture(const texture< type::opengl, TextureType, TArgs... > &o)
             : link(true), id(o.get_id()), spl_idx(o.get_texture_sampler())
@@ -154,6 +159,12 @@ namespace neam
             __tpl_init();
           }
 
+          texture(texture &o, stole_ownership_t)
+            : link(o.is_link()), id(o.get_id()), spl_idx(o.get_texture_sampler())
+          {
+            o.give_up_ownership();
+            __tpl_init();
+          }
           template<typename... TArgs>
           texture(texture< type::opengl, TextureType, TArgs... > &o, stole_ownership_t)
           : link(o.is_link()), id(o.get_id()), spl_idx(o.get_texture_sampler())
@@ -162,9 +173,15 @@ namespace neam
             __tpl_init();
           }
 
+          texture(texture &&t)
+          : link(t.is_link()), id(t.get_id()), spl_idx(t.get_texture_sampler())
+          {
+            t.give_up_ownership();
+            __tpl_init();
+          }
           template<typename... TArgs>
           texture(texture< type::opengl, TextureType, TArgs... > &&t)
-          : link(t.is_link()), id(t.get_id()), spl_idx(t.get_texture_sampler)
+          : link(t.is_link()), id(t.get_id()), spl_idx(t.get_texture_sampler())
           {
             t.give_up_ownership();
             __tpl_init();

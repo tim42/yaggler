@@ -43,6 +43,7 @@
 // #include <GL/gl.h>
 #include <string.h>
 #include <tools/enable_if.hpp>
+#include <tools/ownership.hpp>
 
 #include "shader/shader_base.hpp"
 #include "shader/shader_options.hpp"
@@ -71,9 +72,12 @@ namespace neam
             : shader_id(0), source()
           {
             // the ressource will be shared for file / constexpr strings. (yes, I can do that :D )
-            if (std::is_same<ShaderSourceType, opengl::constexpr_string>::value || std::is_same<ShaderSourceType, opengl::file>::value)
+            // NOTE: this is not what you want.
+/*            if (std::is_same<ShaderSourceType, opengl::constexpr_string>::value || std::is_same<ShaderSourceType, opengl::file>::value)
             {
               static GLuint static_shader_id = 0;
+
+              link = true;
 
               if (static_shader_id)
                 shader_id = static_shader_id;
@@ -88,7 +92,10 @@ namespace neam
                 static_shader_id = shader_id;
               }
             }
-            else if (!(shader_id = glCreateShader(ShaderType::value)))
+            else */
+            std::cout << "shader: construct" << std::endl;
+
+            if (!(shader_id = glCreateShader(ShaderType::value)))
             {
               failed = true;
               throw_on_glerror<shader_exception>("Unable to create the shader (glCreateShader): ");
@@ -99,12 +106,90 @@ namespace neam
             changed = true;
           }
 
+          shader(GLuint _id)
+            : shader_id(_id), source(), link(true)
+          {
+            has_source_changed(0);      // init this func;
+            changed = true;
+          }
+
+          shader(GLuint _id, assume_ownership_t)
+            : shader_id(_id), source(), link(false)
+          {
+            has_source_changed(0);      // init this func;
+            changed = true;
+          }
+
+          // we keep the same ShaderType
+          shader(const shader &o)
+          : shader_id(o.get_id()), source(o.source), additional_str(o.get_additional_strings()), link(true)
+          {
+            has_source_changed(0);      // init this func;
+            changed = false;
+          }
+          template<typename OShaderSourceType, typename OShaderSource, typename OShaderOption>
+          shader(const shader<ShaderType, OShaderSourceType, OShaderSource, OShaderOption> &o)
+            : shader_id(o.get_id()), source(), additional_str(o.get_additional_strings()), link(true)
+          {
+            has_source_changed(0);      // init this func;
+            changed = true;
+          }
+
+          shader(shader &o, stole_ownership_t)
+          : shader_id(o.get_id()), source(o.source), additional_str(o.get_additional_strings()), link(o.is_link())
+          {
+            o.give_up_ownership();
+            has_source_changed(0);      // init this func;
+            changed = false;
+          }
+          template<typename OShaderSourceType, typename OShaderSource, typename OShaderOption>
+          shader(shader<ShaderType, OShaderSourceType, OShaderSource, OShaderOption> &o, stole_ownership_t)
+            : shader_id(o.get_id()), source(), additional_str(o.get_additional_strings()), link(o.is_link())
+          {
+            o.give_up_ownership();
+            has_source_changed(0);      // init this func;
+            changed = true;
+          }
+
+          shader(shader &&o)
+          : shader_id(o.shader_id), source(std::move(o.source)), additional_str(std::move(o.additional_str)), link(o.link)
+          {
+            o.give_up_ownership();
+            has_source_changed(0);      // init this func;
+            changed = false;
+          }
+          template<typename OShaderSourceType, typename OShaderSource, typename OShaderOption>
+          shader(shader<ShaderType, OShaderSourceType, OShaderSource, OShaderOption> &&o)
+            : shader_id(o.get_id()), source(), additional_str(o.get_additional_strings()), link(o.is_link())
+          {
+            o.give_up_ownership();
+            has_source_changed(0);      // init this func;
+            changed = true;
+          }
+
           ~shader()
           {
-            if (shader_id)
+            if (shader_id && !link)
             {
               glDeleteShader(shader_id);
             }
+          }
+
+          shader &give_up_ownership()
+          {
+            link = true;
+            return *this;
+          }
+
+          shader &assume_ownership()
+          {
+            link = false;
+            return *this;
+          }
+
+          bool is_link() const
+          {
+            return link;
           }
 
           const std::string &get_source() const
@@ -433,6 +518,8 @@ namespace neam
           std::string source;
           std::string version_str;
           std::string additional_str;
+
+          bool link = false;
 
           bool failed = false;
           bool changed = false;
