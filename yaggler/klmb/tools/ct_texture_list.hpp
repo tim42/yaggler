@@ -44,15 +44,10 @@ namespace neam
             // set default texture indexes (in the list order)
             setup_samplers_idxs();
           }
-          //           texture_list(const texture_list &o) : ct::type_list_member_instance<Textures...>(o), texture_list() {}
-          texture_list(const cr::tuple<Textures...> &o) : ct::type_list_member_instance<Textures...>(o)
-          {
-            // set default texture indexes (in the list order)
-            setup_samplers_idxs();
-          }
+          texture_list(texture_list &&tl) : ct::type_list_member_instance<Textures...>(std::move(static_cast<ct::type_list_member_instance<Textures...> &&>(tl))) {}
+          texture_list(const texture_list &tl) : ct::type_list_member_instance<Textures...>(static_cast<const ct::type_list_member_instance<Textures...> &>(tl)) {}
 
-          template<typename... Vals>
-          texture_list(Vals... vals) : ct::type_list_member_instance<Textures...>(std::move(vals)...)
+          texture_list(const cr::tuple<Textures...> &o) : ct::type_list_member_instance<Textures...>(o)
           {
             // set default texture indexes (in the list order)
             setup_samplers_idxs();
@@ -77,7 +72,7 @@ namespace neam
           template<size_t Idx>
           char _it_single_setup_samplers_idxs()
           {
-            ct::type_list_member_instance<Textures...>::instance.template get_ref<Idx>().set_texture_sampler(Idx);
+            ct::type_list_member_instance<Textures...>::instance.template get<Idx>().set_texture_sampler(Idx);
             return 0;
           }
 

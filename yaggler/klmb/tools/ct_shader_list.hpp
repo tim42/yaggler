@@ -42,7 +42,7 @@ namespace neam
     {
       // a shader list
       template<typename... Shaders>
-      struct shader_list : public ct::type_list_member_instance<Shaders...>
+      struct shader_list : public ct::type_list<Shaders...>
       {
         private: // helpers
           // Thanks to : stackoverflow.com/q/18366398/

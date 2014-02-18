@@ -104,7 +104,7 @@ namespace neam
 
           static _texture_ref_type return_instance(Textures &textures, const Variables &, const reference_to_texture<TextureIndex> &)
           {
-            return _texture_ref_type(textures.instance.template get_ref<TextureIndex>());
+            return _texture_ref_type(textures.instance.template get<TextureIndex>());
           }
         };
 
@@ -114,7 +114,7 @@ namespace neam
         {
           static cr::ref<VariableType> return_instance(const Textures &, Variables &variables, const indexed_variable<VariableType, Index> &)
           {
-            return cr::ref<VariableType>(variables.template get_ref<Index>());
+            return cr::ref<VariableType>(variables.template get<Index>());
           }
         };
 
