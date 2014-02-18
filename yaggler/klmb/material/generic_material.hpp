@@ -163,7 +163,6 @@ namespace neam
             }
 
             MaterialType *matptr;
-            bool ownership;
 
             virtual base_wrapper *clone() const
             {
