@@ -81,6 +81,9 @@ namespace neam
             static_assert((sizeof...(Args)) == (sizeof...(Vars)), "mismatching values number and uniform_variable number.");
           }
 
+          constexpr variable_context(variable_context &&o) : vars(std::move(o.vars)), values(std::move(o.values)) {}
+          constexpr variable_context(const variable_context &o) : vars(o.vars), values(o.values) {}
+
           // do the binding
           void use()
           {
@@ -95,7 +98,7 @@ namespace neam
           template<size_t Index>
           typename ct::type_at_index<Index, Args...>::type & get_value_at_index()
           {
-            return values.template get_ref<Index>();
+            return values.template get<Index>();
           }
 
           template<size_t Index>
