@@ -72,10 +72,12 @@ namespace neam
     {
       type_list_member_instance() : instance() {}
       type_list_member_instance(const type_list_member_instance &o) : instance(o.instance) {}
+      type_list_member_instance(type_list_member_instance &&o) : instance(std::move(o.instance)) {}
       type_list_member_instance(const cr::tuple<Types...> &o) : instance(o) {}
+      type_list_member_instance(cr::tuple<Types...> &&o) : instance(std::move(o)) {}
 
       template<typename... Vals>
-      type_list_member_instance(Vals... vals) : instance(vals...) {}
+      explicit type_list_member_instance(Vals... vals) : instance(vals...) {}
 
 
       cr::tuple<Types...> instance;
