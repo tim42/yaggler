@@ -58,9 +58,9 @@ namespace neam
         fsquad.drawer.set_draw_method(neam::yaggler::geometry::draw_method::normal);
         fsquad.drawer.set_draw_triangles(Size / 3);
 
-        fsquad.ct_buffers.get_ref<0>().set_data(data);
+        fsquad.ct_buffers.get<0>().set_data(data);
 
-        fsquad.vao.add_buffer(fsquad.ct_buffers.get_ref<0>(), neam::yaggler::geometry::buffer_view<neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>>
+        fsquad.vao.add_buffer(fsquad.ct_buffers.get<0>(), neam::yaggler::geometry::buffer_view<neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>>
                               (0, 3, GL_FLOAT, 0, 0));
 
         return fsquad;
@@ -76,13 +76,13 @@ namespace neam
         fsquad.drawer.set_draw_triangles(VertexArraySize / 3);
         fsquad.drawer.set_index_type(GL_UNSIGNED_INT);
 
-        fsquad.ct_buffers.get_ref<0>().set_data(vertex);
-        fsquad.ct_buffers.get_ref<1>().set_data(indices);
+        fsquad.ct_buffers.get<0>().set_data(vertex);
+        fsquad.ct_buffers.get<1>().set_data(indices);
 
-        fsquad.vao.add_buffer(fsquad.ct_buffers.get_ref<0>(), neam::yaggler::geometry::buffer_view<neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>>
+        fsquad.vao.add_buffer(fsquad.ct_buffers.get<0>(), neam::yaggler::geometry::buffer_view<neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>>
                               (0, 3, GL_FLOAT, 0, 0));
 
-        fsquad.vao.add_buffer(fsquad.ct_buffers.get_ref<1>());
+        fsquad.vao.add_buffer(fsquad.ct_buffers.get<1>());
 
         return fsquad;
       }
