@@ -40,9 +40,6 @@ if (${CMAKE_CURRENT_BINARY_DIR} STREQUAL ${PROJECT_SOURCE_DIR})
   message(WARNING "you must create a build folder in order to build ${PROJ_APP} !!!")
 endif()
 
-# deps check
-include(cmake/deps.cmake)
-
 # output
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/")
@@ -54,7 +51,14 @@ set(YAGGLER_SRCS "")
 add_subdirectory("./third_party/glew")
 add_subdirectory("./third_party/glfw")
 
+set(YAGGLER_INCLUDE_DIRS "")
+set(YAGGLER_DEPS_LIBS "")
+
+# deps check
+include(cmake/deps.cmake)
+
 # include those third party libs
+include_directories(SYSTEM ${GLFW_INCLUDE_DIRS})
 include_directories(SYSTEM "./third_party/glfw/include/")
 include_directories(SYSTEM "./third_party/glew/include/")
 include_directories(SYSTEM "./third_party/png++/include/")
