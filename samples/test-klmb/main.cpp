@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 
   // create a window
 //   neam::yaggler::glfw_window win(neam::yaggler::window_mode::fullscreen);
-  neam::yaggler::glfw_window win(neam::yaggler::window_mode::windowed, {1000, 1000}, "[ :) / K: / Y: ]");
+  neam::yaggler::glfw_window win(neam::yaggler::window_mode::windowed, {100, 100}, "[ :) / K: / Y: ]");
   win.set_position({0, 0});
 
 
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 
   // the material
   // (much easier than using only the vanilla YägGLer, isn't it ?? ;) )
-  auto material = neam::klmb::yaggler::create_material
+  neam::klmb::yaggler::material_wrapper material = neam::klmb::yaggler::create_material_ptr
   <
     // SHADERS
     neam::klmb::yaggler::shader_list
@@ -121,12 +121,8 @@ int main(int argc, char **argv)
     neam::klmb::yaggler::make_ctx_pair("texture", neam::klmb::yaggler::reference_to_texture<0>())
   );
 
-  // some ops on vars
-  material.get_variable<neam::klmb::yaggler::variable_indexes::vp_matrix>() = cam_holder.vp_matrix;
-  material.get_variable<neam::klmb::yaggler::variable_indexes::object_matrix>() = &object_node.world_matrix;
-
-
-  neam::klmb::yaggler::object<> object = neam::klmb::sample::load_model("./data/models/dragon_vrip_res3.ply").convert_to_generic();
+  // create the model
+  neam::klmb::yaggler::model model(neam::klmb::sample::load_model("./data/models/dragon_vrip_res3.ply").convert_to_generic(), &cam_holder.vp_matrix, &object_node.world_matrix, material);
 
   neam::cr::chrono chronos;
   int frame_counter = 0;
@@ -191,11 +187,7 @@ int main(int argc, char **argv)
 
 
     // magical !!! :)
-    material.use();
-
-    // the geom
-    // Draw the triangles !
-    object.draw();
+    model.draw();
 
     win.swap_buffers();
   }
