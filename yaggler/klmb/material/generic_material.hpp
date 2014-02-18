@@ -83,6 +83,21 @@ namespace neam
             return *this;
           }
 
+          // std ownership funcs
+          material_wrapper &give_up_ownership()
+          {
+            if (wrapper)
+              wrapper->ownership = false;
+            return *this;
+          }
+
+          material_wrapper &assume_ownership()
+          {
+            if (wrapper)
+              wrapper->ownership = true;
+            return *this;
+          }
+
           bool is_empty() const
           {
             return !wrapper;
@@ -125,6 +140,8 @@ namespace neam
             virtual void link_shader() = 0;
 
 
+            bool ownership = false;
+
             // see material.hpp --> variable_indexes
             virtual glm::mat4 *& get_vp_matrix() = 0;
             virtual glm::mat4 *& get_object_matrix() = 0;
@@ -133,8 +150,11 @@ namespace neam
           template<typename MaterialType>
           struct spec_wrapper : base_wrapper
           {
-            spec_wrapper(MaterialType *_matptr) : matptr(_matptr), ownership(false) {}
-            spec_wrapper(MaterialType *_matptr, assume_ownership_t) : matptr(_matptr), ownership(true) {}
+            spec_wrapper(MaterialType *_matptr) : matptr(_matptr) {}
+            spec_wrapper(MaterialType *_matptr, assume_ownership_t) : matptr(_matptr)
+            {
+              ownership = (true);
+            }
 
             virtual ~spec_wrapper()
             {
