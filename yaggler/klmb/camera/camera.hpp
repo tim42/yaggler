@@ -57,6 +57,9 @@ namespace neam
         // camera specifics
         glm::vec3 position = glm::vec3(0.0, 0.0, 0.0);
         glm::vec3 up_vector = glm::vec3(0.0, 1.0, 0.0);
+
+        // it's either target_lock or look_at (if target_lock is null)
+        glm::vec3 *target_lock = nullptr;
         glm::vec3 look_at = glm::vec3(0.0, 0.0, 1.0);
 
         // intermediate steps
@@ -89,13 +92,17 @@ namespace neam
         }
         void _recompute_view_matrix()
         {
+          glm::vec3 look = look_at;
+          if (target_lock)
+            look = *target_lock;
+
           if (world_matrix)
           {
             glm::vec4 tpos = ((*world_matrix) * glm::vec4(position, 1));
-            view_matrix = glm::lookAt(glm::vec3(tpos.x, tpos.y, tpos.z), look_at, up_vector);
+            view_matrix = glm::lookAt(glm::vec3(tpos.x, tpos.y, tpos.z), look, up_vector);
           }
           else
-            view_matrix = glm::lookAt(position, look_at, up_vector);
+            view_matrix = glm::lookAt(position, look, up_vector);
         }
         void _recompute_proj_matrix()
         {
