@@ -199,7 +199,7 @@ namespace neam
 
       namespace transformation_node
       {
-        // a node MUST have: local_matrix, compute_object_matrix(void) and dirty
+        // a node MUST have: compute_matrix(void), compute_world(const node *parent_world, node *world_dest) and dirty
 
         // the default node
         struct default_node
