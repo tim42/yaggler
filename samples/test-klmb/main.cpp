@@ -49,9 +49,9 @@ int main(int argc, char **argv)
   neam::ct::vector2 fixed_resolution;
 
   // create a window
-//   neam::yaggler::glfw_window win(neam::yaggler::window_mode::fullscreen);
-  neam::yaggler::glfw_window win(neam::yaggler::window_mode::windowed, {1000, 1000}, "[ :) / K: / Y: ]");
-  win.set_position({0, 0});
+  neam::yaggler::glfw_window win(neam::yaggler::window_mode::fullscreen);
+//   neam::yaggler::glfw_window win(neam::yaggler::window_mode::windowed, {1000, 1000}, "[ :) / K: / Y: ]");
+//   win.set_position({0, 0});
 
 
   // camera stuff
@@ -77,24 +77,39 @@ int main(int argc, char **argv)
   auto &parent_node = trtree.root.create_child();
   auto &object_node = parent_node.create_child();
 
-  object_node.node->position = glm::vec3(0, -3, -0.);
-  object_node.node->scale = glm::vec3(25.);
-  object_node.node->dirty = true;
+  object_node.local->position = glm::vec3(0, -3, -0.);
+  object_node.local->scale = glm::vec3(25.);
+  object_node.local->dirty = true;
+
+
+  auto &object_2_parent_node = parent_node.create_child();
+  auto &object_2_parent_sub_node = object_2_parent_node.create_child();
+  auto &object_2_node = object_2_parent_sub_node.create_child();
+
+  object_2_parent_sub_node.local->position = glm::vec3(-5., -0, -0.);
+  object_2_parent_sub_node.local->dirty = true;
+  object_2_node.local->position = glm::vec3(0., -3., -0.);
+  object_2_node.local->scale = glm::vec3(25.);
+  object_2_node.local->dirty = true;
+
+  // lock cam[1] to object_2_node.
+  cam[1].target_lock = &(object_2_node.world->position);
+  cam[0].target_lock = &(object_2_parent_sub_node.world->position);
 
   // camera stuff.
   auto &parent_camera_node = trtree.root.create_child();
   auto &camera_node = parent_camera_node.create_child();
 
-  camera_node.node->position = glm::vec3(0., 0., -10.);
+  camera_node.local->position = glm::vec3(0., 0., -10.);
 
-  parent_camera_node.node->dirty = true;
-  camera_node.node->dirty = true;
+  parent_camera_node.local->dirty = true;
+  camera_node.local->dirty = true;
 
   // make the link.
-  cam[0].world_matrix = &camera_node.world_matrix;
+  cam[0].world_matrix = &camera_node.world->matrix;
 
   // recompute every mats'
-  trtree.root.recompute_matrices();
+//   trtree.root.recompute_matrices();
 
 
   // the material
@@ -124,7 +139,8 @@ int main(int argc, char **argv)
   material.assume_ownership();
 
   // create the model
-  neam::klmb::yaggler::model model(neam::klmb::sample::load_model("./data/models/dragon_vrip_res3.ply").convert_to_generic(), &cam_holder.vp_matrix, &object_node.world_matrix, material);
+  neam::klmb::yaggler::model model(neam::klmb::sample::load_model("./data/models/dragon_vrip.ply").convert_to_generic(), &cam_holder.vp_matrix, &object_node.world->matrix, material);
+  neam::klmb::yaggler::model model_2(neam::klmb::sample::load_model("./data/models/happy_vrip.ply").convert_to_generic(), &cam_holder.vp_matrix, &object_2_node.world->matrix, material);
 
   neam::cr::chrono chronos;
   int frame_counter = 0;
@@ -144,7 +160,7 @@ int main(int argc, char **argv)
     time_accumulator += delta;
     ++frame_counter;
 
-    if (time_accumulator >= 2)
+    if (time_accumulator >= 4)
     {
       std::cout << "f/s: "       << std::setw(9) << std::left <<  frame_counter / time_accumulator
                 << "  |  ms/f: " << std::setw(9) << std::left << time_accumulator / frame_counter * 1000.f
@@ -169,8 +185,11 @@ int main(int argc, char **argv)
     cam[camid].recompute_matrices();
 
     // move the object
-    parent_camera_node.node->rotation = glm::rotate(parent_camera_node.node->rotation, (float)(M_PI / -15. * delta), glm::vec3(0, 1, 0));
-    parent_camera_node.node->dirty = 1;
+    object_2_parent_node.local->rotation = glm::rotate(object_2_parent_node.local->rotation, (float)(M_PI / 15. * delta), glm::vec3(0, 1, 0));
+    object_2_parent_node.local->dirty = 1;
+
+    parent_camera_node.local->rotation = glm::rotate(parent_camera_node.local->rotation, (float)(M_PI / -15. * delta), glm::vec3(0, 1, 0));
+    parent_camera_node.local->dirty = 1;
 
 //     object_node.node->rotation = glm::rotate(object_node.node->rotation, (float)(M_PI / 5.5 * delta), glm::vec3(0, 1, 0));
 //     object_node.node->rotation = glm::rotate(object_node.node->rotation, (float)(M_PI / 15.5 * delta), glm::vec3(0, 1, 1));
@@ -178,7 +197,7 @@ int main(int argc, char **argv)
 
     // hu :D (just to test)
 //     parent_node.recompute_matrices();
-    parent_camera_node.recompute_matrices();
+    trtree.root.recompute_matrices();
 
     /* Set background colour to NOT BLACK */
     glClearColor(0.30, 0.30, 0.30, 0.1); // not fast on intel HD
@@ -190,6 +209,7 @@ int main(int argc, char **argv)
 
     // magical !!! :)
     model.draw();
+    model_2.draw();
 
     win.swap_buffers();
   }
