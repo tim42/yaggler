@@ -89,7 +89,7 @@ int main(int argc, char **argv)
   object_2_parent_sub_node.local->position = glm::vec3(-5., -0, -0.);
   object_2_parent_sub_node.local->dirty = true;
   object_2_node.local->position = glm::vec3(0., -3., -0.);
-  object_2_node.local->scale = glm::vec3(25.);
+  object_2_node.local->scale = glm::vec3(20.);
   object_2_node.local->dirty = true;
 
   // lock cam[1] to object_2_node.
@@ -139,8 +139,8 @@ int main(int argc, char **argv)
   material.assume_ownership();
 
   // create the model
-  neam::klmb::yaggler::model model(neam::klmb::sample::load_model("./data/models/dragon_vrip.ply").convert_to_generic(), &cam_holder.vp_matrix, &object_node.world->matrix, material);
-  neam::klmb::yaggler::model model_2(neam::klmb::sample::load_model("./data/models/happy_vrip.ply").convert_to_generic(), &cam_holder.vp_matrix, &object_2_node.world->matrix, material);
+  neam::klmb::yaggler::model model(neam::klmb::sample::load_model("./data/models/dragon_vrip_res3.ply").convert_to_generic(), &cam_holder.vp_matrix, &object_node.world->matrix, material);
+  neam::klmb::yaggler::model model_2(neam::klmb::sample::load_model("./data/models/dragon_vrip_res4.ply").convert_to_generic(), &cam_holder.vp_matrix, &object_2_node.world->matrix, material);
 
   neam::cr::chrono chronos;
   int frame_counter = 0;

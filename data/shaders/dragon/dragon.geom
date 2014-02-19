@@ -29,8 +29,8 @@ void main()
 
   normal = normalize(cross((gl_in[2].gl_Position - gl_in[0].gl_Position).xyz, (gl_in[1].gl_Position - gl_in[0].gl_Position).xyz));
 
-  vec4 n = 0.01 / (vec4((normal), 1.0)) * abs(1. + sin((global_time / 5. - length(orig_vertex_position[0]) / 3.5))) * 3.1;
-
+  vec4 n = 0.05 / (vec4((normal), orig_vertex_position[0].w)) * abs(1. - cos((global_time/ 2. - length(orig_vertex_position[0]) / 3.5))) * 3.1;
+  n = sign(n) * (sqrt(abs(n) * 0.07));
 
   gl_Position = gl_in[0].gl_Position + n;
   tri_distance = vec3(1, 0, 0);
