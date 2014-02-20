@@ -67,8 +67,6 @@ namespace neam
             {
               constexpr double max_acc_time = 2.5;
 
-              main_smgr.render();
-
               glfwPollEvents();
               window.swap_buffers();
               glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -80,9 +78,11 @@ namespace neam
                 frame_counter = 0;
                 chrono.reset();
 
+#ifndef YAGGLER_NO_MESSAGES
                 std::cout << "f/s: "       << std::setw(9) << std::left <<  1000.0 / mps_1s
                           << "  |  ms/f: " << std::setw(9) << std::left << mps_1s
                           << std::endl;
+#endif
               }
             }
 
