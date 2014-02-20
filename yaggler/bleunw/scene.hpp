@@ -105,10 +105,10 @@ namespace neam
 
             // render
             klmb::yaggler::camera_holder camera_holder;
-            container<klmb::yaggler::camera *> camera_list;
-            container<klmb::yaggler::ortho_camera *> ortho_camera_list;
+            indexed_container<klmb::yaggler::camera *> camera_list;
+            indexed_container<klmb::yaggler::ortho_camera *> ortho_camera_list;
 
-            container<klmb::yaggler::model *> model_list;
+            indexed_container<klmb::yaggler::model *> model_list;
 
           public: // operations
             void render()
