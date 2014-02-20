@@ -54,6 +54,14 @@ namespace neam
               glfwSetCursorPosCallback(win._get_glfw_handle(), &manager::_t_mouse_move);
               glfwSetScrollCallback(win._get_glfw_handle(), &manager::_t_mouse_wheel);
 
+              glfwSetWindowSizeCallback(win._get_glfw_handle(), &manager::_t_window_size);
+              glfwSetWindowFocusCallback(win._get_glfw_handle(), &manager::_t_focus);
+              glfwSetWindowIconifyCallback(win._get_glfw_handle(), &manager::_t_iconify);
+              glfwSetWindowPosCallback(win._get_glfw_handle(), &manager::_t_window_pos);
+              glfwSetWindowRefreshCallback(win._get_glfw_handle(), &manager::_t_refresh);
+              glfwSetWindowCloseCallback(win._get_glfw_handle(), &manager::_t_close);
+              glfwSetFramebufferSizeCallback(win._get_glfw_handle(), &manager::_t_buffer_resize);
+
               // init the mouse state
               last_mouse_status.buttons = events::mouse_buttons::none;
               double _cpos[2];
@@ -80,6 +88,14 @@ namespace neam
               glfwSetMouseButtonCallback(win._get_glfw_handle(), nullptr);
               glfwSetCursorPosCallback(win._get_glfw_handle(), nullptr);
               glfwSetScrollCallback(win._get_glfw_handle(), nullptr);
+
+              glfwSetWindowSizeCallback(win._get_glfw_handle(), nullptr);
+              glfwSetWindowFocusCallback(win._get_glfw_handle(), nullptr);
+              glfwSetWindowIconifyCallback(win._get_glfw_handle(), nullptr);
+              glfwSetWindowPosCallback(win._get_glfw_handle(), nullptr);
+              glfwSetWindowRefreshCallback(win._get_glfw_handle(), nullptr);
+              glfwSetWindowCloseCallback(win._get_glfw_handle(), nullptr);
+              glfwSetFramebufferSizeCallback(win._get_glfw_handle(), nullptr);
             }
 
             void register_mouse_listener(events::mouse_listener *ml)
@@ -102,16 +118,28 @@ namespace neam
               klisteners.erase(kl);
             }
 
+            void register_window_listener(events::window_listener *wl)
+            {
+              wlisteners.insert(wl);
+            }
+
+            void unregister_window_listener(events::window_listener *wl)
+            {
+              wlisteners.erase(wl);
+            }
+
             void register_listener(events::listener *l)
             {
               mlisteners.insert(l);
               klisteners.insert(l);
+              wlisteners.insert(l);
             }
 
             void unregister_listener(events::listener *l)
             {
               mlisteners.erase(l);
               klisteners.erase(l);
+              wlisteners.erase(l);
             }
 
             // delete them all
@@ -149,6 +177,48 @@ namespace neam
             {
               manager *emgr = reinterpret_cast<manager *>(glfwGetWindowUserPointer(glfw_win));
               emgr->_unicode_input(glfw_win, code);
+            }
+
+            static void _t_window_pos(GLFWwindow *glfw_win, int x, int y)
+            {
+              manager *emgr = reinterpret_cast<manager *>(glfwGetWindowUserPointer(glfw_win));
+              emgr->_window_pos(glfw_win, x, y);
+            }
+
+            static void _t_window_size(GLFWwindow *glfw_win, int x, int y)
+            {
+              manager *emgr = reinterpret_cast<manager *>(glfwGetWindowUserPointer(glfw_win));
+              emgr->_window_size(glfw_win, x, y);
+            }
+
+            static void _t_close(GLFWwindow *glfw_win)
+            {
+              manager *emgr = reinterpret_cast<manager *>(glfwGetWindowUserPointer(glfw_win));
+              emgr->_close(glfw_win);
+            }
+
+            static void _t_refresh(GLFWwindow *glfw_win)
+            {
+              manager *emgr = reinterpret_cast<manager *>(glfwGetWindowUserPointer(glfw_win));
+              emgr->_refresh(glfw_win);
+            }
+
+            static void _t_focus(GLFWwindow *glfw_win, int focus)
+            {
+              manager *emgr = reinterpret_cast<manager *>(glfwGetWindowUserPointer(glfw_win));
+              emgr->_focus(glfw_win, focus);
+            }
+
+            static void _t_iconify(GLFWwindow *glfw_win, int iconify)
+            {
+              manager *emgr = reinterpret_cast<manager *>(glfwGetWindowUserPointer(glfw_win));
+              emgr->_iconify(glfw_win, iconify);
+            }
+
+            static void _t_buffer_resize(GLFWwindow *glfw_win, int x, int y)
+            {
+              manager *emgr = reinterpret_cast<manager *>(glfwGetWindowUserPointer(glfw_win));
+              emgr->_buffer_resize(glfw_win, x, y);
             }
 
           private: // called by the trampos
@@ -250,10 +320,57 @@ namespace neam
               }
             }
 
+            void _window_pos(GLFWwindow *, int x, int y)
+            {
+              glm::vec2 v(x, y);
+//               for (events::window_listener * wl : wlisteners)
+//               {
+//               }
+            }
+
+            void _window_size(GLFWwindow *, int x, int y)
+            {
+              glm::vec2 v(x, y);
+              for (events::window_listener * wl : wlisteners)
+                wl->window_resized(v);
+            }
+
+            void _close(GLFWwindow *)
+            {
+              for (events::window_listener * wl : wlisteners)
+                wl->window_closed();
+            }
+
+            void _refresh(GLFWwindow *)
+            {
+              for (events::window_listener * wl : wlisteners)
+                wl->window_content_refresh();
+            }
+
+            void _focus(GLFWwindow *, int focus)
+            {
+              for (events::window_listener * wl : wlisteners)
+                wl->window_focused(focus);
+            }
+
+            void _iconify(GLFWwindow *, int iconify)
+            {
+              for (events::window_listener * wl : wlisteners)
+                wl->window_iconified(iconify);
+            }
+
+            void _buffer_resize(GLFWwindow *, int x, int y)
+            {
+              glm::vec2 v(x, y);
+              for (events::window_listener * wl : wlisteners)
+                wl->framebuffer_resized(v);
+            }
+
           private:
             neam::yaggler::glfw_window &win;
             std::set<events::keyboard_listener *> klisteners;
             std::set<events::mouse_listener *> mlisteners;
+            std::set<events::window_listener *> wlisteners;
 
             events::mouse_status last_mouse_status;
             events::keyboard_status last_keyboard_status;

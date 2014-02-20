@@ -55,7 +55,21 @@ namespace neam
           virtual void on_input(const keyboard_status &, uint32_t) {}; // for (unicode) text input
         };
 
-        struct listener : public mouse_listener, public keyboard_listener
+        struct window_listener
+        {
+          virtual ~window_listener() {}
+
+          virtual void window_closed() = 0;
+          virtual void window_focused(bool focused) = 0;
+          virtual void window_iconified(bool iconified) = 0;
+
+          virtual void window_resized(const glm::vec2 &new_size) = 0;
+          virtual void framebuffer_resized(const glm::vec2 &new_size) = 0;
+
+          virtual void window_content_refresh() {}
+        };
+
+        struct listener : public mouse_listener, public keyboard_listener, public window_listener
         {
           virtual ~listener() {}
         };
