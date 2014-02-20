@@ -26,7 +26,7 @@
 #ifndef __N_1559079767981120197_2120402712__LISTENER_HPP__
 # define __N_1559079767981120197_2120402712__LISTENER_HPP__
 
-#include <bleunw/event_manager.hpp>
+#include <bleunw/events.hpp>
 
 namespace neam
 {
@@ -37,7 +37,7 @@ namespace neam
       class listener : public neam::bleunw::yaggler::events::listener
       {
         public:
-          listener(bleunw::yaggler::event_manager &_emgr) : emgr(_emgr)
+          listener(bleunw::yaggler::events::manager &_emgr) : emgr(_emgr)
           {
             emgr.register_listener(this);
           }
@@ -89,7 +89,7 @@ namespace neam
           bool do_quit = false;
 
         private:
-          bleunw::yaggler::event_manager &emgr;
+          bleunw::yaggler::events::manager &emgr;
       };
     } // namespace sample
   } // namespace klmb
