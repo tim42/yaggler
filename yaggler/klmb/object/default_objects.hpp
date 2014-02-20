@@ -38,7 +38,7 @@ namespace neam
       namespace object_data
       {
         // The fullscreen quad
-        GLfloat fs_quad [] =
+        GLfloat fs_quad [] __attribute__((unused)) =
         {
           -1.0f, -1.f, 0.0f,
           1.0f, -1.0f, 0.0f,
