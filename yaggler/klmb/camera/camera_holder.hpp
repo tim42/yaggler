@@ -38,13 +38,43 @@ namespace neam
       // allow mainly to switch camera on the fly, without bothering about resetting refs in every shaders.
       struct camera_holder
       {
-        glm::mat4 *vp_matrix = nullptr; // yep, that's it.
+        public:
+          glm::mat4 *vp_matrix = nullptr; // yep, that's it.
 
-        template<typename CamType>
-        void use_camera(CamType &cam)
-        {
-          vp_matrix = &(cam.vp_matrix);
-        }
+          void use_camera(camera &cam)
+          {
+            ortho_cam = nullptr;
+            std_cam = &cam;
+            vp_matrix = &(cam.vp_matrix);
+          }
+          void use_camera(ortho_camera &cam)
+          {
+            std_cam = nullptr;
+            ortho_cam = &cam;
+            vp_matrix = &(cam.vp_matrix);
+          }
+
+          void recompute_cam_matrices()
+          {
+            if (std_cam)
+              std_cam->recompute_matrices();
+            if (ortho_cam)
+              ortho_cam->recompute_matrices();
+          }
+
+          camera *_get_std_cam()
+          {
+            return std_cam;
+          }
+
+          ortho_camera *_get_ortho_cam()
+          {
+            return ortho_cam;
+          }
+
+        private:
+          camera *std_cam = nullptr;
+          ortho_camera *ortho_cam = nullptr;
       };
     } // namespace yaggler
   } // namespace klmb
