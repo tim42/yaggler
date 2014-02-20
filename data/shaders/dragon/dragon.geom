@@ -1,5 +1,14 @@
 
-#version 330
+#version 330 core
+
+#line 4
+
+// // some mandatory K:LMB macros
+
+// this file is using the 'framework'
+#define KLMB_IS_USING_FRAMEWORK
+// this file is a shader entry point
+#define KLMB_IS_ENTRY_POINT
 
 
 layout(triangles) in;
@@ -24,7 +33,7 @@ out vec4 vertex_position;
 
 uniform float global_time;
 
-void main()
+void KLMB_MAIN_FUNCTION()
 {
 
   normal = normalize(cross((gl_in[2].gl_Position - gl_in[0].gl_Position).xyz, (gl_in[1].gl_Position - gl_in[0].gl_Position).xyz));

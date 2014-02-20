@@ -1,6 +1,16 @@
 
 #version 330 core
 
+#line 4
+
+// // some mandatory K:LMB macros
+
+// this file is using the 'framework'
+#define KLMB_IS_USING_FRAMEWORK
+// this file is a shader entry point
+#define KLMB_IS_ENTRY_POINT
+
+
 
 in vec3 in_position;
 uniform mat4 vp_matrix;
@@ -15,7 +25,7 @@ out gl_PerVertex
     vec4 gl_Position;
 };
 
-void main(void)
+void KLMB_MAIN_FUNCTION(void)
 {
     gl_Position = (vp_matrix * object_matrix) * vec4(in_position, 1.);
 //     gl_Position.x +=  cos(global_time * 5 + (50 * in_position.y)) * length(in_position) * 5;

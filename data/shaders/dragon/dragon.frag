@@ -5,7 +5,7 @@
 
 // Specify which version of GLSL we are using.
 
-#version 330
+#version 330 core
 
 #line 10
 
@@ -67,6 +67,3 @@ void main()
 }
 
 #endif
-
-
- 
