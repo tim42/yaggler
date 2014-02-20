@@ -22,17 +22,26 @@
 #define KLMB_FRAMEWORK_MAIN
 
 
+// // now this is some macro works :)
 
-// main
+// declare shader main functions
+#define DECLARE_SHADER_MAIN(n)                         void KLMB_CALL_MAIN_FUNCTION(n);
+
+
+KLMB_FOR_EACH_SHADER(DECLARE_SHADER_MAIN)
+
+
 void KLMB_MAIN_FUNCTION()
 {
-  
+  // call every main functions
+# define CALL_MAIN_FUNCTION(n)                           KLMB_CALL_MAIN_FUNCTION(n);
+  KLMB_FOR_EACH_SHADER(CALL_MAIN_FUNCTION);
 }
 
 #else
 
-// shader does not declare anything: fails on intelHD/mesa
-// this var is unused.
-bool KLMB_DO_NOT_TOUCH_THIS_VAR_1_23456213613641468454212121545545451684118648;
+// shader does not declare anything, fails on intelHD/mesa
+// this var is aimed to be unused.
+bool KLMB_DO_NOT_TOUCH_THIS_VAR_1_23456213613641364136841651941355541684118648;
 
 #endif
