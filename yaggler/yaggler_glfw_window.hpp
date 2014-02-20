@@ -35,6 +35,7 @@
 #include "ct_point.hpp"
 #include "yaggler_except.hpp"
 #include "setup.hpp"
+#include "tools/ownership.hpp"
 
 namespace neam
 {
@@ -48,15 +49,11 @@ namespace neam
 
     class glfw_window
     {
-        glfw_window(const glfw_window &) = delete;
-        glfw_window(glfw_window &&) = delete;
-        glfw_window &operator = (const glfw_window &) = delete;
-        glfw_window &operator = (glfw_window &&) = delete;
 
       public:
         // window_size MUST be an integer, NOT a fixed point size.
         glfw_window(window_mode::windowed_t, const neam::ct::vector2 &window_size, const std::string &title = "[ neam/yaggler")
-          : win(nullptr)
+          : win(nullptr), link(false)
         {
           glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, ::opengl_version::gl_major);
           glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, ::opengl_version::gl_minor);
@@ -170,7 +167,7 @@ namespace neam
           }
         }
         glfw_window(window_mode::fullscreen_t, const std::string &title = "[ neam/yaggler")
-          : win(nullptr)
+        : win(nullptr), link(false)
         {
           glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, ::opengl_version::gl_major);
           glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, ::opengl_version::gl_minor);
@@ -286,10 +283,63 @@ namespace neam
           }
         }
 
+        glfw_window(const glfw_window &w)
+          : win(w.win), link(true)
+        {
+        }
+
+        glfw_window &operator = (const glfw_window &w)
+        {
+          if (this != &w && win && !link)
+            glfwDestroyWindow(win);
+          win = w.win;
+          return *this;
+        }
+
+        glfw_window(glfw_window &w, stole_ownership_t) : win(w.win), link(w.link)
+        {
+          w.win = nullptr;
+        }
+
+        glfw_window(glfw_window &&w) : win(w.win), link(w.link)
+        {
+          w.win = nullptr;
+        }
+
+        glfw_window &operator = (glfw_window &&w)
+        {
+          if (this != &w)
+          {
+            if (win && !link)
+              glfwDestroyWindow(win);
+            win = w.win;
+            link = w.link;
+            w.win = nullptr;
+          }
+          return *this;
+        }
+
         ~glfw_window()
         {
-          if (win)
+          if (win && !link)
             glfwDestroyWindow(win);
+        }
+
+        glfw_window &give_up_ownership()
+        {
+          link = true;
+          return *this;
+        }
+
+        glfw_window &assume_ownership()
+        {
+          link = false;
+          return *this;
+        }
+
+        bool is_link() const
+        {
+          return link;
         }
 
         void select() const
@@ -379,6 +429,7 @@ namespace neam
 
       private:
         GLFWwindow *win;
+        bool link;
     };
   } // namespace yaggler
 } // namespace neam
