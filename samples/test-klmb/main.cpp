@@ -26,10 +26,14 @@ using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::
 // lets include klmb main header.
 #include <klmb/klmb.hpp>
 
+// lets include some bleunw files
+#include <bleunw/event_manager.hpp>
+
 #include <iostream>
 #include <iomanip>
 
 #include "loader.hpp"
+#include "listener.hpp"
 
 constexpr neam::string_t vert = "data/shaders/dragon/dragon.vert";
 constexpr neam::string_t frag = "data/shaders/dragon/dragon.frag";
@@ -50,9 +54,13 @@ int main(int argc, char **argv)
 
   // create a window
   neam::yaggler::glfw_window win(neam::yaggler::window_mode::fullscreen);
-//   neam::yaggler::glfw_window win(neam::yaggler::window_mode::windowed, {1000, 1000}, "[ :) / K: / Y: ]");
+//   neam::yaggler::glfw_window win(neam::yaggler::window_mode::windowed, {1000, 1000}, "[ :) / K: / Y: / :b ]");
 //   win.set_position({0, 0});
 
+  // event stuff
+  neam::bleunw::yaggler::event_manager emgr(win);
+
+  neam::klmb::sample::listener listener(emgr);
 
   // camera stuff
   neam::klmb::yaggler::camera cam[2];
@@ -92,8 +100,7 @@ int main(int argc, char **argv)
   object_2_node.local->scale = glm::vec3(20.);
   object_2_node.local->dirty = true;
 
-  // lock cam[1] to object_2_node.
-  cam[1].target_lock = &(object_2_node.world->position);
+  // lock cam[0] to the object #2.
   cam[0].target_lock = &(object_2_parent_sub_node.world->position);
 
   // camera stuff.
@@ -109,7 +116,7 @@ int main(int argc, char **argv)
   cam[0].world_matrix = &camera_node.world->matrix;
 
   // recompute every mats'
-//   trtree.root.recompute_matrices();
+  trtree.root.recompute_matrices();
 
 
   // the material
@@ -154,7 +161,7 @@ int main(int argc, char **argv)
   // 4 3V32 (at least, as the windows is open)
   float time_accumulator = 0;
   int camid = 0;
-  while (!win.should_close())
+  while (!win.should_close() && !listener.do_quit)
   {
     float delta = chronos.delta();
     time_accumulator += delta;
@@ -188,22 +195,19 @@ int main(int argc, char **argv)
     object_2_parent_node.local->rotation = glm::rotate(object_2_parent_node.local->rotation, (float)(M_PI / 15. * delta), glm::vec3(0, 1, 0));
     object_2_parent_node.local->dirty = 1;
 
+    // move the cam
     parent_camera_node.local->rotation = glm::rotate(parent_camera_node.local->rotation, (float)(M_PI / -15. * delta), glm::vec3(0, 1, 0));
     parent_camera_node.local->dirty = 1;
 
-//     object_node.node->rotation = glm::rotate(object_node.node->rotation, (float)(M_PI / 5.5 * delta), glm::vec3(0, 1, 0));
-//     object_node.node->rotation = glm::rotate(object_node.node->rotation, (float)(M_PI / 15.5 * delta), glm::vec3(0, 1, 1));
-//     object_node.node->dirty = 1;
 
-    // hu :D (just to test)
-//     parent_node.recompute_matrices();
+    // recompute matrices (and .world) on modified objects
     trtree.root.recompute_matrices();
 
-    /* Set background colour to NOT BLACK */
+    // Set background colour to NOT BLACK
     glClearColor(0.30, 0.30, 0.30, 0.1); // not fast on intel HD
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, neam::ct::conversion::to<GLint>(fixed_resolution.x), neam::ct::conversion::to<GLint>(fixed_resolution.y));
-    /* Clear background with the NOT BLACK colour */
+    // Clear background with the NOT BLACK colour
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
