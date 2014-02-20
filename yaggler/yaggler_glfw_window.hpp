@@ -371,6 +371,12 @@ namespace neam
           glfwSwapBuffers(win);
         }
 
+        // advanced
+        GLFWwindow *_get_glfw_handle()
+        {
+          return win;
+        }
+
       private:
         GLFWwindow *win;
     };
