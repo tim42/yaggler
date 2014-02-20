@@ -85,6 +85,35 @@ namespace neam
             (void)code;
           }
 
+          virtual void framebuffer_resized(const glm::vec2 &new_size)
+          {
+            (void)new_size;
+          }
+
+          virtual void window_closed()
+          {
+            do_quit = true;
+          }
+
+          virtual void window_focused(bool focused)
+          {
+            (void)focused;
+          }
+
+          virtual void window_iconified(bool iconified)
+          {
+            (void)iconified;
+          }
+
+          virtual void window_resized(const glm::vec2 &new_size)
+          {
+            (void)new_size;
+          }
+
+          virtual void window_content_refresh()
+          {
+          }
+
         public:
           bool do_quit = false;
 
