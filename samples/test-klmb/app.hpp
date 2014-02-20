@@ -73,6 +73,8 @@ namespace neam
               parent_camera_local_node->rotation = glm::rotate(parent_camera_local_node->rotation, (float)(M_PI / -15. * delta), glm::vec3(0, 1, 0));
               parent_camera_local_node->dirty = 1;
 
+              main_smgr.render();
+
               end_render_loop();
             }
           }
@@ -80,7 +82,7 @@ namespace neam
         private:
           void init()
           {
-            main_smgr.camera_list.insert(&camera);
+            main_smgr.camera_list.push_back(&camera);
             main_smgr.camera_holder.use_camera(camera);
 
             auto &parent_node = main_smgr.transformation_tree.root.create_child();
@@ -149,12 +151,15 @@ namespace neam
             // models
             main_smgr.objects.push_back(neam::klmb::sample::load_model("./data/models/dragon_vrip_res3.ply").convert_to_generic());
 
-            main_smgr.model_list.insert(new neam::klmb::yaggler::model(main_smgr.objects.back(), &main_smgr.camera_holder.vp_matrix, &object_node.world->matrix, material));
-            main_smgr.model_list.insert(new neam::klmb::yaggler::model(main_smgr.objects.back(), &main_smgr.camera_holder.vp_matrix, &object_2_node.world->matrix, material));
+            main_smgr.model_list.push_back(new neam::klmb::yaggler::model(main_smgr.objects.back(), &main_smgr.camera_holder.vp_matrix, &object_node.world->matrix, material));
+            main_smgr.model_list.push_back(new neam::klmb::yaggler::model(main_smgr.objects.back(), &main_smgr.camera_holder.vp_matrix, &object_2_node.world->matrix, material));
 
             // yay: gl calls :D
             glEnable(GL_DEPTH_TEST);
             glDepthFunc(GL_LESS);
+
+            // frame_buffer / RTT
+            fbo[0].bind_texture_color(rtt_dest, 0);
           }
 
         private:
@@ -162,6 +167,9 @@ namespace neam
 
           neam::klmb::yaggler::transformation_node::default_node *object_2_parent_local_node;
           neam::klmb::yaggler::transformation_node::default_node *parent_camera_local_node;
+
+          neam::yaggler::texture::frame_buffer<neam::yaggler::type::opengl> fbo[2];
+          neam::yaggler::texture::texture<neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>> rtt_dest;
       };
     } // namespace sample
   } // namespace klmb
