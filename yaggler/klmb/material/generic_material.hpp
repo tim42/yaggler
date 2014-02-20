@@ -164,26 +164,26 @@ namespace neam
 
             MaterialType *matptr;
 
-            virtual base_wrapper *clone() const
+            virtual base_wrapper *clone() const final
             {
               return new spec_wrapper {matptr};
             }
 
-            virtual void use() const
+            virtual void use() const final
             {
               matptr->use();
             }
-            virtual void link_shader()
+            virtual void link_shader() final
             {
               matptr->link_shader();
             }
 
-            virtual glm::mat4 *&get_object_matrix()
+            virtual glm::mat4 *&get_object_matrix() final
             {
               return matptr->template get_variable<variable_indexes::object_matrix>();
             }
 
-            virtual glm::mat4 *&get_vp_matrix()
+            virtual glm::mat4 *&get_vp_matrix() final
             {
               return matptr->template get_variable<variable_indexes::vp_matrix>();
             }
