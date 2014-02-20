@@ -27,7 +27,7 @@ using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::
 #include <klmb/klmb.hpp>
 
 // lets include some bleunw files
-#include <bleunw/event_manager.hpp>
+#include <bleunw/events.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -53,12 +53,12 @@ int main(int argc, char **argv)
   neam::ct::vector2 fixed_resolution;
 
   // create a window
-  neam::yaggler::glfw_window win(neam::yaggler::window_mode::fullscreen);
-//   neam::yaggler::glfw_window win(neam::yaggler::window_mode::windowed, {1000, 1000}, "[ :) / K: / Y: / :b ]");
-//   win.set_position({0, 0});
+//   neam::yaggler::glfw_window win(neam::yaggler::window_mode::fullscreen);
+  neam::yaggler::glfw_window win(neam::yaggler::window_mode::windowed, {1000, 1000}, "[ :) / K: / Y: / :b ]");
+  win.set_position({0, 0});
 
   // event stuff
-  neam::bleunw::yaggler::event_manager emgr(win);
+  neam::bleunw::yaggler::events::manager emgr(win);
 
   neam::klmb::sample::listener listener(emgr);
 
