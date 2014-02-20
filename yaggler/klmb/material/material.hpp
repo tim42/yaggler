@@ -50,10 +50,9 @@ namespace neam
     {
       namespace framework_files
       {
-        // in all the shader stages, there's (I believe) only two that you could easily
-        // have multiple outputs and combine them. (perhaps there's also tess-ctrl)
         constexpr neam::string_t main_frag = "data/klmb-framework/main.frag";
         constexpr neam::string_t main_vert = "data/klmb-framework/main.vert";
+        constexpr neam::string_t main_geom = "data/klmb-framework/main.geom";
       } // namespace framework
 
       // this is the very basic K:LMB/YägGLer base_material.
@@ -237,6 +236,8 @@ namespace neam
           // the prog :)
           using program_t = typename Shaders::template program_auto_merger
           <
+            ct::pair<embed::GLenum<GL_VERTEX_SHADER>, auto_file_shader<framework_files::main_vert>>,
+            ct::pair<embed::GLenum<GL_GEOMETRY_SHADER>, auto_file_shader<framework_files::main_geom>>,
             ct::pair<embed::GLenum<GL_FRAGMENT_SHADER>, auto_file_shader<framework_files::main_frag>>
           >::type;
           program_t shader_prog;

@@ -62,6 +62,13 @@ namespace neam
         >...
       >;
 
+      template<const char * Filename>
+      using rgba_png_2d_texture = neam::yaggler::texture::texture
+      <
+        neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>,
+        neam::yaggler::texture::options::png_texture_init<GL_RGBA, neam::embed::string<Filename> >
+      >;
+
       // /// /// shaders usings
 
       // shader from a file, compiled only one time (no FS watcher)

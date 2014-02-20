@@ -66,6 +66,16 @@ namespace neam
           uint8_t       fragment__shader_number = 0;
           bool          fragment__framework_registered = false;
           bool          fragment__main_registered = false;
+
+          // vertex stuff
+          uint8_t       vertex__shader_number = 0;
+          bool          vertex__framework_registered = false;
+          bool          vertex__main_registered = false;
+
+          // geom stuff
+          uint8_t       geometry__shader_number = 0;
+          bool          geometry__framework_registered = false;
+          bool          geometry__main_registered = false;
         };
 
         // the basical one
@@ -82,8 +92,127 @@ namespace neam
           }
         };
 
+        // vertex shader stuff
+        template<>
+        struct setup_shader_framework<GL_VERTEX_SHADER>
+        {
+          template<typename Shader>
+          static uint8_t setup(Shader &shader, uint8_t, _shader_framework_data &fdata)
+          {
+            bool is_entry_point = tools::is_true(shader.get_preprocessor_value("KLMB_IS_ENTRY_POINT"));
+            bool is_framework_main = tools::is_true(shader.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
 
-        // the others
+            if (is_framework_main && fdata.vertex__framework_registered)
+              std::cerr << "K:LMB/YAGGLER : ERROR : material: vertex shader framework: framework has already been registered." << std::endl;
+
+            fdata.vertex__framework_registered |= is_framework_main;
+
+            // setup / load defs
+            std::string base_framework_defs = "#define KLMB_PROG_ID " + std::string(__KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.vertex__shader_number))) + '\n';
+            base_framework_defs += "#define KLMB_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.vertex__shader_number)) + '\n';
+
+            // a simple opti for progs with only one shader for this stage
+            if ((is_framework_main || fdata.vertex_shader_number == 1) && !fdata.vertex__main_registered)
+            {
+              base_framework_defs += "#define KLMB_IS_MAIN\n";
+              fdata.vertex__main_registered = true;
+            }
+
+            // only for the framework main
+            if (is_framework_main)
+            {
+              base_framework_defs += "#define KLMB_TOTAL_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.vertex__shader_number)) + '\n';
+            }
+            base_framework_defs += __KLMB__FILE_TO_STRING(KLMB_YAGGLER_GLOBAL_DEFS) + "\n";
+
+            // framework main specifics
+            if (is_framework_main)
+            {
+              // for-each shaders
+              std::ostringstream fe_shad;
+              fe_shad << "#define KLMB_FOR_EACH_SHADER(x) ";
+              for (size_t i = 0; i < fdata.vertex__shader_number; ++i)
+                fe_shad << "x(" << i << ") ";
+              fe_shad << "\n";
+
+              base_framework_defs += fe_shad.str();
+            }
+
+            // cleanup 'additional strings'
+            shader.clear_additional_strings();
+            shader.append_to_additional_strings(base_framework_defs);
+
+            // increment the prog counter.
+            if (is_entry_point)
+            {
+              ++fdata.vertex__shader_number;
+              return 1;
+            }
+            return 0;
+          }
+        };
+
+        // geometry shader stuff
+        template<>
+        struct setup_shader_framework<GL_GEOMETRY_SHADER>
+        {
+          template<typename Shader>
+          static uint8_t setup(Shader &shader, uint8_t, _shader_framework_data &fdata)
+          {
+            bool is_entry_point = tools::is_true(shader.get_preprocessor_value("KLMB_IS_ENTRY_POINT"));
+            bool is_framework_main = tools::is_true(shader.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
+
+            if (is_framework_main && fdata.geometry__framework_registered)
+              std::cerr << "K:LMB/YAGGLER : ERROR : material: geometry shader framework: framework has already been registered." << std::endl;
+
+            fdata.geometry__framework_registered |= is_framework_main;
+
+            // setup / load defs
+            std::string base_framework_defs = "#define KLMB_PROG_ID " + std::string(__KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.geometry__shader_number))) + '\n';
+            base_framework_defs += "#define KLMB_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.geometry__shader_number)) + '\n';
+
+            // a simple opti for progs with only one shader for this stage
+            if ((is_framework_main || fdata.geometry_shader_number == 1) && !fdata.geometry__main_registered)
+            {
+              base_framework_defs += "#define KLMB_IS_MAIN\n";
+              fdata.geometry__main_registered = true;
+            }
+
+            // only for the framework main
+            if (is_framework_main)
+            {
+              base_framework_defs += "#define KLMB_TOTAL_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.geometry__shader_number)) + '\n';
+            }
+            base_framework_defs += __KLMB__FILE_TO_STRING(KLMB_YAGGLER_GLOBAL_DEFS) + "\n";
+
+            // framework main specifics
+            if (is_framework_main)
+            {
+              // for-each shaders
+              std::ostringstream fe_shad;
+              fe_shad << "#define KLMB_FOR_EACH_SHADER(x) ";
+              for (size_t i = 0; i < fdata.geometry__shader_number; ++i)
+                fe_shad << "x(" << i << ") ";
+              fe_shad << "\n";
+
+              base_framework_defs += fe_shad.str();
+            }
+
+            // cleanup 'additional strings'
+            shader.clear_additional_strings();
+            shader.append_to_additional_strings(base_framework_defs);
+
+            // increment the prog counter.
+            if (is_entry_point)
+            {
+              ++fdata.geometry__shader_number;
+              return 1;
+            }
+            return 0;
+          }
+        };
+
+        // fragment shader stuff
         template<>
         struct setup_shader_framework<GL_FRAGMENT_SHADER>
         {
