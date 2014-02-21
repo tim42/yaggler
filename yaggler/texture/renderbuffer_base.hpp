@@ -1,12 +1,12 @@
 //
-// file : texture.hpp
-// in : file:///home/tim/projects/yaggler/yaggler/texture/texture.hpp
+// file : render_buffer_base.hpp
+// in : file:///home/tim/projects/yaggler/yaggler/texture/render_buffer_base.hpp
 //
 // created by : Timothée Feuillet on linux-coincoin.tim
-// date: 11/11/2013 23:38:36
+// date: 21/02/2014 16:55:17
 //
 //
-// Copyright (C) 2013-2014 Timothée Feuillet
+// Copyright (C) 2014 Timothée Feuillet
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,21 +23,25 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 
+#ifndef __N_13284683701485156445_265710099__RENDER_BUFFER_BASE_HPP__
+# define __N_13284683701485156445_265710099__RENDER_BUFFER_BASE_HPP__
 
-#ifndef __N_1759243103934287646_488505617__TEXTURE_HPP__
-# define __N_1759243103934287646_488505617__TEXTURE_HPP__
+namespace neam
+{
+  namespace yaggler
+  {
+    namespace texture
+    {
+      template<typename ObjectType, typename... Args>
+      class renderbuffer
+      {
+        static_assert(!(sizeof...(Args) + 1), "This renderbuffer type doesn't exist or is not valid.");
+      };
+    } // namespace texture
+  } // namespace yaggler
+} // namespace neam
 
-#include <texture/texture_base.hpp>
-#include <texture/opengl_texture.hpp>
-#include <texture/png_loader.hpp>
-
-#include <texture/framebuffer_base.hpp>
-#include <texture/opengl_framebuffer.hpp>
-
-#include <texture/renderbuffer_base.hpp>
-#include <texture/opengl_renderbuffer.hpp>
-
-#endif /*__N_1759243103934287646_488505617__TEXTURE_HPP__*/
+#endif /*__N_13284683701485156445_265710099__RENDER_BUFFER_BASE_HPP__*/
 
 // kate: indent-mode cstyle; indent-width 2; replace-tabs on; 
 

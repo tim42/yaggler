@@ -30,6 +30,7 @@
 #include <GLEW/glew.h>
 #include <texture/options.hpp>
 #include "texture_base.hpp"
+#include "opengl_renderbuffer.hpp"
 #include <tools/ownership.hpp>
 #include <yaggler_type.hpp>
 
@@ -177,6 +178,16 @@ namespace neam
           {
             use();
             _sub_bind_texture(target, tex, attachement, level, layer);
+          }
+
+          void bind_renderbuffer(const renderbuffer<type::opengl> &rdb, GLenum attachment)
+          {
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rdb.get_id());
+          }
+
+          void bind_renderbuffer(GLenum target, const renderbuffer<type::opengl> &rdb, GLenum attachment)
+          {
+            glFramebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, rdb.get_id());
           }
 
         private:
