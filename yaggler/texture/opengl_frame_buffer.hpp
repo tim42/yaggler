@@ -125,24 +125,28 @@ namespace neam
           template<typename TextureType, typename... TArgs>
           void bind_texture_color(const texture<type::opengl, TextureType, TArgs...> &tex, unsigned int color_attachement_index, unsigned int level = 0)
           {
+            use();
             _sub_bind_texture(GL_FRAMEBUFFER, tex, GL_COLOR_ATTACHMENT0 + color_attachement_index, level);
           }
 
           template<typename TextureType, typename... TArgs>
           void bind_texture_color(const texture<type::opengl, TextureType, TArgs...> &tex, unsigned int color_attachement_index, unsigned int layer, unsigned int level = 0)
           {
+            use();
             _sub_bind_texture(GL_FRAMEBUFFER, tex, GL_COLOR_ATTACHMENT0 + color_attachement_index, level, layer);
           }
 
           template<typename TextureType, typename... TArgs>
           void bind_texture_color(GLenum target, const texture<type::opengl, TextureType, TArgs...> &tex, unsigned int color_attachement_index, unsigned int level = 0)
           {
+            use();
             _sub_bind_texture(target, tex, GL_COLOR_ATTACHMENT0 + color_attachement_index, level);
           }
 
           template<typename TextureType, typename... TArgs>
           void bind_texture_color(GLenum target, const texture<type::opengl, TextureType, TArgs...> &tex, unsigned int color_attachement_index, unsigned int layer, unsigned int level = 0)
           {
+            use();
             _sub_bind_texture(target, tex, GL_COLOR_ATTACHMENT0 + color_attachement_index, level, layer);
           }
 
@@ -150,24 +154,28 @@ namespace neam
           template<typename TextureType, typename... TArgs>
           void bind_texture(const texture<type::opengl, TextureType, TArgs...> &tex, GLenum attachement, unsigned int level = 0)
           {
+            use();
             _sub_bind_texture(GL_FRAMEBUFFER, tex, attachement, level);
           }
 
           template<typename TextureType, typename... TArgs>
           void bind_texture(const texture<type::opengl, TextureType, TArgs...> &tex, GLenum attachement, unsigned int layer, unsigned int level = 0)
           {
+            use();
             _sub_bind_texture(GL_FRAMEBUFFER, tex, attachement, level, layer);
           }
 
           template<typename TextureType, typename... TArgs>
           void bind_texture(GLenum target, const texture<type::opengl, TextureType, TArgs...> &tex, GLenum attachement, unsigned int level = 0)
           {
+            use();
             _sub_bind_texture(target, tex, attachement, level);
           }
 
           template<typename TextureType, typename... TArgs>
           void bind_texture(GLenum target, const texture<type::opengl, TextureType, TArgs...> &tex, GLenum attachement, unsigned int layer, unsigned int level = 0)
           {
+            use();
             _sub_bind_texture(target, tex, attachement, level, layer);
           }
 
