@@ -50,6 +50,9 @@
 // models
 #include <klmb/model/model.hpp>
 
+// compositors
+#include <klmb/compositor/compositor.hpp>
+
 namespace neam
 {
   namespace klmb
