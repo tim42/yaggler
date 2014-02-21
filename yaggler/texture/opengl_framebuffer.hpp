@@ -1,6 +1,6 @@
 //
-// file : frame_buffer.hpp
-// in : file:///home/tim/projects/yaggler/yaggler/texture/frame_buffer.hpp
+// file : framebuffer.hpp
+// in : file:///home/tim/projects/yaggler/yaggler/texture/framebuffer.hpp
 //
 // created by : Timothée Feuillet on linux-coincoin.tim
 // date: 14/01/2014 16:24:12
@@ -24,8 +24,8 @@
 //
 
 
-#ifndef __N_65281327319805357_321962912__OPENGL_FRAME_BUFFER_HPP__
-# define __N_65281327319805357_321962912__OPENGL_FRAME_BUFFER_HPP__
+#ifndef __N_65281327319805357_321962912__OPENGL_FRAMEBUFFER_HPP__
+# define __N_65281327319805357_321962912__OPENGL_FRAMEBUFFER_HPP__
 
 #include <GLEW/glew.h>
 #include <texture/options.hpp>
@@ -41,55 +41,55 @@ namespace neam
     {
       // a basic framebuffer
       template<typename... Args>
-      class frame_buffer<type::opengl, Args...>
+      class framebuffer<type::opengl, Args...>
       {
         public:
-          frame_buffer()
+          framebuffer()
             : id(0), link(false)
           {
             glGenFramebuffers(1, &id);
           }
 
-          frame_buffer(GLuint _id)
+          framebuffer(GLuint _id)
             : id(_id), link(true)
           {
           }
 
-          frame_buffer(GLuint _id, assume_ownership_t)
+          framebuffer(GLuint _id, assume_ownership_t)
             : id(_id), link(false)
           {
           }
 
-          frame_buffer(const frame_buffer &fb)
+          framebuffer(const framebuffer &fb)
             : id(fb.id), link(true)
           {
           }
 
-          frame_buffer(frame_buffer &&fb)
+          framebuffer(framebuffer &&fb)
             : id(fb.id), link(fb.link)
           {
             fb.link = true;
           }
 
-          frame_buffer(frame_buffer &fb, stole_ownership_t)
+          framebuffer(framebuffer &fb, stole_ownership_t)
             : id(fb.id), link(fb.link)
           {
             fb.link = true;
           }
 
-          ~frame_buffer()
+          ~framebuffer()
           {
             if (!link)
               glDeleteFramebuffers(1, &id);
           }
 
-          frame_buffer &give_up_ownership()
+          framebuffer &give_up_ownership()
           {
             link = true;
             return *this;
           }
 
-          frame_buffer &assume_ownership()
+          framebuffer &assume_ownership()
           {
             link = false;
             return *this;
@@ -204,7 +204,7 @@ namespace neam
   } // namespace yaggler
 } // namespace neam
 
-#endif /*__N_65281327319805357_321962912__OPENGL_FRAME_BUFFER_HPP__*/
+#endif /*__N_65281327319805357_321962912__OPENGL_FRAMEBUFFER_HPP__*/
 
 // kate: indent-mode cstyle; indent-width 2; replace-tabs on;
 

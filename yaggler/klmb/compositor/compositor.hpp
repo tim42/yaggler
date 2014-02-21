@@ -93,7 +93,7 @@ namespace neam
               amctp...
             );
 
-            neam::yaggler::texture::frame_buffer<neam::yaggler::type::opengl> tmp_framebuffer;
+            neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> tmp_framebuffer;
 
             size_t i = 0;
             void((int []){(tmp_framebuffer.bind_texture(pack.textures.template get<OutputTextureIndex>().texture, oidxs.attachment[i++]), 5)...});
@@ -118,13 +118,13 @@ namespace neam
           struct pass_holder
           {
             compositor_pass pass;
-            neam::yaggler::texture::frame_buffer<neam::yaggler::type::opengl> framebuffer;
+            neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> framebuffer;
             GLenum clear;
 
-            pass_holder(const compositor_pass &_pass, const neam::yaggler::texture::frame_buffer<neam::yaggler::type::opengl> &_fb, GLenum _clear) : pass(_pass), framebuffer(_fb), clear(_clear) {}
-            pass_holder(compositor_pass && _pass, neam::yaggler::texture::frame_buffer<neam::yaggler::type::opengl> && _fb, GLenum _clear) : pass(std::move(_pass)), framebuffer(std::move(_fb)), clear(_clear) {}
-            pass_holder(const compositor_pass & _pass, neam::yaggler::texture::frame_buffer<neam::yaggler::type::opengl> && _fb, GLenum _clear) : pass((_pass)), framebuffer(std::move(_fb)), clear(_clear) {}
-            pass_holder(compositor_pass && _pass, const neam::yaggler::texture::frame_buffer<neam::yaggler::type::opengl> & _fb, GLenum _clear) : pass(std::move(_pass)), framebuffer((_fb)), clear(_clear) {}
+            pass_holder(const compositor_pass &_pass, const neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> &_fb, GLenum _clear) : pass(_pass), framebuffer(_fb), clear(_clear) {}
+            pass_holder(compositor_pass && _pass, neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> && _fb, GLenum _clear) : pass(std::move(_pass)), framebuffer(std::move(_fb)), clear(_clear) {}
+            pass_holder(const compositor_pass & _pass, neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> && _fb, GLenum _clear) : pass((_pass)), framebuffer(std::move(_fb)), clear(_clear) {}
+            pass_holder(compositor_pass && _pass, const neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> & _fb, GLenum _clear) : pass(std::move(_pass)), framebuffer((_fb)), clear(_clear) {}
 
             pass_holder(const pass_holder &_pass) : pass(_pass.pass), framebuffer(_pass.framebuffer), clear(_pass.clear) {}
             pass_holder(pass_holder && _pass) : pass(std::move(_pass.pass)), framebuffer(std::move(_pass.framebuffer)), clear(_pass.clear) {}

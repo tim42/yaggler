@@ -63,16 +63,16 @@ namespace neam
       struct framebuffer_pack
       {
         cr::tuple<texture_entry<Textures>...> textures;
-        neam::yaggler::texture::frame_buffer<neam::yaggler::type::opengl> framebuffer;
+        neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> framebuffer;
 
-        framebuffer_pack(const neam::yaggler::texture::frame_buffer<neam::yaggler::type::opengl> &fmb, texture_entry<Textures>... _textures)
+        framebuffer_pack(const neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> &fmb, texture_entry<Textures>... _textures)
           : textures(_textures...), framebuffer(fmb)
         {
           // TODO: init Texture samplers
 //           void((int []){(_textures.texture.set_texture_sampler(_textures.sampler), 5)...});
 //           void((int []){(framebuffer.bind_texture(_textures.texture, _textures.attachement), 5)...});
         }
-        framebuffer_pack(neam::yaggler::texture::frame_buffer<neam::yaggler::type::opengl> &&fmb, texture_entry<Textures>... _textures)
+        framebuffer_pack(neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> &&fmb, texture_entry<Textures>... _textures)
           : textures(_textures...), framebuffer(std::move(fmb))
         {
           // TODO: init Texture samplers
@@ -125,12 +125,12 @@ namespace neam
       };
 
       template<typename... Textures>
-      framebuffer_pack<Textures...> make_framebuffer_pack(const neam::yaggler::texture::frame_buffer<neam::yaggler::type::opengl> &fmb, texture_entry<Textures>... _textures)
+      framebuffer_pack<Textures...> make_framebuffer_pack(const neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> &fmb, texture_entry<Textures>... _textures)
       {
         return framebuffer_pack<Textures...>(fmb, _textures...);
       }
       template<typename... Textures>
-      framebuffer_pack<Textures...> make_framebuffer_pack(neam::yaggler::texture::frame_buffer<neam::yaggler::type::opengl> &&fmb, texture_entry<Textures>... _textures)
+      framebuffer_pack<Textures...> make_framebuffer_pack(neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> &&fmb, texture_entry<Textures>... _textures)
       {
         return framebuffer_pack<Textures...>(std::move(fmb), _textures...);
       }

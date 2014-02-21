@@ -1,6 +1,6 @@
 //
-// file : frame_buffer_base.hpp
-// in : file:///home/tim/projects/yaggler/yaggler/texture/frame_buffer_base.hpp
+// file : framebuffer_base.hpp
+// in : file:///home/tim/projects/yaggler/yaggler/texture/framebuffer_base.hpp
 //
 // created by : Timothée Feuillet on linux-coincoin.tim
 // date: 14/01/2014 16:24:56
@@ -34,9 +34,9 @@ namespace neam
     namespace texture
     {
       template<typename ObjectType, typename... Args>
-      class frame_buffer
+      class framebuffer
       {
-        static_assert(!(sizeof...(Args) + 1), "This frame buffer type doesn't exist or is not valid.");
+        static_assert(!(sizeof...(Args) + 1), "This framebuffer type doesn't exist or is not valid.");
       };
     } // namespace texture
   } // namespace yaggler

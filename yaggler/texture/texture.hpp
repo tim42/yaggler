@@ -31,8 +31,8 @@
 #include <texture/opengl_texture.hpp>
 #include <texture/png_loader.hpp>
 
-#include <texture/frame_buffer_base.hpp>
-#include <texture/opengl_frame_buffer.hpp>
+#include <texture/framebuffer_base.hpp>
+#include <texture/opengl_framebuffer.hpp>
 
 #endif /*__N_1759243103934287646_488505617__TEXTURE_HPP__*/
 
