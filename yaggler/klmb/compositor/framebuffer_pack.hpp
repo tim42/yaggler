@@ -62,66 +62,64 @@ namespace neam
       template<typename... Textures>
       struct framebuffer_pack
       {
-        cr::tuple<texture_entry<Textures>...> textures;
-        neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> framebuffer;
+        public:
+          cr::tuple<texture_entry<Textures>...> textures;
+          neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> framebuffer;
 
-        framebuffer_pack(const neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> &fmb, texture_entry<Textures>... _textures)
-          : textures(_textures...), framebuffer(fmb)
-        {
-          // TODO: init Texture samplers
-//           void((int []){(_textures.texture.set_texture_sampler(_textures.sampler), 5)...});
-//           void((int []){(framebuffer.bind_texture(_textures.texture, _textures.attachement), 5)...});
-        }
-        framebuffer_pack(neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> &&fmb, texture_entry<Textures>... _textures)
-          : textures(_textures...), framebuffer(std::move(fmb))
-        {
-          // TODO: init Texture samplers
-//           void((int []){(_textures.texture.set_texture_sampler(_textures.sampler), 5)...});
-//           void((int []){(framebuffer.bind_texture(_textures.texture, _textures.attachement), 5)...});
-        }
+          framebuffer_pack(const neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> &fmb, texture_entry<Textures>... _textures)
+            : textures(_textures...), framebuffer(fmb)
+          {
+            set_textures_samplers(cr::gen_seq<sizeof...(Textures)>());
+          }
+          framebuffer_pack(neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> && fmb, texture_entry<Textures>... _textures)
+            : textures(_textures...), framebuffer(std::move(fmb))
+          {
+            set_textures_samplers(cr::gen_seq<sizeof...(Textures)>());
+          }
 
-        framebuffer_pack(const framebuffer_pack &fb)
-          : textures(fb.textures), framebuffer(fb.framebuffer)
-        {
-        }
+          framebuffer_pack(const framebuffer_pack &fb)
+            : textures(fb.textures), framebuffer(fb.framebuffer)
+          {
+          }
 
-        framebuffer_pack(framebuffer_pack &&fb)
-          : textures(std::move(fb.textures)), framebuffer(std::move(fb.framebuffer))
-        {
-        }
+          framebuffer_pack(framebuffer_pack && fb)
+            : textures(std::move(fb.textures)), framebuffer(std::move(fb.framebuffer))
+          {
+          }
 
-        framebuffer_pack(framebuffer_pack &fb, stole_ownership_t)
-          : textures(std::move(fb.textures)), framebuffer(std::move(fb.framebuffer))
-        {
-        }
+          framebuffer_pack(framebuffer_pack &fb, stole_ownership_t)
+            : textures(std::move(fb.textures)), framebuffer(std::move(fb.framebuffer))
+          {
+          }
 
-        // construct the output framebuffer
-        framebuffer_pack(int)
-          : textures(), framebuffer(0)
-        {
-        }
+          void use() const
+          {
+            framebuffer.use();
+          }
 
-        void use() const
-        {
-          framebuffer.use();
-        }
+          template<size_t... Idxs>
+          void use_textures() const
+          {
+            void((int []){(textures.template get<Idxs>().texture.use(), 5)...});
+          }
 
-        template<size_t... Idxs>
-        void use_textures() const
-        {
-          void((int []){(textures.template get<Idxs>().texture.use(), 5)...});
-        }
+          void use_textures() const
+          {
+            use_textures(cr::gen_seq<sizeof...(Textures)>());
+          }
 
-        void use_textures() const
-        {
-          use_textures(cr::gen_seq<sizeof...(Textures)>());
-        }
+          template<size_t... Idxs>
+          void use_textures(cr::seq<Idxs...>) const
+          {
+            use_textures<Idxs...>();
+          }
 
-        template<size_t... Idxs>
-        void use_textures(cr::seq<Idxs...>) const
-        {
-          use_textures<Idxs...>();
-        }
+        private:
+          template<size_t... Idxs>
+          void set_textures_samplers(cr::seq<Idxs...>)
+          {
+            void((int []){(textures.template get<Idxs>().texture.set_texture_sampler(textures.template get<Idxs>().sampler), 5)...});
+          }
       };
 
       template<typename... Textures>
