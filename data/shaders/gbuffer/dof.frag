@@ -23,6 +23,8 @@ uniform sampler2D geometry;             // normal + depth       (rgb + a)
 uniform vec2 direction;                 // blur direction
 uniform vec2 buffer_size;               // screen size
 
+uniform float center = 9.;              // the focus point (z-distance
+uniform float max_distance = 15.;       // the minimal distance from 'center' where the blur will be maximal.
 
 KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_0); // color          (rgba)
 //KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_1); // normal + depth (rgb + a)
@@ -45,17 +47,11 @@ void KLMB_MAIN_FUNCTION()
 
   vec2 uv = gl_FragCoord.xy / buffer_size;
 
-//   float t = texture(geometry, uv).w / 25.;
-//     KLMB_SHARED_NAME(color_0) = vec4(t, t, t, 1.);
-
-//   return;
-  // compute center / blur factor
-
   // blur
   float denom = 0.1;
   vec4 sum = texture(scene, uv) * denom;
 
-  float center = 9.;/*texture(geometry, vec2(0.5, 0.5)).w
+  /*float center = 9.;*//*texture(geometry, vec2(0.5, 0.5)).w
                 + texture(geometry, vec2(0.5 + 0.02, 0.5 + 0.00)).w
                 + texture(geometry, vec2(0.5 - 0.02, 0.5 + 0.00)).w
                 + texture(geometry, vec2(0.5 + 0.00, 0.5 + 0.02)).w
@@ -71,7 +67,7 @@ void KLMB_MAIN_FUNCTION()
     if (alpha == 0)
       alpha = 10000.;
   alpha = abs(center - alpha);
-  alpha = clamp(alpha, 0, MAX_DST) / MAX_DST;
+  alpha = clamp(alpha, 0, max_distance) / max_distance;
 
   for (float i = 0; i < NUM_BLUR_SAMPLES; ++i)
   {
@@ -83,11 +79,6 @@ void KLMB_MAIN_FUNCTION()
     sum += texture(scene, nuv) * coef * alpha;
     denom += coef * alpha;
   }
-
-#if DO_BLEND == 1
-  if (r_alpha == 0.)
-    alpha = 1.;
-#endif
 
   KLMB_SHARED_NAME(color_0) = vec4((sum / denom).xyzw);
 }
