@@ -47,7 +47,7 @@ namespace neam
       template<size_t... Indexes, typename... AttachmentType>
       output_texture_indexes<Indexes...> make_output_indexes(AttachmentType... attachment)
       {
-        return output_texture_indexes<Indexes...>{{attachment...}};
+        return output_texture_indexes<Indexes...>{{(GLuint)attachment...}};
       }
 
       // a set of passes
