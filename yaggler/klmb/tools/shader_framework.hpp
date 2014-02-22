@@ -109,7 +109,7 @@ namespace neam
 
             // setup / load defs
             std::string base_framework_defs = "#define KLMB_PROG_ID " + std::string(__KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.vertex__shader_number))) + '\n';
-            base_framework_defs += "#define KLMB_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.vertex__shader_number)) + '\n';
+            base_framework_defs += "#define KLMB_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.vertex_shader_number)) + '\n';
 
             // a simple opti for progs with only one shader for this stage
             if ((is_framework_main || fdata.vertex_shader_number == 1) && !fdata.vertex__main_registered)
@@ -121,7 +121,7 @@ namespace neam
             // only for the framework main
             if (is_framework_main)
             {
-              base_framework_defs += "#define KLMB_TOTAL_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.vertex__shader_number)) + '\n';
+              base_framework_defs += "#define KLMB_TOTAL_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.vertex_shader_number)) + '\n';
             }
             base_framework_defs += __KLMB__FILE_TO_STRING(KLMB_YAGGLER_GLOBAL_DEFS) + "\n";
 
@@ -169,7 +169,7 @@ namespace neam
 
             // setup / load defs
             std::string base_framework_defs = "#define KLMB_PROG_ID " + std::string(__KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.geometry__shader_number))) + '\n';
-            base_framework_defs += "#define KLMB_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.geometry__shader_number)) + '\n';
+            base_framework_defs += "#define KLMB_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.geometry_shader_number)) + '\n';
 
             // a simple opti for progs with only one shader for this stage
             if ((is_framework_main || fdata.geometry_shader_number == 1) && !fdata.geometry__main_registered)
@@ -181,7 +181,7 @@ namespace neam
             // only for the framework main
             if (is_framework_main)
             {
-              base_framework_defs += "#define KLMB_TOTAL_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.geometry__shader_number)) + '\n';
+              base_framework_defs += "#define KLMB_TOTAL_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.geometry_shader_number)) + '\n';
             }
             base_framework_defs += __KLMB__FILE_TO_STRING(KLMB_YAGGLER_GLOBAL_DEFS) + "\n";
 
