@@ -53,6 +53,9 @@
 // compositors
 #include <klmb/compositor/compositor.hpp>
 
+// gbuffer
+#include <klmb/gbuffer/gbuffer.hpp>
+
 namespace neam
 {
   namespace klmb
