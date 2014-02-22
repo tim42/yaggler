@@ -14,6 +14,7 @@
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
+// inputs
 in gl_PerVertex
 {
     vec4 gl_Position;
@@ -21,39 +22,42 @@ in gl_PerVertex
 
 in vec4 orig_vertex_position[];
 
-
+// outputs
 out gl_PerVertex
 {
     vec4 gl_Position;
 };
 
-out vec3 normal;
 out vec3 tri_distance;
-out vec4 vertex_position;
 
+// uniforms
 uniform float global_time;
 
+// external functions (this is a gbuffer geom shader)
+void gbuffer_set_position(vec4 _position);
+vec3 gbuffer_compute_normal(vec4 v1, vec4 v2, vec4 v3);
+
+// main
 void KLMB_MAIN_FUNCTION()
 {
-
-  normal = normalize(cross((gl_in[2].gl_Position - gl_in[0].gl_Position).xyz, (gl_in[1].gl_Position - gl_in[0].gl_Position).xyz));
+  vec3 normal = gbuffer_compute_normal(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_in[2].gl_Position);
 
   vec4 n = 0.05 / (vec4((normal), orig_vertex_position[0].w)) * abs(1. - cos((global_time/ 2. - length(orig_vertex_position[0]) / 3.5))) * 3.1;
   // n = sign(n) * (sqrt(abs(n) * 0.07));
 
-  gl_Position = gl_in[0].gl_Position /*/ (2.0 + sin(global_time)) */ + n;
+  gl_Position = gl_in[0].gl_Position + n;
+  gbuffer_set_position(gl_Position);
   tri_distance = vec3(1, 0, 0);
-  vertex_position = gl_Position;
   EmitVertex();
 
-  gl_Position = gl_in[1].gl_Position /*/ (2.0 + cos(2*global_time))*/ + n;
+  gl_Position = gl_in[1].gl_Position + n;
+  gbuffer_set_position(gl_Position);
   tri_distance = vec3(0, 1, 0);
-  vertex_position = gl_Position;
   EmitVertex();
 
-  gl_Position = gl_in[2].gl_Position /*/ (2.0 + cos(global_time))*/ + n;
+  gl_Position = gl_in[2].gl_Position + n;
+  gbuffer_set_position(gl_Position);
   tri_distance = vec3(0, 0, 1);
-  vertex_position = gl_Position;
   EmitVertex();
 
 

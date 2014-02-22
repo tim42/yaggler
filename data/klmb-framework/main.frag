@@ -28,7 +28,7 @@
 // // now this is some macro works :)
 
 // declare output buffers
-#define DECLARE_OUTPUT_BUFFER(n)                       KLMB_OUTPUT_VAR vec4 color_ ## n;
+#define DECLARE_OUTPUT_BUFFER(n)                       layout(location = n) KLMB_OUTPUT_VAR vec4 color_ ## n;
 // declare shader output buffers
 #define DECLARE_SHADER_OUTPUT_BUFFER(s, b)             vec4 KLMB_GET_PROG_SHARED(s, color_ ## b);
 // declare shader main functions
@@ -42,21 +42,25 @@ KLMB_FOR_EACH_SHADER(DECLARE_SHADER_MAIN)
 
 void KLMB_MAIN_FUNCTION()
 {
+  // init buffers
+# define INIT_SHADER_OUTPUT_BUFFER(s, b)                     KLMB_GET_PROG_SHARED(s, color_ ## b) = vec4(0, 0, 0, 0);
+  KLMB_FOR_EACH_SHADER_AND_OUTPUT_BUFFER(INIT_SHADER_OUTPUT_BUFFER);
+
+
+# define INIT_OUTPUT_BUFFER(b)                     color_ ## b = vec4(0, 0, 0, 0.);
+  KLMB_FOR_EACH_OUTPUT_BUFFER(INIT_OUTPUT_BUFFER);
+
   // call every main functions
 # define CALL_MAIN_FUNCTION(n)                           KLMB_CALL_MAIN_FUNCTION(n);
   KLMB_FOR_EACH_SHADER(CALL_MAIN_FUNCTION);
 
-  // init buffers
-# define INIT_OUTPUT_BUFFER(s, b)                     color_ ## b = vec4(0, 0, 0, 0);
-  KLMB_FOR_EACH_SHADER_AND_OUTPUT_BUFFER(INIT_OUTPUT_BUFFER);
-
   // gather every values
-# define GATHER_OUTPUT_BUFFER(s, b)                     color_ ## b += KLMB_GET_PROG_SHARED(s, color_ ## b);
+# define GATHER_OUTPUT_BUFFER(s, b)                     color_ ## b += KLMB_GET_PROG_SHARED(s, color_ ## b) + vec4(0, 0, 0, 0);
   KLMB_FOR_EACH_SHADER_AND_OUTPUT_BUFFER(GATHER_OUTPUT_BUFFER);
 
   // reduce every values
-# define REDUCE_OUTPUT_BUFFER(b)                        color_ ## b /= KLMB_TOTAL_PROG_NUMBER;
-  KLMB_FOR_EACH_OUTPUT_BUFFER(REDUCE_OUTPUT_BUFFER);
+// # define REDUCE_OUTPUT_BUFFER(b)                        color_ ## b /= KLMB_TOTAL_PROG_NUMBER;
+//   KLMB_FOR_EACH_OUTPUT_BUFFER(REDUCE_OUTPUT_BUFFER);
 }
 
 #else

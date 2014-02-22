@@ -68,7 +68,7 @@ namespace neam
             (
               neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl>(0), // output to 0 (screen)
 
-              neam::klmb::yaggler::make_texture_entry("texture", rtt_dest, 0)
+              neam::klmb::yaggler::make_texture_entry("texture", gbuffer.color_1, 0)
             ));
 
             // output pass
@@ -88,8 +88,8 @@ namespace neam
 
               glViewport(0, 0, framebuffer_resolution.x, framebuffer_resolution.y);
 
-              fbo.use_draw();
-              glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+              gbuffer.use();
 
               main_smgr.render();
 
@@ -150,19 +150,17 @@ namespace neam
               <
                 neam::klmb::yaggler::auto_file_shader<vert>,
                 neam::klmb::yaggler::auto_file_shader<geom>,
+                neam::klmb::yaggler::gbuffer::gbuffer_geom_shader,
+                neam::klmb::yaggler::gbuffer::gbuffer_frag_shader,
                 neam::klmb::yaggler::auto_file_shader<frag>
               >,
               // TEXTURES
-              neam::klmb::yaggler::rgba_png_2d_texture_list
-              <
-                yaggler_white_logo
-              >
+              neam::klmb::yaggler::no_textures
             >
             // CONTEXT
             (
               neam::klmb::yaggler::make_ctx_pair("screen_resolution", neam::cr::make_const_ref(framebuffer_resolution)),
-             neam::klmb::yaggler::make_ctx_pair("global_time", &neam::cr::chrono::now_relative),
-             neam::klmb::yaggler::make_ctx_pair("texture", neam::klmb::yaggler::reference_to_texture<0>())
+             neam::klmb::yaggler::make_ctx_pair("global_time", &neam::cr::chrono::now_relative)
             );
 
             main_smgr.materials.push_back(std::move(material));
@@ -178,10 +176,8 @@ namespace neam
             glEnable(GL_DEPTH_TEST);
             glDepthFunc(GL_LESS);
 
-            // frame_buffer / RTT
-            depthbuffer.set_storage({framebuffer_resolution.x, framebuffer_resolution.y}, GL_DEPTH_COMPONENT24);
-            fbo.bind_texture_color(rtt_dest, 0);
-            fbo.bind_renderbuffer(depthbuffer, GL_DEPTH_ATTACHMENT);
+            // gbuffer
+            gbuffer.set_screen_size({framebuffer_resolution.x, framebuffer_resolution.y});
           }
 
         private:
@@ -190,14 +186,7 @@ namespace neam
           neam::klmb::yaggler::transformation_node::default_node *object_2_parent_local_node;
           neam::klmb::yaggler::transformation_node::default_node *parent_camera_local_node;
 
-          // RTT
-          neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> fbo;
-          neam::yaggler::texture::renderbuffer<neam::yaggler::type::opengl> depthbuffer;
-          neam::yaggler::texture::texture
-          <
-            neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>,
-            neam::yaggler::texture::options::empty_texture_init<GL_RGBA, neam::ct::vector<1920, 1080>>
-          > rtt_dest;
+          neam::klmb::yaggler::gbuffer::gbuffer gbuffer;
       };
     } // namespace sample
   } // namespace klmb

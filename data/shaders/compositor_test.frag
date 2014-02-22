@@ -14,16 +14,11 @@
 // #endif
 
 uniform float global_time;
-uniform vec2 screen_resolution;
+uniform sampler2D texture;
 
-in vec4  gbuffer_position;
+in vec4  vertex_position;
 
 #ifdef USING_KLMB_FRAMEWORK
-
-KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_0);
-
-in vec3 gbuffer_normal;
-in vec3 tri_distance;
 
 
 // // some mandatory K:LMB macros
@@ -35,25 +30,18 @@ in vec3 tri_distance;
 
 // the number of output buffers
 #define KLMB_NUMBER_OF_OUTPUT_BUFFER            1
+KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_0);
 
-
-float amplify(float d, float scale, float offset)
-{
-  d = scale * d + offset;
-  d = clamp(d, 0, 1);
-  d = 1 - exp2(-2*d*d);
-  return d;
-}
 
 void KLMB_MAIN_FUNCTION()
 {
-  float d1 = min(min(tri_distance.x, tri_distance.y), tri_distance.z);
-  d1 = amplify(d1, 10, 0.0);
-  KLMB_SHARED_NAME(color_0).rgb = (clamp(d1 , 0, 100) * 1.3 * (1 - gbuffer_position.z / 25.5) * (vec3(0.5, 0.9, 1.70)) * length(gbuffer_normal.xy));
+  // yep, hardcoded :)
+  KLMB_SHARED_NAME(color_0).rgba = texture2D(texture, gl_FragCoord.xy / vec2(1920, 1080)).rgba;
 }
 
 #else
 
+out vec4 color_0;
 
 // output something... _*red*_ :)
 void main()
