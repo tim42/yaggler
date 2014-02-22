@@ -27,7 +27,7 @@ in gl_PerVertex
 } gl_in[];
 
 in vec4 orig_vertex_position[];
-uniform float global_time;
+
 #endif
 
 // to the frag stage
