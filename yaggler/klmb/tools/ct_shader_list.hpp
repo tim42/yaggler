@@ -97,7 +97,7 @@ namespace neam
               template<typename Current, typename... Types>
               struct am_filter<Current, Types...>
               {
-                using type = typename std::conditional < filter<Current::type_1::value, Shaders...>::type::size(),
+                using type = typename std::conditional < (bool)filter<Current::type_1::value, Shaders...>::type::size(),
                       typename ct::append_type<typename Current::type_2, typename am_filter<Types...>::type>::type,
                       typename am_filter<Types...>::type
                       >::type;

@@ -177,7 +177,7 @@ namespace neam
             glDepthFunc(GL_LESS);
 
             // gbuffer
-            gbuffer.set_screen_size({framebuffer_resolution.x, framebuffer_resolution.y});
+            gbuffer.set_screen_size({(ct::fixed_t)framebuffer_resolution.x, (ct::fixed_t)framebuffer_resolution.y});
           }
 
         private:
