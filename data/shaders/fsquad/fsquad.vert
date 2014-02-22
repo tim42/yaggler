@@ -24,6 +24,6 @@ out gl_PerVertex
 void KLMB_MAIN_FUNCTION(void)
 {
     gl_Position = vec4(in_position, 1.);
-    orig_vertex_position = vec4(in_position, 1.0);
+    orig_vertex_position = gl_Position;
 }
 

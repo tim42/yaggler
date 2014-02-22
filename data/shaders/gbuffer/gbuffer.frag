@@ -26,8 +26,6 @@ KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_1); // normal + depth (rgb + a)
 
 // color_0 is computed by the other shader, color_1 is computed by this one.
 
-out vec4 color_0;
-out vec4 color_1;
 void KLMB_MAIN_FUNCTION()
 {
   KLMB_SHARED_NAME(color_1).rgb = gbuffer_normal;

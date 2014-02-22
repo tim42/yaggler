@@ -36,7 +36,7 @@ constexpr neam::string_t vert = "data/shaders/dragon/dragon.vert";
 constexpr neam::string_t frag = "data/shaders/dragon/dragon.frag";
 constexpr neam::string_t geom = "data/shaders/dragon/dragon.geom";
 
-constexpr neam::string_t compositor_1 = "data/shaders/compositor_test.frag";
+constexpr neam::string_t dof_compositor_frag = "data/shaders/gbuffer/dof.frag";
 
 constexpr neam::string_t yaggler_white_logo = "data/textures/yaggler-w.png";
 
@@ -64,15 +64,34 @@ namespace neam
           {
             cr::chrono chronos;
 
-            auto compositor = neam::klmb::yaggler::make_compositor(neam::klmb::yaggler::make_framebuffer_pack
+            neam::yaggler::texture::texture<neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>> tmp_text;
+            tmp_text.set_texture_data(GL_RGBA, ct::vector2{(ct::fixed_t)framebuffer_resolution.x, (ct::fixed_t)framebuffer_resolution.y}, GL_RED, GL_BYTE, nullptr, 0);
+            auto dof_compositor = neam::klmb::yaggler::make_compositor(neam::klmb::yaggler::make_framebuffer_pack
             (
               neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl>(0), // output to 0 (screen)
 
-              neam::klmb::yaggler::make_texture_entry("texture", gbuffer.color_1, 0)
+              // gbuffer
+              neam::klmb::yaggler::make_texture_entry("scene", gbuffer.color_0, 0),
+              neam::klmb::yaggler::make_texture_entry("geometry", gbuffer.color_1, 1),
+
+              // temporary
+              neam::klmb::yaggler::make_texture_entry("scene", tmp_text, 0)
             ));
 
-            // output pass
-            compositor.add_pass<neam::klmb::yaggler::auto_file_shader<compositor_1>>(0, neam::klmb::yaggler::input_texture_indexes<0>());
+            // init temporary texture
+//             dof_compositor.pack.textures.get<0>().texture.set_texture_data(GL_RGBA, ct::vector2{(ct::fixed_t)framebuffer_resolution.x, (ct::fixed_t)framebuffer_resolution.y}, GL_RED, GL_BYTE, nullptr, 0);
+
+            // passes:
+            //  non-output pass
+            dof_compositor.add_pass<neam::klmb::yaggler::auto_file_shader<dof_compositor_frag>>(0, neam::klmb::yaggler::input_texture_indexes<0, 1>(), neam::klmb::yaggler::make_output_indexes<2>(GL_COLOR_ATTACHMENT0),
+                neam::klmb::yaggler::make_ctx_pair("direction", glm::vec2(0, 1)),
+                neam::klmb::yaggler::make_ctx_pair("buffer_size", framebuffer_resolution)
+            );
+            //  output pass
+            dof_compositor.add_pass<neam::klmb::yaggler::auto_file_shader<dof_compositor_frag>>(0, neam::klmb::yaggler::input_texture_indexes<2, 1>(),
+                neam::klmb::yaggler::make_ctx_pair("direction", glm::vec2(1, 0)),
+                neam::klmb::yaggler::make_ctx_pair("buffer_size", framebuffer_resolution)
+            );
 
             while (!window.should_close())
             {
@@ -93,7 +112,7 @@ namespace neam
 
               main_smgr.render();
 
-              compositor.render();
+              dof_compositor.render();
 
               end_render_loop();
             }

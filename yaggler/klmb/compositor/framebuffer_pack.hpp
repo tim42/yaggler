@@ -51,11 +51,11 @@ namespace neam
       {
         return texture_entry<Texture>(name, texture, sampler);
       }
-//       template<typename Texture>
-//       texture_entry<Texture> make_texture_entry(const std::string &name, Texture &&texture, size_t sampler)
-//       {
-//         return texture_entry<Texture>(name, std::move(texture), sampler);
-//       }
+      template<typename Texture>
+      texture_entry<Texture> make_texture_entry(const std::string &name, typename std::remove_reference<Texture>::type &&texture, size_t sampler)
+      {
+        return texture_entry<Texture>(name, std::move((texture)), sampler);
+      }
 
       // a framebuffer + textures pack-class
       // NOTE: textures aren't attached to the framebuffer, it's just a class that hold both for compositors.

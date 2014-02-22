@@ -42,7 +42,7 @@ void KLMB_MAIN_FUNCTION()
 {
   vec3 normal = gbuffer_compute_normal(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_in[2].gl_Position);
 
-  vec4 n = 0.05 / (vec4((normal), orig_vertex_position[0].w)) * abs(1. - cos((global_time/ 2. - length(orig_vertex_position[0]) / 3.5))) * 3.1;
+  vec4 n = /*vec4(0, 0, 0, orig_vertex_position[0].w);//*/0.05 / (vec4((normal), orig_vertex_position[0].w)) * abs(1. - cos((global_time/ 2. - length(orig_vertex_position[0]) / 3.5))) * 3.1;
   // n = sign(n) * (sqrt(abs(n) * 0.07));
 
   gl_Position = gl_in[0].gl_Position + n;

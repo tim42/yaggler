@@ -87,7 +87,7 @@ namespace neam
               color_1.set_texture_sampler(0);
 
               color_0.set_texture_data(GL_RGBA, screen_size, GL_RED, GL_BYTE, nullptr, 0);
-              color_1.set_texture_data(GL_RGBA, screen_size, GL_RED, GL_BYTE, nullptr, 0);
+              color_1.set_texture_data(GL_RGBA32F, screen_size, GL_RED, GL_BYTE, nullptr, 0);
 
               depthbuffer.set_storage(screen_size, GL_DEPTH_COMPONENT24);
 
