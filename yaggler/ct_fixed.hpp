@@ -21,7 +21,6 @@
 #define __CT_FIXED_HPP__
 
 #include <stdint.h>
-#include <boost/concept_check.hpp>
 
 // fixed point for neam/yaggler
 // TODO: doc ?
