@@ -54,7 +54,10 @@ namespace neam
             neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> fbo;
             neam::yaggler::texture::texture<neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>> color_0;
             neam::yaggler::texture::texture<neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>> color_1;
+            neam::yaggler::texture::texture<neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>> color_2;
             neam::yaggler::texture::renderbuffer<neam::yaggler::type::opengl> depthbuffer;
+
+            GLenum clear_bits = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 
           public:
             gbuffer()
@@ -85,23 +88,34 @@ namespace neam
             {
               color_0.set_texture_sampler(0);
               color_1.set_texture_sampler(0);
+              color_2.set_texture_sampler(0);
+
+              color_0.set_gl_parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+              color_0.set_gl_parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+              color_1.set_gl_parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+              color_1.set_gl_parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+              color_2.set_gl_parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+              color_2.set_gl_parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
               color_0.set_texture_data(GL_RGBA, screen_size, GL_RED, GL_BYTE, nullptr, 0);
               color_1.set_texture_data(GL_RGBA32F, screen_size, GL_RED, GL_BYTE, nullptr, 0);
+              color_2.set_texture_data(GL_RGBA32F, screen_size, GL_RED, GL_BYTE, nullptr, 0);
 
               depthbuffer.set_storage(screen_size, GL_DEPTH_COMPONENT24);
 
               fbo.bind_texture_color(color_0, 0);
-              fbo.bind_texture(color_1, GL_COLOR_ATTACHMENT1);
+              fbo.bind_texture_color(color_1, 1);
+              fbo.bind_texture_color(color_1, 2);
               fbo.bind_renderbuffer(depthbuffer, GL_DEPTH_ATTACHMENT);
+
+              GLenum bufs[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
+              glDrawBuffers(3, bufs);
             }
 
-            void use() const
+            void use()
             {
               fbo.use_draw();
-              glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-              GLenum bufs[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
-              glDrawBuffers(2, bufs);
+              glClear(clear_bits);
             }
         };
 
