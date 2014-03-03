@@ -26,6 +26,7 @@
 #ifndef __N_1662009231574877484_1854883408__CT_TEXTURE_LIST_HPP__
 # define __N_1662009231574877484_1854883408__CT_TEXTURE_LIST_HPP__
 
+#include <tools/execute_pack.hpp>
 #include <tools/ct_list.hpp>
 
 namespace neam
@@ -54,33 +55,18 @@ namespace neam
           }
 
         private: // use() helpers
-          template<size_t Idx>
-          char _it_single_use() const
-          {
-            ct::type_list_member_instance<Textures...>::instance.template get<Idx>().use();
-            return 0;
-          }
 
           template<size_t... Idxs>
           void _it_use(cr::seq<Idxs...>) const
           {
-            void((char []){_it_single_use<Idxs>()...}); // who knows how this'll be optimised out ?
-            // (and which compiler supports it...)
+            NEAM_EXECUTE_PACK((ct::type_list_member_instance<Textures...>::instance.template get<Idxs>().use()));
           }
 
         private: // setup_samplers_idxs() helpers
-          template<size_t Idx>
-          char _it_single_setup_samplers_idxs()
-          {
-            ct::type_list_member_instance<Textures...>::instance.template get<Idx>().set_texture_sampler(Idx);
-            return 0;
-          }
-
           template<size_t... Idxs>
           void _it_setup_samplers_idxs(cr::seq<Idxs...>)
           {
-            void((char []){_it_single_setup_samplers_idxs<Idxs>()...}); // who knows how this'll be optimised out ?
-            // (and which compiler supports it...)
+            NEAM_EXECUTE_PACK((ct::type_list_member_instance<Textures...>::instance.template get<Idxs>().set_texture_sampler(Idxs)));
           }
 
         public:
