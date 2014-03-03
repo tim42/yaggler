@@ -39,7 +39,7 @@ namespace neam
     namespace sample
     {
       // load a model from ply file
-      // (fuckingly simple loader)
+      // (fuckingly simple/hideous loader)
       neam::klmb::yaggler::object<GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER> load_model(const std::string &filename)
       {
         std::ifstream file(filename);
@@ -69,6 +69,8 @@ namespace neam
         glm::vec3 *vertex = new glm::vec3[vert_count];
         GLuint *idxs = new GLuint[tri_count * 3];
 
+        neam::klmb::yaggler::aabb aabb;
+
         long i = 0;
         std::istringstream is;
         while (i < vert_count && std::getline(file, line))
@@ -76,6 +78,7 @@ namespace neam
           is.clear();
           is.str(line);
           is >> vertex[i].x >> vertex[i].y >> vertex[i].z;
+          aabb.add_vertex(vertex[i]);
           ++i;
         }
 
@@ -91,6 +94,10 @@ namespace neam
 
         // setup object
         neam::klmb::yaggler::object<GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER> object;
+
+        // setup aabb
+        object.bounding_box = aabb;
+
         // setup drawer
         object.drawer.set_draw_method(neam::yaggler::geometry::draw_method::indexed);
         object.drawer.set_draw_triangles(tri_count);
@@ -99,6 +106,9 @@ namespace neam
         // YägGLer stuff
         object.ct_buffers.get<0>().set_data(neam::array_wrapper<glm::vec3>(vertex, vert_count));
         object.ct_buffers.get<1>().set_data(neam::array_wrapper<GLuint>(idxs, tri_count * 3));
+
+        delete [] vertex;
+        delete [] idxs;
 
         // add buffers to vao
         object.vao.add_buffer(object.ct_buffers.get<0>(), neam::yaggler::geometry::buffer_view<neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>>
