@@ -30,9 +30,10 @@
 #include <yaggler_type.hpp>
 #include <GLEW/glew.h>
 
+#include <tools/execute_pack.hpp>
+#include <tools/tuple.hpp>
 #include <geometry/vao_base.hpp>
 #include <geometry/options.hpp>
-#include <tools/tuple.hpp>
 #include <yaggler_except.hpp>
 
 namespace neam
@@ -56,7 +57,7 @@ namespace neam
           template<size_t... Idxs>
           void __int_from_ct(neam::cr::seq<Idxs...>&&)
           {
-            void((char []){__init_single<Idxs, Init>(0)...});
+            NEAM_EXECUTE_PACK((__init_single<Idxs, Init>(0)));
           }
 
         public:
@@ -188,8 +189,7 @@ namespace neam
           {
             use();
             b.use();
-            void((int []){(vs.use(), 5)...}); // who knows how this'll be optimised out ?
-            // (and which compiler supports it...)
+            NEAM_EXECUTE_PACK((vs.use()));
           }
 
           // create a link to a more generic texture.
