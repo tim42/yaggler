@@ -28,9 +28,12 @@
 
 #include <deque>
 
+#include <tools/execute_pack.hpp>
+
 #include <geometry/opengl_vao.hpp>
 #include <geometry/opengl_draw_state.hpp>
 #include <geometry/buffer_base.hpp>
+#include "aabb.hpp"
 
 namespace neam
 {
@@ -44,6 +47,9 @@ namespace neam
       struct object
       {
         public:
+          // the aabb, to be linked with default_node::initial_bounding_box
+          aabb bounding_box;
+
           // the vao
           neam::yaggler::geometry::vao<neam::yaggler::type::opengl> vao;
 
@@ -79,7 +85,7 @@ namespace neam
 
           static constexpr GLenum __indexes_container[] = {GL_ARRAY_BUFFER, GL_ATOMIC_COUNTER_BUFFER, GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, GL_DRAW_INDIRECT_BUFFER, GL_DISPATCH_INDIRECT_BUFFER, GL_ELEMENT_ARRAY_BUFFER, GL_PIXEL_PACK_BUFFER, GL_PIXEL_UNPACK_BUFFER, GL_QUERY_BUFFER, GL_SHADER_STORAGE_BUFFER, GL_TEXTURE_BUFFER, GL_TRANSFORM_FEEDBACK_BUFFER, GL_UNIFORM_BUFFER};
 
-          // to help with indexes
+          // to help with indexes. Could be used as template parameter ;)
           static constexpr size_t get_index_for_enum(GLenum val)
           {
             return _rec_get_index_for_enum(val, 0, sizeof(__indexes_container) / sizeof(__indexes_container[0]));
@@ -97,12 +103,13 @@ namespace neam
 
           // create a link
           object(const object &o)
-            : vao(o.vao), drawer(o.drawer), ct_buffers(o.ct_buffers), buffers(o.buffers)
+            : bounding_box(o.bounding_box), vao(o.vao), drawer(o.drawer), ct_buffers(o.ct_buffers), buffers(o.buffers)
           {
+            give_up_ownership();
           }
           // stole ownership
           object(object &o, stole_ownership_t)
-            : object(std::move(o), cr::gen_seq<sizeof...(CTBufferTypes)>(), rt_idxs_gen_seq())
+          : object(std::move(o), cr::gen_seq<sizeof...(CTBufferTypes)>(), rt_idxs_gen_seq())
           {
           }
           object(object && o)
@@ -129,6 +136,8 @@ namespace neam
           object &stole(object &o)
           {
             vao.stole(o.vao);
+            drawer = o.drawer;
+            bounding_box = (o.bounding_box);
             ct_buffers_stole(o, cr::gen_seq<sizeof...(CTBufferTypes)>());
             buffers_stole(o, rt_idxs_gen_seq());
             return *this;
@@ -137,6 +146,8 @@ namespace neam
           object &link_to(const object &o)
           {
             vao.link_to(o.vao);
+            drawer = o.drawer;
+            bounding_box = (o.bounding_box);
             ct_buffers_link_to(o, cr::gen_seq<sizeof...(CTBufferTypes)>());
             buffers_link_to(o, rt_idxs_gen_seq());
             return *this;
@@ -174,12 +185,13 @@ namespace neam
             object<> gen(std::move(vao));
 
             gen.drawer = drawer;
+            gen.bounding_box = bounding_box;
 
             // copy 'runtime' buffers
             gen.___gen_buffers_stole(*this, rt_idxs_gen_seq());
 
             // move 'ct' buffers to 'runtime' (non-ct) buffers
-            void((int []){(gen.buffers.template get<get_index_for_enum(CTBufferTypes)>().emplace_back( std::move(ct_buffers.template get<CTIdxs>())), 5)...});
+            NEAM_EXECUTE_PACK((gen.buffers.template get<get_index_for_enum(CTBufferTypes)>().emplace_back( std::move(ct_buffers.template get<CTIdxs>()))));
 
             return gen;
           }
@@ -189,12 +201,13 @@ namespace neam
             object<> gen((vao));
 
             gen.drawer = drawer;
+            gen.bounding_box = bounding_box;
 
             // 'link' 'runtime' buffers
             gen.___gen_buffers_link(*this, rt_idxs_gen_seq());
 
             // 'link' 'ct' buffers as 'runtime' (non-ct) buffers
-            void((int []){(gen.buffers.template get<get_index_for_enum(CTBufferTypes)>().emplace_back((ct_buffers.template get<CTIdxs>())), 5)...});
+            NEAM_EXECUTE_PACK((gen.buffers.template get<get_index_for_enum(CTBufferTypes)>().emplace_back((ct_buffers.template get<CTIdxs>()))));
 
             return gen;
           }
@@ -203,14 +216,12 @@ namespace neam
           template<GLenum... CTArgs, size_t... Idxs>
           void ___gen_buffers_stole(object<CTArgs...> &o, cr::seq<Idxs...>)
           {
-            void((int []){((buffers.template get<Idxs>() = std::move(o.buffers.template get<Idxs>())), 5)...}); // who knows how this'll be optimised out ?
-            // (and which compiler supports it...)
+            NEAM_EXECUTE_PACK((buffers.template get<Idxs>() = std::move(o.buffers.template get<Idxs>())));
           }
           template<GLenum... CTArgs, size_t... Idxs>
           void ___gen_buffers_link(const object<CTArgs...> &o, cr::seq<Idxs...>)
           {
-            void((int []){((___gen_buffers_link_sub<Idxs>(o)), 5)...}); // who knows how this'll be optimised out ?
-            // (and which compiler supports it...)
+            NEAM_EXECUTE_PACK((___gen_buffers_link_sub<Idxs>(o)));
           }
 
         private:
@@ -232,7 +243,7 @@ namespace neam
           // ownership thief
           template<size_t... CTIdxs, size_t... RTIdxs>
           object(object && o, cr::seq<CTIdxs...>, cr::seq<RTIdxs...>)
-            : vao(o.vao, stole_ownership), drawer(o.drawer),
+            : bounding_box(o.bounding_box), vao(o.vao, stole_ownership), drawer(o.drawer),
               ct_buffers(cr::make_move((o.ct_buffers.template get<CTIdxs>()))...),
               buffers(cr::make_move(o.buffers.template get<RTIdxs>())...)
           {
@@ -241,33 +252,28 @@ namespace neam
           template<size_t... Idxs>
           void ct_buffers_give_up_ownership(cr::seq<Idxs...>)
           {
-            void((int []){(ct_buffers.template get<Idxs>().give_up_ownership(), 5)...}); // who knows how this'll be optimised out ?
-            // (and which compiler supports it...)
+            NEAM_EXECUTE_PACK((ct_buffers.template get<Idxs>().give_up_ownership()));
           }
           template<size_t... Idxs>
           void ct_buffers_assume_ownership(cr::seq<Idxs...>)
           {
-            void((int []){(ct_buffers.template get<Idxs>().assume_ownership(), 5)...}); // who knows how this'll be optimised out ?
-            // (and which compiler supports it...)
+            NEAM_EXECUTE_PACK((ct_buffers.template get<Idxs>().assume_ownership()));
           }
           template<size_t... Idxs>
           void ct_buffers_stole(object &o, cr::seq<Idxs...>)
           {
-            void((int []){(ct_buffers.template get<Idxs>().stole(o.ct_buffers.template get<Idxs>()), 5)...}); // who knows how this'll be optimised out ?
-            // (and which compiler supports it...)
+            NEAM_EXECUTE_PACK((ct_buffers.template get<Idxs>().stole(o.ct_buffers.template get<Idxs>())));
           }
           template<size_t... Idxs>
           void ct_buffers_link_to(const object &o, cr::seq<Idxs...>)
           {
-            void((int []){(ct_buffers.template get<Idxs>().link_to(o.ct_buffers.template get<Idxs>()), 5)...}); // who knows how this'll be optimised out ?
-            // (and which compiler supports it...)
+            NEAM_EXECUTE_PACK((ct_buffers.template get<Idxs>().link_to(o.ct_buffers.template get<Idxs>())));
           }
 
           template<size_t... Idxs>
           void buffers_give_up_ownership(cr::seq<Idxs...>)
           {
-            void((int []){(sub_buffers_give_up_ownership<Idxs>(), 5)...}); // who knows how this'll be optimised out ?
-            // (and which compiler supports it...)
+            NEAM_EXECUTE_PACK((sub_buffers_give_up_ownership<Idxs>()));
           }
           template<size_t Idx>
           void sub_buffers_give_up_ownership()
@@ -280,8 +286,7 @@ namespace neam
           template<size_t... Idxs>
           void buffers_assume_ownership(cr::seq<Idxs...>)
           {
-            void((int []){(sub_buffers_assume_ownership<Idxs>(), 5)...}); // who knows how this'll be optimised out ?
-            // (and which compiler supports it...)
+            NEAM_EXECUTE_PACK((sub_buffers_assume_ownership<Idxs>()));
           }
           template<size_t Idx>
           void sub_buffers_assume_ownership()
@@ -294,14 +299,12 @@ namespace neam
           template<size_t... Idxs>
           void buffers_stole(object &o, cr::seq<Idxs...>)
           {
-            void((int []){((buffers.template get<Idxs>() = std::move(o.buffers.template get<Idxs>())), 5)...}); // who knows how this'll be optimised out ?
-            // (and which compiler supports it...)
+            NEAM_EXECUTE_PACK(((buffers.template get<Idxs>() = std::move(o.buffers.template get<Idxs>()))));
           }
           template<size_t... Idxs>
           void buffers_link_to(const object &o, cr::seq<Idxs...>)
           {
-            void((int []){((sub_buffers_link_to<Idxs>(o)), 5)...}); // who knows how this'll be optimised out ?
-            // (and which compiler supports it...)
+            NEAM_EXECUTE_PACK(((sub_buffers_link_to<Idxs>(o))));
           }
           template<size_t Idx>
           void sub_buffers_link_to(const object &o)
