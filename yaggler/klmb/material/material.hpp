@@ -35,6 +35,7 @@
 #include <klmb/material/klmb_context_helper.hpp>
 #include <klmb/material/material_usings.hpp>
 
+#include <tools/execute_pack.hpp>
 #include <tools/ct_string.hpp>
 #include <tools/merge_pack.hpp>
 
@@ -66,8 +67,13 @@ namespace neam
       template<typename Shaders, typename Textures, typename VarCtx, typename Variables>
       class base_material
       {
-        public:
+        private:
+          static constexpr GLuint __init_vars(const std::string &)
+          {
+            return 0;
+          }
 
+        public:
           template<typename... Pairs>
           base_material(Pairs... pairs)
             : textures(), shader_prog(),
@@ -75,7 +81,7 @@ namespace neam
               vctx(neam::yaggler::shader::variable_context<neam::yaggler::shader::contexts::none>::create<neam::yaggler::shader::contexts::fixed>
                    (
                      typename internal::make_tuple<Textures, typename Pairs::value_t...>::type(internal::get_type_instance<Textures, Variables, typename Pairs::value_t>::return_instance(textures, variable_values, pairs.value)...),
-                     shader_prog.get_uniform_variable(pairs.variable_name)...
+                    __init_vars(pairs.variable_name)...
                      // Y. A. Y. :D
                    )),
               variable_strings {{pairs.variable_name...}}
@@ -224,8 +230,7 @@ namespace neam
             framework_data.vertex_shader_number = Shaders::vertex_shaders_t::size();
             framework_data.compute_shader_number = Shaders::compute_shaders_t::size();
 
-            void((char []){_klmb_defines_single_shader_setup<Idxs>(prog_counter, framework_data)...}); // who knows how this'll be optimised out ?
-            // (and which compiler supports it...)
+            NEAM_EXECUTE_PACK((_klmb_defines_single_shader_setup<Idxs>(prog_counter, framework_data)));
           }
 
         private:
