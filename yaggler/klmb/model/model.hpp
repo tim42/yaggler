@@ -29,8 +29,12 @@
 #include <glm/glm.hpp>
 
 #include <klmb/object/object.hpp>
+#include <klmb/object/obb.hpp>
+#include <klmb/object/transformation_tree.hpp>
 #include <klmb/camera/camera_holder.hpp>
 #include <klmb/material/generic_material.hpp>
+
+
 
 namespace neam
 {
@@ -38,6 +42,12 @@ namespace neam
   {
     namespace yaggler
     {
+      namespace transformation_node
+      {
+
+        struct default_node;
+      }
+
       // object + position + material.
       class model
       {
@@ -45,12 +55,14 @@ namespace neam
           // the object geometry
           object<> geometry;
 
-//           camera_holder *holder;
           glm::mat4 **vp_matrix = nullptr; // a pointer to the vp_matrix of the camera_holder.
           glm::mat4 *world_pos = nullptr;  // a pointer to the world_pos of the transformation_tree node.
 
           // the material
           material_wrapper material;
+
+          // the node (for rendering. optional)
+          transformation_node::default_node *node = nullptr;
 
         public:
           model(const object<> &_geometry, glm::mat4 **_vp_matrix = nullptr, glm::mat4 *_world_pos = nullptr, const material_wrapper &_material = material_wrapper())
@@ -69,6 +81,16 @@ namespace neam
           {
             if (!material.is_empty())
             {
+              // check for bounding box visibility
+              if (node)
+              {
+                // TODO: fix this.
+//                 aabb pbb = node->transformed_bounding_box.project(*vp_matrix);
+
+                // not visible
+//                 if ((pbb.max.x < -1.f || pbb.min.x > 1.f) || (pbb.max.y < -1.f || pbb.min.y > 1.f) || pbb.max.z < 0.)
+//                   return;
+              }
               material.get_object_matrix() = world_pos;
               if (vp_matrix)
                 material.get_vp_matrix() = *vp_matrix;
