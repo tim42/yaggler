@@ -69,6 +69,9 @@
 #include "ct_point.hpp"
 #include "ct_point_udl.hpp"
 
+// glm udl
+#include "glm_udl.hpp"
+
 // tools
 #include "tools/ct_string.hpp"
 #include "tools/embed.hpp"
