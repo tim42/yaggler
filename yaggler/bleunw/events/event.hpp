@@ -84,7 +84,7 @@ namespace neam
 
           mouse_buttons::mouse_buttons buttons = mouse_buttons::none;
 
-          modifier_keys::modifier_keys mods;
+          modifier_keys::modifier_keys modifiers;
 
           struct
           {

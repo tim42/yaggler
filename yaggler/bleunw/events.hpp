@@ -74,7 +74,7 @@ namespace neam
               glm::vec2 wsz(_wsz[0], _wsz[1]);
 
               last_mouse_status.normalized_position = last_mouse_status.position / wsz;
-              last_mouse_status.mods = events::modifier_keys::none;
+              last_mouse_status.modifiers = events::modifier_keys::none;
               last_mouse_status.wheel = glm::vec2(0, 0);
             }
 
@@ -234,7 +234,7 @@ namespace neam
                 current_mouse_status.delta.active_buttons = static_cast<events::mouse_buttons::mouse_buttons>(1 << button);
 
 
-              current_mouse_status.mods = static_cast<events::modifier_keys::modifier_keys>(modifers);
+              current_mouse_status.modifiers = static_cast<events::modifier_keys::modifier_keys>(modifers);
               if (action == GLFW_PRESS)
                 current_mouse_status.buttons =  static_cast<events::mouse_buttons::mouse_buttons>(current_mouse_status.buttons | (1 << button));
               else if (action == GLFW_RELEASE)
@@ -245,7 +245,7 @@ namespace neam
                 if (action == GLFW_PRESS)
                   ml->button_pressed(current_mouse_status, current_mouse_status.delta.active_buttons);
                 else if (action == GLFW_RELEASE)
-                  ml->button_released(current_mouse_status, current_mouse_status.delta.active_buttons);
+                  ml->button_released(current_mouse_status, static_cast<events::mouse_buttons::mouse_buttons>(1 << button));
               }
 
               last_mouse_status = current_mouse_status;
@@ -257,11 +257,11 @@ namespace neam
 
               current_mouse_status.delta.normalized_position = glm::vec2(0, 0);
               current_mouse_status.delta.position = glm::vec2(0, 0);
-              current_mouse_status.delta.wheel = last_mouse_status.wheel - glm::vec2(x, y);
+              current_mouse_status.delta.wheel = glm::vec2(x, y);
               current_mouse_status.delta.active_buttons = events::mouse_buttons::none;
 
 
-              current_mouse_status.wheel = glm::vec2(x, y);
+              current_mouse_status.wheel += glm::vec2(x, y);
 
               for (events::mouse_listener * ml : mlisteners)
               {
@@ -301,13 +301,51 @@ namespace neam
               events::keyboard_status ks;
 
               ks.modifiers = static_cast<events::modifier_keys::modifier_keys>(modifers);
+              last_mouse_status.modifiers = ks.modifiers;
+
+              events::key_code::key_code key_code = static_cast<events::key_code::key_code>(key);
+
+              // mouse modifers
+              switch (key_code)
+              {
+                case events::key_code::left_control:
+                case events::key_code::right_control:
+                  if (action == GLFW_PRESS)
+                    last_mouse_status.modifiers = static_cast<events::modifier_keys::modifier_keys>(last_mouse_status.modifiers | events::modifier_keys::modifier_keys::control);
+                  else
+                    last_mouse_status.modifiers = static_cast<events::modifier_keys::modifier_keys>(last_mouse_status.modifiers & ~events::modifier_keys::modifier_keys::control);
+                  break;
+                case events::key_code::left_alt:
+                case events::key_code::right_alt:
+                  if (action == GLFW_PRESS)
+                    last_mouse_status.modifiers = static_cast<events::modifier_keys::modifier_keys>(last_mouse_status.modifiers | events::modifier_keys::modifier_keys::alt);
+                  else
+                    last_mouse_status.modifiers = static_cast<events::modifier_keys::modifier_keys>(last_mouse_status.modifiers & ~events::modifier_keys::modifier_keys::alt);
+                  break;
+                case events::key_code::left_shift:
+                case events::key_code::right_shift:
+                  if (action == GLFW_PRESS)
+                    last_mouse_status.modifiers = static_cast<events::modifier_keys::modifier_keys>(last_mouse_status.modifiers | events::modifier_keys::modifier_keys::shift);
+                  else
+                    last_mouse_status.modifiers = static_cast<events::modifier_keys::modifier_keys>(last_mouse_status.modifiers & ~events::modifier_keys::modifier_keys::shift);
+                  break;
+                case events::key_code::left_super:
+                case events::key_code::right_super:
+                  if (action == GLFW_PRESS)
+                    last_mouse_status.modifiers = static_cast<events::modifier_keys::modifier_keys>(last_mouse_status.modifiers | events::modifier_keys::modifier_keys::super);
+                  else
+                    last_mouse_status.modifiers = static_cast<events::modifier_keys::modifier_keys>(last_mouse_status.modifiers & ~events::modifier_keys::modifier_keys::super);
+                  break;
+                default: // this makes gcc happy.
+                  break;
+              }
 
               for (events::keyboard_listener * kl : klisteners)
               {
                 if (action == GLFW_PRESS)
-                  kl->key_pressed(ks, static_cast<events::key_code::key_code>(key));
+                  kl->key_pressed(ks, key_code);
                 else if (action == GLFW_RELEASE)
-                  kl->key_released(ks, static_cast<events::key_code::key_code>(key));
+                  kl->key_released(ks, key_code);
               }
               last_keyboard_status = ks;
             }
