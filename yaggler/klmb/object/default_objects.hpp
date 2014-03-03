@@ -53,38 +53,44 @@ namespace neam
       template<size_t Size>
       object<GL_ARRAY_BUFFER> create_object_from_object_data(const GLfloat (&data)[Size])
       {
-        object<GL_ARRAY_BUFFER> fsquad;
+        object<GL_ARRAY_BUFFER> obj;
 
-        fsquad.drawer.set_draw_method(neam::yaggler::geometry::draw_method::normal);
-        fsquad.drawer.set_draw_triangles(Size / 3);
+        for (size_t i = 0; i < Size / 3; ++i)
+          obj.bounding_box.add_vertex(glm::vec3(data[i * 3 + 0], data[i * 3 + 1], data[i * 3 + 2]));
 
-        fsquad.ct_buffers.get<0>().set_data(data);
+        obj.drawer.set_draw_method(neam::yaggler::geometry::draw_method::normal);
+        obj.drawer.set_draw_triangles(Size / 3);
 
-        fsquad.vao.add_buffer(fsquad.ct_buffers.get<0>(), neam::yaggler::geometry::buffer_view<neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>>
+        obj.ct_buffers.get<0>().set_data(data);
+
+        obj.vao.add_buffer(obj.ct_buffers.get<0>(), neam::yaggler::geometry::buffer_view<neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>>
                               (0, 3, GL_FLOAT, 0, 0));
 
-        return fsquad;
+        return obj;
       }
 
       // indexed data
       template<size_t VertexArraySize, size_t IndexArraySize>
       object<GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER> create_object_from_object_data(const GLfloat (&vertex)[VertexArraySize], const GLuint (&indices)[IndexArraySize])
       {
-        object<GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER> fsquad;
+        object<GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER> obj;
 
-        fsquad.drawer.set_draw_method(neam::yaggler::geometry::draw_method::indexed);
-        fsquad.drawer.set_draw_triangles(VertexArraySize / 3);
-        fsquad.drawer.set_index_type(GL_UNSIGNED_INT);
+        for (size_t i = 0; i < VertexArraySize / 3; ++i)
+          obj.bounding_box.add_vertex(glm::vec3(vertex[i * 3 + 0], vertex[i * 3 + 1], vertex[i * 3 + 2]));
 
-        fsquad.ct_buffers.get<0>().set_data(vertex);
-        fsquad.ct_buffers.get<1>().set_data(indices);
+        obj.drawer.set_draw_method(neam::yaggler::geometry::draw_method::indexed);
+        obj.drawer.set_draw_triangles(VertexArraySize / 3);
+        obj.drawer.set_index_type(GL_UNSIGNED_INT);
 
-        fsquad.vao.add_buffer(fsquad.ct_buffers.get<0>(), neam::yaggler::geometry::buffer_view<neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>>
+        obj.ct_buffers.get<0>().set_data(vertex);
+        obj.ct_buffers.get<1>().set_data(indices);
+
+        obj.vao.add_buffer(obj.ct_buffers.get<0>(), neam::yaggler::geometry::buffer_view<neam::yaggler::type::opengl, neam::embed::geometry::destination_precision<neam::yaggler::geometry::destination_precision::single_precision>>
                               (0, 3, GL_FLOAT, 0, 0));
 
-        fsquad.vao.add_buffer(fsquad.ct_buffers.get<1>());
+        obj.vao.add_buffer(obj.ct_buffers.get<1>());
 
-        return fsquad;
+        return obj;
       }
 
 
