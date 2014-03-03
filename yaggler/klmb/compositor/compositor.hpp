@@ -26,6 +26,8 @@
 #ifndef __N_603245356577486585_950303849__COMPOSITOR_HPP__
 # define __N_603245356577486585_950303849__COMPOSITOR_HPP__
 
+#include <tools/execute_pack.hpp>
+
 #include <klmb/compositor/pass.hpp>
 #include <klmb/compositor/framebuffer_pack.hpp>
 
@@ -96,7 +98,7 @@ namespace neam
             neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> tmp_framebuffer;
 
             size_t i = 0;
-            void((int []){(tmp_framebuffer.bind_texture(pack.textures.template get<OutputTextureIndex>().texture, oidxs.attachment[i++]), 5)...});
+            NEAM_EXECUTE_PACK((tmp_framebuffer.bind_texture(pack.textures.template get<OutputTextureIndex>().texture, oidxs.attachment[i++])));
 
             passes.emplace_back(pass_holder<InputTextureIndex...>(std::move(pass), std::move(tmp_framebuffer), gl_clear));
 
