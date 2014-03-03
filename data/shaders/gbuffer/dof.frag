@@ -24,21 +24,19 @@ uniform vec2 direction;                 // blur direction
 uniform vec2 buffer_size;               // screen size
 
 uniform float center = 9.;              // the focus point (z-distance
-uniform float max_distance = 15.;       // the minimal distance from 'center' where the blur will be maximal.
+uniform float max_distance = 100.;       // the minimal distance from 'center' where the blur will be maximal.
+uniform float min_distance = 10.;       // the maximal distance from 'center' where the blur will be null.
 
 KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_0); // color          (rgba)
-//KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_1); // normal + depth (rgb + a)
+// KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_1); // normal + depth (rgb + a)
 
 // the max samples
-#define NUM_BLUR_SAMPLES 10.0
+#define NUM_BLUR_SAMPLES 30.0
 
 // gaussian distrib'
 #define SQUARE(x)       ((x) * (x))
 #define GAUSS_DISTRIB   (sqrt(-SQUARE(NUM_BLUR_SAMPLES + 1.0f) / -11.082527f))
 #define GAUSS(x)        (1.0 / (2.506628275 * GAUSS_DISTRIB) * exp(-(SQUARE(x) / (2.0 * SQUARE(GAUSS_DISTRIB)))))
-
-// distance where the Blur is maximum
-#define MAX_DST 15.f
 
 void KLMB_MAIN_FUNCTION()
 {
@@ -49,7 +47,9 @@ void KLMB_MAIN_FUNCTION()
 
   // blur
   float denom = 0.1;
+  vec4 geom = texture(geometry, uv);
   vec4 sum = texture(scene, uv) * denom;
+  vec4 geom_sum = geom * denom;
 
   /*float center = 9.;*//*texture(geometry, vec2(0.5, 0.5)).w
                 + texture(geometry, vec2(0.5 + 0.02, 0.5 + 0.00)).w
@@ -63,21 +63,29 @@ void KLMB_MAIN_FUNCTION()
                 + texture(geometry, vec2(0.5 - 0.02, 0.5 - 0.02)).w;
   center /= 9.;*/
 
-  float alpha = texture(geometry, uv).w ;
-    if (alpha == 0)
-      alpha = 10000.;
-  alpha = abs(center - alpha);
-  alpha = clamp(alpha, 0, max_distance) / max_distance;
+  float alpha = geom.w ;
+  alpha = (clamp(abs(center - alpha), min_distance, max_distance) - min_distance) / (max_distance - min_distance);
+  if (geom.w == 0.)
+    alpha = 1.;
 
-  for (float i = 0; i < NUM_BLUR_SAMPLES; ++i)
+
+  for (float i = 0.; i < NUM_BLUR_SAMPLES * alpha; ++i)
   {
-    float idx = i - (NUM_BLUR_SAMPLES / 2.0);
-    vec2 nuv = uv + o * (idx * 2.0);
-
+    float idx = i - (NUM_BLUR_SAMPLES * alpha / 2.0);
+    vec2 nuv = uv + o * (idx * 2.2);
 
     float coef = GAUSS(idx);
-    sum += texture(scene, nuv) * coef * alpha;
-    denom += coef * alpha;
+    vec4 color = texture(scene, nuv);
+    float depth = texture(geometry, nuv).w;
+    if (depth == 0)
+      depth = 1.;
+    else
+      depth = (clamp(abs(center - depth), min_distance, max_distance) - min_distance) / (max_distance - min_distance);
+
+    float k = (1. + length(color.xyz) * cos(i / (NUM_BLUR_SAMPLES * alpha) * (3.1415 / 2.)));
+    float d = clamp((depth - alpha + 0.9) * depth, 0, 0.9) * 2.0;
+    sum += color * coef * alpha * (sqrt((k))) * d;
+    denom += coef * alpha * d;
   }
 
   KLMB_SHARED_NAME(color_0) = vec4((sum / denom).xyzw);
