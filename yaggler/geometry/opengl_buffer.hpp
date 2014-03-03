@@ -225,7 +225,7 @@ namespace neam
           void set_data(const array_wrapper<glm::vec4> &data, GLenum draw_type = GL_STATIC_DRAW)
           {
             bind();
-            GLfloat dest_data[data.size * 4];
+            GLfloat *dest_data = new GLfloat[data.size * 4];
             for (size_t i = 0; i < data.size; ++i)
             {
               dest_data[i + 0] = (data.array[i].x);
@@ -234,31 +234,34 @@ namespace neam
               dest_data[i + 3] = (data.array[i].w);
             }
 
-            glBufferData(GeomType::value, sizeof(dest_data), dest_data, draw_type);
+            glBufferData(GeomType::value, sizeof(GLfloat) * 4 * data.size, dest_data, draw_type);
+            delete [] dest_data;
           }
 
           void set_data(const array_wrapper<glm::vec3> &data, GLenum draw_type = GL_STATIC_DRAW)
           {
             bind();
-            GLfloat dest_data[data.size * 3];
+            GLfloat *dest_data = new GLfloat[data.size * 3];
             for (size_t i = 0; i < data.size; ++i)
             {
               dest_data[i * 3 + 0] = (data.array[i].x);
               dest_data[i * 3 + 1] = (data.array[i].y);
               dest_data[i * 3 + 2] = (data.array[i].z);
             }
-            glBufferData(GeomType::value, sizeof(dest_data), dest_data, draw_type);
+            glBufferData(GeomType::value, sizeof(GLfloat) * 3 * data.size, dest_data, draw_type);
+            delete [] dest_data;
           }
           void set_data(const array_wrapper<glm::vec2> &data, GLenum draw_type = GL_STATIC_DRAW)
           {
             bind();
-            GLfloat dest_data[data.size * 2];
+            GLfloat *dest_data = new GLfloat[data.size * 2];
             for (size_t i = 0; i < data.size; ++i)
             {
               dest_data[i + 0] = (data.array[i].x);
               dest_data[i + 1] = (data.array[i].y);
             }
-            glBufferData(GeomType::value, sizeof(dest_data), dest_data, draw_type);
+            glBufferData(GeomType::value, sizeof(GLfloat) * 2 * data.size, dest_data, draw_type);
+            delete [] dest_data;
           }
 
           // set the data from an C array (with fixed size)
@@ -266,7 +269,7 @@ namespace neam
           void set_data(glm::vec4 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
             bind();
-            GLfloat dest_data[ArraySize * 4];
+            GLfloat *dest_data = new GLfloat[ArraySize * 4];
             for (size_t i = 0; i < ArraySize; ++i)
             {
               dest_data[i + 0] = (data[i].x);
@@ -275,14 +278,15 @@ namespace neam
               dest_data[i + 3] = (data[i].w);
             }
 
-            glBufferData(GeomType::value, sizeof(dest_data), dest_data, draw_type);
+            glBufferData(GeomType::value, sizeof(GLfloat) * 4 * ArraySize, dest_data, draw_type);
+            delete [] dest_data;
           }
           // set the data from an C array (with fixed size)
           template<size_t ArraySize>
           void set_data(glm::vec3 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
             bind();
-            GLfloat dest_data[ArraySize * 3];
+            GLfloat *dest_data = new GLfloat[ArraySize * 3];
             for (size_t i = 0; i < ArraySize; ++i)
             {
               dest_data[i + 0] = (data[i].x);
@@ -290,21 +294,23 @@ namespace neam
               dest_data[i + 2] = (data[i].z);
             }
 
-            glBufferData(GeomType::value, sizeof(dest_data), dest_data, draw_type);
+            glBufferData(GeomType::value, sizeof(GLfloat) * 3 * ArraySize, dest_data, draw_type);
+            delete [] dest_data;
           }
           // set the data from an C array (with fixed size)
           template<size_t ArraySize>
           void set_data(glm::vec2 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
             bind();
-            GLfloat dest_data[ArraySize * 2];
+            GLfloat *dest_data = new GLfloat[ArraySize * 2];
             for (size_t i = 0; i < ArraySize; ++i)
             {
               dest_data[i + 0] = (data[i].x);
               dest_data[i + 1] = (data[i].y);
             }
 
-            glBufferData(GeomType::value, sizeof(dest_data), dest_data, draw_type);
+            glBufferData(GeomType::value, sizeof(GLfloat) * 2 * ArraySize, dest_data, draw_type);
+            delete [] dest_data;
           }
 
           // set the data from an C array (with fixed size)
@@ -312,7 +318,7 @@ namespace neam
           void set_data_convert_to_float(ct::vector4 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
             bind();
-            GLfloat dest_data[ArraySize * 4];
+            GLfloat *dest_data = new GLfloat[ArraySize * 4];
             for (size_t i = 0; i < ArraySize; ++i)
             {
               dest_data[i + 0] = ct::conversion::to<GLfloat>(data[i].x);
@@ -321,14 +327,15 @@ namespace neam
               dest_data[i + 3] = ct::conversion::to<GLfloat>(data[i].w);
             }
 
-            glBufferData(GeomType::value, sizeof(dest_data), dest_data, draw_type);
+            glBufferData(GeomType::value, sizeof(GLfloat) * 4 * ArraySize, dest_data, draw_type);
+            delete [] dest_data;
           }
           // set the data from an C array (with fixed size)
           template<size_t ArraySize>
           void set_data_convert_to_float(ct::vector3 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
             bind();
-            GLfloat dest_data[ArraySize * 3];
+            GLfloat *dest_data = new GLfloat[ArraySize * 3];
             for (size_t i = 0; i < ArraySize; ++i)
             {
               dest_data[i + 0] = ct::conversion::to<GLfloat>(data[i].x);
@@ -336,34 +343,37 @@ namespace neam
               dest_data[i + 2] = ct::conversion::to<GLfloat>(data[i].z);
             }
 
-            glBufferData(GeomType::value, sizeof(dest_data), dest_data, draw_type);
+            glBufferData(GeomType::value, sizeof(GLfloat) * 3 * ArraySize, dest_data, draw_type);
+            delete [] dest_data;
           }
           // set the data from an C array (with fixed size)
           template<size_t ArraySize>
           void set_data_convert_to_float(ct::vector2 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
             bind();
-            GLfloat dest_data[ArraySize * 2];
+            GLfloat *dest_data = new GLfloat[ArraySize * 2];
             for (size_t i = 0; i < ArraySize; ++i)
             {
               dest_data[i + 0] = ct::conversion::to<GLfloat>(data[i].x);
               dest_data[i + 1] = ct::conversion::to<GLfloat>(data[i].y);
             }
 
-            glBufferData(GeomType::value, sizeof(dest_data), dest_data, draw_type);
+            glBufferData(GeomType::value, sizeof(GLfloat) * 2 * ArraySize, dest_data, draw_type);
+            delete [] dest_data;
           }
           // set the data from an C array (with fixed size)
           template<size_t ArraySize>
           void set_data_convert_to_float(ct::fixed_t data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
             bind();
-            GLfloat dest_data[ArraySize];
+            GLfloat *dest_data = new GLfloat[ArraySize];
             for (size_t i = 0; i < ArraySize; ++i)
             {
               dest_data[i + 0] = ct::conversion::to<GLfloat>(data[i]);
             }
 
-            glBufferData(GeomType::value, sizeof(dest_data), dest_data, draw_type);
+            glBufferData(GeomType::value, sizeof(GLfloat) * ArraySize, dest_data, draw_type);
+            delete [] dest_data;
           }
 
           // create a link to a more generic buffer.
