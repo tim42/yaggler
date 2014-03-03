@@ -40,7 +40,7 @@
 #endif
 
 #include <GLEW/glew.h>
-// #include <GL/gl.h>
+
 #include <string.h>
 #include <tools/enable_if.hpp>
 #include <tools/ownership.hpp>
@@ -71,9 +71,9 @@ namespace neam
           shader()
             : shader_id(0), source()
           {
-            // the ressource will be shared for file / constexpr strings. (yes, I can do that :D )
-            // NOTE: this is not what you want.
-/*            if (std::is_same<ShaderSourceType, opengl::constexpr_string>::value || std::is_same<ShaderSourceType, opengl::file>::value)
+            // the ressource could be shared for file / constexpr strings. (yes, I can do that :D )
+            // NOTE: this is probably not what you want.
+            if (ShaderOption::value == shader_option::shared_instance)
             {
               static GLuint static_shader_id = 0;
 
@@ -92,9 +92,7 @@ namespace neam
                 static_shader_id = shader_id;
               }
             }
-            else */
-
-            if (!(shader_id = glCreateShader(ShaderType::value)))
+            else if (!(shader_id = glCreateShader(ShaderType::value)))
             {
               failed = true;
               throw_on_glerror<shader_exception>("Unable to create the shader (glCreateShader): ");
@@ -168,7 +166,7 @@ namespace neam
 
           ~shader()
           {
-            if (shader_id && !link)
+            if (shader_id && !link && ShaderOption::value != shader_option::shared_instance)
             {
               glDeleteShader(shader_id);
             }
@@ -182,7 +180,11 @@ namespace neam
 
           shader &assume_ownership()
           {
-            link = false;
+            // no ownership on shareds. (there is a workaround this limitation,
+            // but this mean that you explicitly ask YägGler to break this
+            // (by assigning a 'shared' shader to a 'non-shared' one).
+            if (ShaderOption::value != shader_option::shared_instance)
+              link = false;
             return *this;
           }
 

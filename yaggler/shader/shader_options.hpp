@@ -39,6 +39,7 @@ namespace neam
       {
         reload_on_change,       // ask to watch the shader file and recompile it when the file changes
         one_shot_compilation,   // never recompile the shader (except when it's manualu asked)
+        shared_instance,        // every declaration of this class will share the same Id. The shader won't be destructed.
       };
     } // namespace shader
   } // namespace yaggler
