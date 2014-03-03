@@ -26,6 +26,7 @@
 
 #ifndef __N_462308859677856537_1340905228__REF_HPP__
 # define __N_462308859677856537_1340905228__REF_HPP__
+#include <type_traits>
 
 namespace neam
 {
@@ -60,6 +61,10 @@ namespace neam
     {
       return ref<const RefType>(value);
     }
+
+    // type traits
+    template<typename X> struct is_ref : public std::false_type {};
+    template<typename T> struct is_ref<ref<T>> : public std::true_type {};
 
   } // namespace cr
 } // namespace neam
