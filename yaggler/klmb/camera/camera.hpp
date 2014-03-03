@@ -98,7 +98,7 @@ namespace neam
 
           if (world_matrix)
           {
-            glm::vec4 tpos = ((*world_matrix) * glm::vec4(position, 1));
+            glm::vec4 tpos = ((*world_matrix) * glm::vec4(position, 1.));
             view_matrix = glm::lookAt(glm::vec3(tpos.x, tpos.y, tpos.z), look, up_vector);
           }
           else
@@ -125,7 +125,7 @@ namespace neam
         glm::mat4 vp_matrix; // the result (to be passed as ref<> to shaders / objects /...)
 
         // some controls vars
-        glm::vec2 min = glm::vec2(0, 0);
+        glm::vec2 min = glm::vec2(-1, -1);
         glm::vec2 max = glm::vec2(1, 1);
 
         float near = 0;
