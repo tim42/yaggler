@@ -26,8 +26,9 @@
 #ifndef __N_539314345523947050_1106712426__FRAMEBUFFER_PACK_HPP__
 # define __N_539314345523947050_1106712426__FRAMEBUFFER_PACK_HPP__
 
-#include <texture/texture.hpp>
 #include <deque>
+#include <tools/execute_pack.hpp>
+#include <texture/texture.hpp>
 
 namespace neam
 {
@@ -100,7 +101,7 @@ namespace neam
           template<size_t... Idxs>
           void use_textures() const
           {
-            void((int []){(textures.template get<Idxs>().texture.use(), 5)...});
+            NEAM_EXECUTE_PACK((textures.template get<Idxs>().texture.use()));
           }
 
           void use_textures() const
@@ -118,7 +119,7 @@ namespace neam
           template<size_t... Idxs>
           void set_textures_samplers(cr::seq<Idxs...>)
           {
-            void((int []){(textures.template get<Idxs>().texture.set_texture_sampler(textures.template get<Idxs>().sampler), 5)...});
+            NEAM_EXECUTE_PACK((textures.template get<Idxs>().texture.set_texture_sampler(textures.template get<Idxs>().sampler)));
           }
       };
 
