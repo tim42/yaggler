@@ -26,13 +26,17 @@
 
 #ifndef __N_17818792821539412134_1983288025__CONTEXT_HPP__
 # define __N_17818792821539412134_1983288025__CONTEXT_HPP__
+
 #include <initializer_list>
-#include "opengl_uniform_var.hpp"
+
+#include <tools/execute_pack.hpp>
 #include <tools/tuple.hpp>
 #include <tools/enable_if.hpp>
 #include <tools/function.hpp>
 #include <tools/array.hpp>
 #include <tools/type_at_index.hpp>
+
+#include <shader/opengl_uniform_var.hpp>
 
 namespace neam
 {
@@ -127,33 +131,28 @@ namespace neam
           template<size_t... Idxs>
           void binder(neam::cr::seq<Idxs...>&&)
           {
-            void((char []){_binder<Idxs, Args>(0)...}); // who knows how this'll be optimised out ?
-            // (and which compiler supports it...)
-//             char _[] __attribute__((unused)) = {_binder<Idxs, Args>(0)...};
+            NEAM_EXECUTE_PACK((_binder<Idxs, Args>(0)));
           }
 
           // on functions/functors
           template<size_t Idx, typename Arg>
-          char _binder(typename neam::cr::enable_if < neam::cr::is_function_pointer<Arg>::value || std::is_member_function_pointer<Arg>::value, __LINE__, size_t >::type)
+          void _binder(typename neam::cr::enable_if < neam::cr::is_function_pointer<Arg>::value || std::is_member_function_pointer<Arg>::value, __LINE__, int >::type)
           {
             vars[Idx] = (values.template get<Idx>())();
-            return 0;
           }
 
           // on a classic var (use affectation directly)
+          // NOTE: ref<> and pointers won't be here as the uniform is setted only one time
           template<size_t Idx, typename Arg>
-          char _binder(typename neam::cr::enable_if < !neam::cr::is_function_pointer<Arg>::value && !std::is_member_function_pointer<Arg>::value, __LINE__, size_t >::type)
+          void _binder(typename neam::cr::enable_if < !neam::cr::is_function_pointer<Arg>::value && !std::is_member_function_pointer<Arg>::value, __LINE__, int >::type)
           {
             vars[Idx] = (values.template get<Idx>());
-            return 0;
           }
 
           template<typename... Vars, size_t... Idxs>
           void var_setter(neam::cr::seq<Idxs...>&&, const Vars &... _vars)
           {
-            void((GLint []){(vars[Idxs]._set_id(_vars), 0)...}); // who knows how this'll be optimised out ?
-            // (and which compiler supports it...)
-
+            NEAM_EXECUTE_PACK((vars[Idxs]._set_id(_vars)));
           }
 
         private:
