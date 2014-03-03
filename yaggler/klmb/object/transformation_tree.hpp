@@ -28,9 +28,13 @@
 
 #include <deque>
 #include <vector>
-#include <tools/memory_pool.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
+
+#include <tools/memory_pool.hpp>
+
+#include <klmb/object/aabb.hpp>
+#include <klmb/object/obb.hpp>
 
 namespace neam
 {
@@ -61,12 +65,23 @@ namespace neam
                 Node *local_node_ptr = new (tree->node_pool) Node(_node);
                 Node *world_node_ptr = new (tree->node_pool) Node;
 
+                local_node_ptr->compute_matrix();
                 local_node_ptr->compute_world(world, world_node_ptr);
 
                 childs_cont.emplace_back(local_node_ptr, world_node_ptr, tree);
                 node_holder &ret = childs_cont.back();
                 ret.parent = this;
                 return ret;
+              }
+
+              // remove this node
+              void remove()
+              {
+                if (parent)
+                {
+                  auto it = std::find(parent->childs.begin(), parent->childs.end(), *this);
+                  parent->childs.erase(it);
+                }
               }
 
               // compute and propagate matrices transformations to every childs
@@ -110,8 +125,6 @@ namespace neam
                     bool inc = false;
                     if (hldr->childs_cont[*current].local->dirty || world_recompute)
                     {
-                      hldr->childs_cont[*current].local->compute_matrix();
-
                       // we recompute world here.
                       ++world_recompute;
                       inc = true;
@@ -158,16 +171,69 @@ namespace neam
               // ATTENTION: DO NOT USE DIRECTLY.
               node_holder(Node *_local, Node *_world, transformation_tree *_tree) : local(_local), world(_world), childs(childs_cont), tree(_tree)
               {
-                local->holder = this;
-                world->holder = this;
+                // TODO: find another way to do it.
+                local->holder = reinterpret_cast<decltype(local->holder)>(this);
+                world->holder = reinterpret_cast<decltype(world->holder)>(this);
               }
 
               ~node_holder()
               {
-                tree->node_pool.destroy(local);
-                tree->node_pool.deallocate(local);
-                tree->node_pool.destroy(world);
-                tree->node_pool.deallocate(world);
+                if (local)
+                {
+                  tree->node_pool.destroy(local);
+                  tree->node_pool.deallocate(local);
+                }
+                if (world)
+                {
+                  tree->node_pool.destroy(world);
+                  tree->node_pool.deallocate(world);
+                }
+              }
+
+              bool operator == (const node_holder &o)
+              {
+                return local == o.local;
+              }
+
+              node_holder &operator = (const node_holder &o)
+              {
+                if (local)
+                {
+                  tree->node_pool.destroy(local);
+                  tree->node_pool.deallocate(local);
+                }
+                if (world)
+                {
+                  tree->node_pool.destroy(world);
+                  tree->node_pool.deallocate(world);
+                }
+
+                local = new (tree->node_pool) Node(*o.local);
+                world = new (tree->node_pool) Node(*o.world);
+                local->holder = reinterpret_cast<decltype(local->holder)>(this);
+                world->holder = reinterpret_cast<decltype(world->holder)>(this);
+                return *this;
+              }
+              node_holder &operator = (node_holder && o)
+              {
+                if (local)
+                {
+                  tree->node_pool.destroy(local);
+                  tree->node_pool.deallocate(local);
+                }
+                if (world)
+                {
+                  tree->node_pool.destroy(world);
+                  tree->node_pool.deallocate(world);
+                }
+
+                local = o.local;
+                world = o.world;
+                o.local = nullptr;
+                o.world = nullptr;
+                local->holder = reinterpret_cast<decltype(local->holder)>(this);
+                world->holder = reinterpret_cast<decltype(world->holder)>(this);
+                return *this;
               }
 
             private:
@@ -175,8 +241,8 @@ namespace neam
               {
                 local = new (tree->node_pool) Node;
                 world = new (tree->node_pool) Node;
-                local->holder = this;
-                world->holder = this;
+                local->holder = reinterpret_cast<decltype(local->holder)>(this);
+                world->holder = reinterpret_cast<decltype(world->holder)>(this);
               }
 
             private:
@@ -213,9 +279,18 @@ namespace neam
           bool dirty = false;
           glm::mat4 matrix = glm::mat4(1.); // the local transformation
 
+          aabb *initial_bounding_box = nullptr;// projected for visibility tests ? ;)
+                                            // projected for GUI on_clicks ? :)
+                                            // (NOTE: not projected here, simply 'world tranformed')
+
+          obb transformed_bounding_box;
+
           void compute_matrix()
           {
             matrix = glm::translate(position) * glm::mat4_cast(rotation) * glm::scale(scale);
+
+            if (initial_bounding_box)
+              transformed_bounding_box.set_transform_from(*initial_bounding_box, position, scale, rotation);
           }
 
           void compute_world(const default_node *parent_world, default_node *world_dest) const
@@ -233,6 +308,7 @@ namespace neam
               world_dest->rotation = rotation;
             }
 
+            world_dest->initial_bounding_box = initial_bounding_box;
             world_dest->compute_matrix();
             world_dest->dirty = false;
           }
