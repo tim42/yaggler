@@ -144,10 +144,6 @@ namespace neam
               size.x = image.get_width();
               size.y = image.get_height();
 
-// #ifndef YAGGLER_NO_MESSAGES
-//               std::cout << "YAGGLER: loading png image '" << File::value << "' [" << size.x << ", " << size.y << "] pixels (with " << pixel_size * 8 << "bpp)..." << std::endl;
-// #endif
-
               uint8_t *ret_array = new uint8_t[pixel_size * size.x * size.y];
 
               size_t idx = 0;
