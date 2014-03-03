@@ -34,9 +34,11 @@
 
 #include <shader/program_base.hpp>
 #include <shader/except.hpp>
-#include "opengl_uniform_var.hpp"
+#include <shader/opengl_uniform_var.hpp>
+
 #include <tools/bad_type.hpp>
 
+#include <tools/execute_pack.hpp>
 #include <tools/tuple.hpp>
 #include <tools/type_at_index.hpp>
 #include <yaggler_type.hpp>
@@ -56,36 +58,25 @@ namespace neam
       class program<type::opengl, CTShaders...>
       {
         private: // iterate over ct shaders. [helper]
-          template<typename Shader>
-          inline int _it_attach_cts_inner(Shader &shader)
-          {
-            glAttachShader(pg_id, shader.get_id());
-            return 0;
-          }
-
           template<uint64_t... Idx>
           inline void it_over_cts_attach(cr::seq<Idx...>)
           {
-            int _[] __attribute__((unused)) = {_it_attach_cts_inner(shaders.template get<Idx>())...}; // gcc may be enought intelligent to ignore this array ;)
+            NEAM_EXECUTE_PACK((glAttachShader(pg_id, shaders.template get<Idx>().get_id())));
           }
 
           template<typename Shader>
-          inline int _it_recompile_cts_inner(Shader &shader)
+          inline void _it_recompile_cts_inner(Shader &shader)
           {
             shader.recompile();
             failed |= shader.has_failed();
-
-            return 0;
           }
 
           template<uint64_t... Idx>
           inline void it_over_cts_recompile(cr::seq<Idx...>)
           {
             failed = false;
-            int _[] __attribute__((unused)) = {_it_recompile_cts_inner(shaders.template get<Idx>())...}; // gcc may be enought intelligent to ignore this array ;)
+            NEAM_EXECUTE_PACK((_it_recompile_cts_inner(shaders.template get<Idx>())));
           }
-
-        private: // constructor
 
         public:
           // create a link to the original shader
@@ -129,14 +120,12 @@ namespace neam
           program(program &&p)
             : shaders(std::move(p.shaders)), pg_id(p.get_id()), symlink(p.is_link())
           {
-            std::cout << "GOOD prgm: move" << std::endl;
             p.give_up_ownership();
           }
           template<typename... OCTShaders>
           program(program<type::opengl, OCTShaders...> && p)
             : shaders(), pg_id(p.get_id()), symlink(p.is_link())
           {
-            std::cout << "prgm: move" << std::endl;
             p.give_up_ownership();
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
           }
