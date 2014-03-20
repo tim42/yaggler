@@ -49,11 +49,8 @@ namespace neam
 
     class glfw_window
     {
-
-      public:
-        // window_size MUST be an integer, NOT a fixed point size.
-        glfw_window(window_mode::windowed_t, const neam::ct::vector2 &window_size, const std::string &title = "[ neam/yaggler")
-          : win(nullptr), link(false)
+      private:
+        void init_glfw_hints()
         {
           glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, ::opengl_version::gl_major);
           glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, ::opengl_version::gl_minor);
@@ -78,22 +75,10 @@ namespace neam
           }
 
           glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, ::opengl_version::debug);
+        }
 
-          if (!(win = glfwCreateWindow(window_size.x, window_size.y, title.data(), 0, 0)))
-            throw glfw_exception("GLFW: glfwCreateWindow call failed");
-
-          select();
-
-          // init glew
-          glewExperimental = GL_TRUE;
-          GLenum err = glewInit();
-
-          throw_on_glerror<glew_exception>("GLEW INTERNAL ERROR (glewInit): ");
-          if (err != GLEW_OK)
-          {
-            throw glew_exception(reinterpret_cast<const char *>(glewGetErrorString(err)));
-          }
-
+        void init_debug()
+        {
           if (::opengl_version::debug)
           {
             if (GLEW_ARB_debug_output)
@@ -166,32 +151,35 @@ namespace neam
             }
           }
         }
+
+      public:
+        // window_size MUST be an integer, NOT a fixed point size.
+        glfw_window(window_mode::windowed_t, const neam::ct::vector2 &window_size, const std::string &title = "[ neam/yaggler")
+          : win(nullptr), link(false)
+        {
+          init_glfw_hints();
+
+          if (!(win = glfwCreateWindow(window_size.x, window_size.y, title.data(), 0, 0)))
+            throw glfw_exception("GLFW: glfwCreateWindow call failed");
+
+          select();
+
+          // init glew
+          glewExperimental = GL_TRUE;
+          GLenum err = glewInit();
+
+          throw_on_glerror<glew_exception>("GLEW INTERNAL ERROR (glewInit): ");
+          if (err != GLEW_OK)
+          {
+            throw glew_exception(reinterpret_cast<const char *>(glewGetErrorString(err)));
+          }
+
+          init_debug();
+        }
         glfw_window(window_mode::fullscreen_t, const std::string &title = "[ neam/yaggler")
         : win(nullptr), link(false)
         {
-          glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, ::opengl_version::gl_major);
-          glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, ::opengl_version::gl_minor);
-
-          // switch over a constexpr value: no overhead/no generaed branchement code.
-          if (::opengl_version::gl_major > 3 || (::opengl_version::gl_major == 3 && ::opengl_version::gl_minor >= 2))
-          {
-            switch (::opengl_version::profile)
-            {
-              case setup::opengl_profile::any:
-                glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
-                break;
-              case setup::opengl_profile::core:
-                glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-                break;
-              case setup::opengl_profile::compat:
-                glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
-                break;
-            }
-            // some additional hints
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, ::opengl_version::forward_compat);
-          }
-
-          glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, ::opengl_version::debug);
+          init_glfw_hints();
 
           const GLFWvidmode *vmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
@@ -210,77 +198,7 @@ namespace neam
             throw glew_exception(reinterpret_cast<const char *>(glewGetErrorString(err)));
           }
 
-          if (::opengl_version::debug)
-          {
-            if (GLEW_ARB_debug_output)
-            {
-              glDebugMessageCallbackARB([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei, const char * message, void *) -> void
-              {
-                std::cerr << "OPENGL DEBUG OUTPUT: [";
-                switch (type)
-                {
-                  case GL_DEBUG_TYPE_ERROR_ARB:
-                    std::cerr << "ERROR";
-                    break;
-                  case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB:
-                    std::cerr << "DEPRECATED BEHAVIOUR";
-                    break;
-                  case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB:
-                    std::cerr << "UNDEFINED BEHAVIOUR";
-                    break;
-                  case GL_DEBUG_TYPE_PORTABILITY_ARB:
-                    std::cerr << "PORTABILITY ISSUE";
-                    break;
-                  case GL_DEBUG_TYPE_PERFORMANCE_ARB:
-                    std::cerr << "PERFORMANCE ISSUE";
-                    break;
-                  case GL_DEBUG_TYPE_OTHER_ARB:
-                    std::cerr << "OTHER";
-                }
-                std::cerr << "/";
-                switch (severity)
-                {
-                  case GL_DEBUG_SEVERITY_HIGH_ARB:
-                    std::cerr << "HIGH";
-                    break;
-                  case GL_DEBUG_SEVERITY_MEDIUM_ARB:
-                    std::cerr << "MEDIUM";
-                    break;
-                  case GL_DEBUG_SEVERITY_LOW_ARB:
-                    std::cerr << "LOW";
-                }
-                std::cerr << "] from [";
-                switch (source)
-                {
-                  case GL_DEBUG_SOURCE_API_ARB:
-                    std::cerr << "API";
-                    break;
-                  case GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB:
-                    std::cerr << "WINDOW SYSTEM";
-                    break;
-                  case GL_DEBUG_SOURCE_SHADER_COMPILER_ARB:
-                    std::cerr << "SHADER COMPILER";
-                    break;
-                  case GL_DEBUG_SOURCE_THIRD_PARTY_ARB:
-                    std::cerr << "THIRD PARTY";
-                    break;
-                  case GL_DEBUG_SOURCE_APPLICATION_ARB:
-                    std::cerr << "APPLICATION";
-                    break;
-                  case GL_DEBUG_SOURCE_OTHER_ARB:
-                    std::cerr << "OTHER";
-                }
-                std::cerr << "] (ID: " << id << "): '" << message << "'" << std::endl;
-              }, nullptr);
-
-              glEnable(GL_DEBUG_OUTPUT);
-              glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-
-              glDebugMessageControlARB(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW_ARB, 0, NULL, true);
-              glDebugMessageControlARB(GL_DEBUG_SOURCE_APPLICATION_ARB, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
-              glDebugMessageControlARB(GL_DEBUG_SOURCE_THIRD_PARTY_ARB, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
-            }
-          }
+          init_debug();
         }
 
         glfw_window(const glfw_window &w)
