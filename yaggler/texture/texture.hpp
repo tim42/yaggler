@@ -30,6 +30,7 @@
 #include <texture/texture_base.hpp>
 #include <texture/opengl_texture.hpp>
 #include <texture/png_loader.hpp>
+#include <texture/png_writer.hpp>
 
 #include <texture/framebuffer_base.hpp>
 #include <texture/opengl_framebuffer.hpp>
