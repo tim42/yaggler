@@ -61,10 +61,10 @@ namespace neam
           glfwSetErrorCallback([](int code, const char *message)
           {
             std::cout << "GLFW error [" << code << "]: '" << message << "'" << std::endl;
-            throw glfw_exception(message, true);
+            throw glfw_exception(message, false);
           });
 
-          // init glut
+          // init glfw
           if (!glfwInit())
             throw glfw_exception("unable to init GLFW (glfwInit call failed)");
         }
