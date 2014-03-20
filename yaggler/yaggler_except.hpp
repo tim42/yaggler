@@ -28,27 +28,32 @@
 # define __YAGGLER_EXCEPT_HPP__
 
 #include <cstring>
+#include <string>
 #include <iostream>
 #include <stdexcept>
 #include <GLEW/glew.h>
+
+#include <tools/demangle.hpp>
 
 // base exceptions for yaggler
 
 namespace neam
 {
-  class runtime_error
+  class base_runtime_error
   {
     public:
-      runtime_error(const std::string &s) noexcept
+      base_runtime_error(const std::string &s) noexcept
         : str(s)
       {
+        std::cerr << "\n[EXCEPTION]: " << s << std::endl << std::endl;
       }
-      runtime_error(std::string &&s) noexcept
+      base_runtime_error(std::string &&s) noexcept
         : str(s)
       {
+        std::cerr << "\n[EXCEPTION]: " << s << std::endl << std::endl;
       }
 
-      virtual ~runtime_error()
+      virtual ~base_runtime_error()
       {
       }
 
@@ -59,6 +64,22 @@ namespace neam
 
     private:
       std::string str;
+  };
+
+  template<typename ExceptionType>
+  class runtime_error : public base_runtime_error
+  {
+    public:
+      runtime_error(const std::string &s) noexcept : base_runtime_error(neam::demangle<ExceptionType>() + ": " + s)
+      {
+      }
+      runtime_error(std::string &&s) noexcept : base_runtime_error(neam::demangle<ExceptionType>() + ": " + (s))
+      {
+      }
+
+      virtual ~runtime_error()
+      {
+      }
   };
 
   namespace yaggler
@@ -74,14 +95,12 @@ namespace neam
     }
 
     // exception related with GLFW
-    class glfw_exception : public neam::runtime_error
+    class glfw_exception : public neam::runtime_error<glfw_exception>
     {
       public:
         explicit glfw_exception(const char *__arg, bool _free_message = false) noexcept
-          : neam::runtime_error(std::string("yaggler/GLFW: ") + __arg)
+          : neam::runtime_error<glfw_exception>(std::string("yaggler/GLFW: ") + __arg)
         {
-          std::cerr << "yaggler/glfw exception: " << __arg << std::endl;
-
           if (_free_message)
             delete []  __arg;
         }
@@ -94,15 +113,13 @@ namespace neam
     };
 
     // exception related with GLEW
-    class glew_exception : public neam::runtime_error
+    class glew_exception : public neam::runtime_error<glew_exception>
     {
       public:
         explicit glew_exception(const char *__arg, bool _free_message = false) noexcept
       :
-        neam::runtime_error(std::string("yaggler/GLEW: ") + __arg)
+        neam::runtime_error<glew_exception>(std::string("yaggler/GLEW: ") + __arg)
         {
-          std::cerr << "yaggler/glew exception: " << __arg << std::endl;
-
           if (_free_message)
             delete []  __arg;
         }
@@ -115,15 +132,13 @@ namespace neam
     };
 
     // exception related with GLUT
-    class opengl_exception : public neam::runtime_error
+    class opengl_exception : public neam::runtime_error<opengl_exception>
     {
       public:
         explicit opengl_exception(const char *__arg, bool _free_message = false) noexcept
       :
-        neam::runtime_error(std::string("yaggler/OpenGL: ") + __arg)
+        neam::runtime_error<opengl_exception>(std::string("yaggler/OpenGL: ") + __arg)
         {
-          std::cerr << "yaggler/opengl exception: " << __arg << std::endl;
-
           if (_free_message)
             delete []  __arg;
         }
@@ -136,15 +151,13 @@ namespace neam
     };
 
     // exception related with yaggler
-    class yaggler_exception : public neam::runtime_error
+    class yaggler_exception : public neam::runtime_error<yaggler_exception>
     {
       public:
         explicit yaggler_exception(const char *__arg, bool _free_message = false) noexcept
         :
-        neam::runtime_error(std::string("YagGler: ") + __arg)
+        neam::runtime_error<yaggler_exception>(std::string("YagGler: ") + __arg)
         {
-          std::cerr << "yaggler exception: " << __arg << std::endl;
-
           if (_free_message)
             delete []  __arg;
         }
