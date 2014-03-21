@@ -37,6 +37,7 @@
 #include <tools/array_wrapper.hpp>
 #include <tools/ref.hpp>
 #include <ct_point.hpp>
+#include <geometry/opengl_buffer.hpp>
 
 namespace neam
 {
@@ -46,35 +47,53 @@ namespace neam
     {
 
 #ifndef YAGGLER_NO_FUCKING_TESTS
-#define CHECK_ID        if (id == -1)return *this
+#define CHECK_ID            if (static_cast<GLint>(id) == -1)return *this
+#define CHECK_PGID          if (static_cast<GLint>(pgid) == -1)return *this
 #else
 #define CHECK_ID
+#define CHECK_PGID
 #endif
 
+      // this class could be used to set both uniform variables and uniform blocks
       class uniform_variable
       {
         public:
-          uniform_variable(GLint _id = -1) : id(_id) {}
+          uniform_variable(GLuint _id = -1, GLuint _pgid = -1) : id(_id), pgid(_pgid) {}
           ~uniform_variable() {}
 
-          // this probably wont do what you want... so I delete it.
+          uniform_variable (const uniform_variable &o)
+            : id(o.id), pgid(o.pgid)
+          {
+          }
+
+          // this probably wont do what you want...
           uniform_variable &operator = (const uniform_variable &o) = delete;
 
           // return the id of the var
-          GLint get_id() const
+          GLuint get_id() const
           {
             return id;
           }
 
+          GLuint get_program_id() const
+          {
+            return pgid;
+          }
+
           // could be dangerous.
-          void _set_id(GLint _id)
+          void _set_id(GLuint _id)
           {
             id = _id;
+          }
+          void _set_id(const uniform_variable &o)
+          {
+            id = o.id;
+            pgid = o.pgid;
           }
 
           bool is_valid() const
           {
-            return id != -1;
+            return static_cast<GLint>(id) != -1;
           }
 
           /// switch for refs (avoid a g++ error) ///
@@ -91,6 +110,17 @@ namespace neam
               *this = *t.value;
             return *this;
           }
+
+          /// UNIFORM BLOCK ///
+          inline uniform_variable &operator = (const geometry::buffer<type::opengl, embed::GLenum<GL_UNIFORM_BUFFER>> &b)
+          {
+            CHECK_ID;
+            CHECK_PGID;
+
+            glUniformBlockBinding(pgid, id, b.get_id());
+            return *this;
+          }
+
 
           /// FLOAT 1V ///
 
@@ -2410,7 +2440,8 @@ namespace neam
           }
 
         private:
-          GLint id;
+          GLuint id;
+          GLuint pgid;
       };
 #undef CHECK_ID
     } // namespace shader

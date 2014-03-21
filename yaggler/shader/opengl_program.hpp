@@ -255,9 +255,14 @@ namespace neam
             }
           }
 
-          GLint get_uniform_variable(const std::string &name)
+          uniform_variable get_uniform_variable(const std::string &name) const
           {
             return glGetUniformLocation(pg_id, name.data());
+          }
+
+          uniform_variable get_uniform_block(const std::string &name) const
+          {
+            return uniform_variable(glGetUniformBlockIndex(pg_id, name.data()), pg_id);
           }
 
           // don't forget to link it after :)
