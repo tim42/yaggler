@@ -74,6 +74,15 @@ namespace neam
           }
 
         public:
+          using program_t = typename Shaders::template program_auto_merger
+          <
+            ct::pair<embed::GLenum<GL_VERTEX_SHADER>, auto_file_shader<framework_files::main_vert>>,
+            ct::pair<embed::GLenum<GL_GEOMETRY_SHADER>, auto_file_shader<framework_files::main_geom>>,
+            ct::pair<embed::GLenum<GL_FRAGMENT_SHADER>, auto_file_shader<framework_files::main_frag>>
+          >::type;
+
+
+        public:
           template<typename... Pairs>
           base_material(Pairs... pairs)
             : textures(), shader_prog(),
@@ -84,7 +93,8 @@ namespace neam
                     __init_vars(pairs.variable_name)...
                      // Y. A. Y. :D
                    )),
-              variable_strings {{pairs.variable_name...}}
+              variable_strings {{pairs.variable_name...}},
+              variable_buffers {{pairs.buffer_storage...}}
           {
             glGetError(); // because shader_prog is not yet linked.
 
@@ -98,7 +108,7 @@ namespace neam
           base_material(base_material &&mt)
             : textures(std::move(mt.textures)), shader_prog(std::move(mt.shader_prog)),
               variable_values(std::move(mt.variable_values)),
-              vctx(std::move(mt.vctx)), variable_strings(std::move(mt.variable_strings))
+              vctx(std::move(mt.vctx)), variable_strings(std::move(mt.variable_strings)), variable_buffers(std::move(mt.variable_buffers))
           {
           }
 
@@ -161,11 +171,11 @@ namespace neam
           }
 
           // return the shader program
-          typename Shaders::template program_t<> &get_shader_program()
+          program_t &get_shader_program()
           {
             return shader_prog;
           }
-          const typename Shaders::template program_t<> &get_shader_program() const
+          const program_t &get_shader_program() const
           {
             return shader_prog;
           }
@@ -192,7 +202,7 @@ namespace neam
           template<size_t... Idxs>
           void _set_variables(neam::cr::seq<Idxs...>)
           {
-            vctx.set_variables(shader_prog.get_uniform_variable(variable_strings[Idxs])...);
+            vctx.set_variables(shader_prog.get_uniform(variable_strings[Idxs], variable_buffers[Idxs])...);
           }
 
           // shader framework
@@ -239,18 +249,13 @@ namespace neam
           // framework shader files
 
           // the prog :)
-          using program_t = typename Shaders::template program_auto_merger
-          <
-            ct::pair<embed::GLenum<GL_VERTEX_SHADER>, auto_file_shader<framework_files::main_vert>>,
-            ct::pair<embed::GLenum<GL_GEOMETRY_SHADER>, auto_file_shader<framework_files::main_geom>>,
-            ct::pair<embed::GLenum<GL_FRAGMENT_SHADER>, auto_file_shader<framework_files::main_frag>>
-          >::type;
           program_t shader_prog;
 
           Variables variable_values;
 
           VarCtx vctx; // must be last (after the textures, after shader_prog and after the variable values)
           std::array<std::string, VarCtx::get_number_of_variables()> variable_strings;
+          std::array<bool, VarCtx::get_number_of_variables()> variable_buffers; // is an uniform buffer ?
       };
 
       namespace internal

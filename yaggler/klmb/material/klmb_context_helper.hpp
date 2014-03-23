@@ -41,31 +41,43 @@ namespace neam
       {
         using value_t = Value;
 
-        material_ctx_pair(const std::string &name, const Value &val) : variable_name(name), value(val) {}
-        material_ctx_pair(std::string &&name, const Value &val) : variable_name(name), value(val) {}
-        material_ctx_pair(const std::string &name, Value &&val) : variable_name(name), value(val) {}
-        material_ctx_pair(std::string &&name, Value &&val) : variable_name(name), value(val) {}
+        material_ctx_pair(const std::string &name, const Value &val, bool buffer = false) : variable_name(name), value(val), buffer_storage(buffer) {}
+        material_ctx_pair(std::string &&name, const Value &val, bool buffer = false) : variable_name(name), value(val), buffer_storage(buffer) {}
+        material_ctx_pair(const std::string &name, Value &&val, bool buffer = false) : variable_name(name), value(val), buffer_storage(buffer) {}
+        material_ctx_pair(std::string &&name, Value &&val, bool buffer = false) : variable_name(name), value(val), buffer_storage(buffer) {}
 
         template<typename OtherValue>
-        material_ctx_pair(const material_ctx_pair<OtherValue> &o) : variable_name(o.variable_name), value(o.value) {}
+        material_ctx_pair(const material_ctx_pair<OtherValue> &o) : variable_name(o.variable_name), value(o.value), buffer_storage(o.buffer_storage) {}
 
         template<typename OtherValue>
-        material_ctx_pair(material_ctx_pair<OtherValue> &&o) : variable_name(std::move(o.variable_name)), value(std::move(o.value)) {}
+        material_ctx_pair(material_ctx_pair<OtherValue> &&o) : variable_name(std::move(o.variable_name)), value(std::move(o.value)), buffer_storage(o.buffer_storage) {}
 
         std::string variable_name;
         value_t value;
+        bool buffer_storage;
       };
 
-      // a maker
+      // a maker (for uniform variable)
       template<typename Value>
       material_ctx_pair<Value> make_ctx_pair(const std::string &name, Value val)
       {
-        return material_ctx_pair<Value>{name, std::move(val)};
+        return material_ctx_pair<Value>(name, std::move(val), false);
       }
       template<typename Value>
       material_ctx_pair<Value> make_ctx_pair(std::string &&name, Value val)
       {
-        return material_ctx_pair<Value>{name, std::move(val)};
+        return material_ctx_pair<Value>(std::move(name), std::move(val), false);
+      }
+      // for uniform buffer
+      template<typename Value>
+      material_ctx_pair<Value> make_ctx_buffer_pair(const std::string &name, Value val)
+      {
+        return material_ctx_pair<Value>(name, std::move(val), true);
+      }
+      template<typename Value>
+      material_ctx_pair<Value> make_ctx_buffer_pair(std::string &&name, Value val)
+      {
+        return material_ctx_pair<Value>(std::move(name), std::move(val), true);
       }
 
 
