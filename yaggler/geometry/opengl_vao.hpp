@@ -183,6 +183,11 @@ namespace neam
             glBindVertexArray(id);
           }
 
+          void unuse() const
+          {
+            glBindVertexArray(0);
+          }
+
           // add buffer / views to the vao
           template<typename Buffer, typename... Views>
           void add_buffer(const Buffer &b, const Views &... vs)
