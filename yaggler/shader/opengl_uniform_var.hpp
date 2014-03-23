@@ -117,7 +117,7 @@ namespace neam
             CHECK_ID;
             CHECK_PGID;
 
-            glUniformBlockBinding(pgid, id, b.get_id());
+            glUniformBlockBinding(pgid, id, b.get_binding_point());
             return *this;
           }
 
