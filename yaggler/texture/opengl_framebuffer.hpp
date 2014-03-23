@@ -109,17 +109,44 @@ namespace neam
           // frame buffer related functions
 
           // draw/read | both
+          void bind() const
+          {
+            glBindFramebuffer(GL_FRAMEBUFFER, id);
+          }
+
+          void unbind() const
+          {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+          }
+
           void use() const
           {
             glBindFramebuffer(GL_FRAMEBUFFER, id);
           }
+
+          void unuse() const
+          {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+          }
+
           void use_read() const
           {
             glBindFramebuffer(GL_READ_FRAMEBUFFER, id);
           }
+
           void use_draw() const
           {
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, id);
+          }
+
+          void unuse_read() const
+          {
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+          }
+
+          void unuse_draw() const
+          {
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
           }
 
           // bind texture to color only

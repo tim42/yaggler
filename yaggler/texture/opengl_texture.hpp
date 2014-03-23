@@ -317,10 +317,23 @@ namespace neam
               glBindImageTexture(spl_idx, id, 0, GL_TRUE, 0, image_access_mode, image_format);
           }
 
+          void unuse() const
+          {
+            if (!image_texture)
+              glBindTexture(TextureType::value, 0);
+            else
+              glBindImageTexture(spl_idx, 0, 0, GL_TRUE, 0, image_access_mode, image_format);
+          }
+
           // same thing than 'use' but do not bind it to a TU
           void bind() const
           {
             glBindTexture(TextureType::value, id);
+          }
+
+          void unbind() const
+          {
+            glBindTexture(TextureType::value, 0);
           }
 
           // return the texture type
@@ -457,7 +470,7 @@ namespace neam
           // size is the x/y size of the image data. (ATTENTION: not in fixed pos, but as integers)
           //
           // doc: https://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
-          auto set_sub_texture_data(const ct::vector2 &offset, ct::vector2 &size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
+          auto set_sub_texture_data(const ct::vector2 &offset, const ct::vector2 &size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_2D || TextureType::value == GL_TEXTURE_1D_ARRAY), void)
           {
             bind();

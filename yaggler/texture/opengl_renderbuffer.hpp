@@ -106,6 +106,22 @@ namespace neam
             glBindRenderbuffer(GL_RENDERBUFFER, id);
           }
 
+          void use() const
+          {
+            glBindRenderbuffer(GL_RENDERBUFFER, id);
+          }
+
+          void unbind() const
+          {
+            glBindRenderbuffer(GL_RENDERBUFFER, 0);
+          }
+
+          void unuse() const
+          {
+            glBindRenderbuffer(GL_RENDERBUFFER, 0);
+          }
+
+
           void set_storage(ct::vector2 size, GLenum internalformat, size_t samples = 0)
           {
             bind();
