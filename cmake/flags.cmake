@@ -2,7 +2,7 @@
 ## CMAKE file for neam/yaggler
 ##
 
-set(YAGGLER_FLAGS "-fno-rtti -march=native -mtune=native")
+set(YAGGLER_FLAGS "-march=native -mtune=native")
 
 # general flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
