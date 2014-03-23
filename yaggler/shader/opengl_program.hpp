@@ -265,6 +265,14 @@ namespace neam
             return uniform_variable(glGetUniformBlockIndex(pg_id, name.data()), pg_id);
           }
 
+          // switch based on a boolean parameter (for materials)
+          uniform_variable get_uniform(const std::string &name, bool block)
+          {
+            if (block)
+              return get_uniform_block(name);
+            return get_uniform_variable(name);
+          }
+
           // don't forget to link it after :)
           void bind_attribute_location(const std::string &attribute_name, GLuint location)
           {
@@ -291,6 +299,11 @@ namespace neam
           void use() const
           {
             glUseProgram(pg_id);
+          }
+
+          void unuse() const
+          {
+            glUseProgram(0);
           }
 
           // attach a shader
