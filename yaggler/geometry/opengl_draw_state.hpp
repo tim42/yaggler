@@ -141,6 +141,10 @@ namespace neam
               case draw_method::indexed_instanced:
                 glDrawElementsInstanced(mode, count, type, reinterpret_cast<GLvoid *>(start_index), prim_count);
                 break;
+#ifndef YAGGLER_NO_MESSAGES
+              default:
+                std::cerr << "YAGGLER: ERROR: unknow draw method" << std::endl;
+#endif
             }
           }
 
