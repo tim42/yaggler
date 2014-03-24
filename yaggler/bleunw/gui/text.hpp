@@ -27,6 +27,7 @@
 # define __N_5056306421379269814_1366371712__TEXT_HPP__
 
 #include <bleunw/gui/font_face.hpp>
+#include <bleunw/gui/renderable.hpp>
 
 #include <klmb/object/transformation_tree.hpp>
 #include <klmb/object/object.hpp>
@@ -34,7 +35,7 @@
 #include <klmb/material/generic_material.hpp>
 #include <klmb/material/material.hpp>
 
-#include <raii_unuser.hpp>
+#include <raii_use.hpp>
 
 namespace neam
 {
@@ -58,7 +59,7 @@ namespace neam
         } // namespace internal
 
         template<typename FragmentShader>
-        class base_text
+        class base_text : public renderable
         {
           public:
             base_text(const std::string &_value, font_face *_font = nullptr)
@@ -84,6 +85,36 @@ namespace neam
 
               x_pos.set_binding_point(1);
               vao.add_buffer(indices);
+            }
+
+            // this is dangerous: in YägGLer, this is used to create a "link".
+            // There is no such things here: You copy a text, you also copy/recreate everything in it.
+            // NOTE: custom uniforms won't get copied.
+            base_text(const base_text &o)
+              : font(nullptr), changed(true), value(o.value)
+            {
+              init_shader();
+
+              drawer.set_index_type(GL_UNSIGNED_BYTE);
+
+              color = o.color;
+              if (o.font)
+                set_font(o.font);
+
+              x_pos.set_binding_point(1);
+              vao.add_buffer(indices);
+            }
+
+            base_text &operator = (const base_text &o)
+            {
+              color = o.color;
+              set_text(o.value);
+              set_font(o.font);
+            }
+
+            base_text &operator = (const std::string &s)
+            {
+              set_text(s);
             }
 
             ~base_text()
@@ -127,7 +158,7 @@ namespace neam
               return *fragment_shader;
             }
 
-            void render()
+            virtual void render()
             {
               if (font)
               {
@@ -149,7 +180,8 @@ namespace neam
               }
             }
 
-            void render() const
+            // this could be used to prevent/delay changes
+            virtual void render() const
             {
               if (font)
               {
@@ -157,10 +189,9 @@ namespace neam
                 YAGG_SCOPED_USE(vao);
                 YAGG_SCOPED_USE(x_pos);
 
-                YAGG_SCOPED_USE(font->font);
+                font->font.use();
 
-                YAGG_SCOPED_USE(material);
-
+                material.use();
                 drawer.draw();
               }
             }
@@ -204,8 +235,7 @@ namespace neam
             }
 
           public:
-            glm::mat4 *world_pos = nullptr;
-            glm::mat4 **vp_matrix = nullptr;
+            glm::vec4 color = glm::vec4(1., 1., 1., 1.);
 
           private:
             void init_shader()
@@ -226,6 +256,7 @@ namespace neam
                 // CONTEXT
                 neam::klmb::yaggler::make_ctx_pair("global_time", &neam::cr::chrono::now_relative),
                 neam::klmb::yaggler::make_ctx_pair("font_texture", cr::make_const_ref(font_texture)),
+                neam::klmb::yaggler::make_ctx_pair("font_color", cr::make_const_ref(color)),
                 neam::klmb::yaggler::make_ctx_pair("char_count", cr::make_const_ref(char_count)),
                 neam::klmb::yaggler::make_ctx_buffer_pair("displacement_block", cr::make_const_ref(x_pos))
               );
@@ -239,7 +270,6 @@ namespace neam
 
           private:
             font_face *font = nullptr;
-            neam::klmb::yaggler::transformation_node::default_node *node = nullptr;
             bool changed = true;
             std::string value;
 
