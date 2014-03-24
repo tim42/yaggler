@@ -40,7 +40,7 @@ namespace neam
   {
     namespace yaggler
     {
-            namespace internal
+      namespace internal
       {
         constexpr neam::string_t fsquad_vert = "data/shaders/fsquad/fsquad.vert";
       } // namespace internal
@@ -92,7 +92,8 @@ namespace neam
               // SHADERS
               neam::klmb::yaggler::shader_list
               <
-                neam::klmb::yaggler::auto_file_shader<internal::fsquad_vert>,
+                // we could share this stage across other instance: no changes will be done.
+                neam::klmb::yaggler::auto_shared_file_shader<internal::fsquad_vert>,
                 Shader
               >,
               // TEXTURES
