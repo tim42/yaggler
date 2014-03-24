@@ -59,6 +59,7 @@ include(cmake/deps.cmake)
 
 # include those third party libs
 include_directories(SYSTEM ${GLFW_INCLUDE_DIRS})
+# include_directories(SYSTEM "./third_party/fncw/")
 include_directories(SYSTEM "./third_party/glfw/include/")
 include_directories(SYSTEM "./third_party/glew/include/")
 include_directories(SYSTEM "./third_party/png++/include/")
@@ -73,11 +74,18 @@ include_directories("./")
 # build yaggler dummy "lib"
 add_subdirectory(yaggler)
 
+# build the tools
+# add_subdirectory(tools/font-generator/)
+
+
 # build the samples
 # add_subdirectory(samples/test)
 # add_subdirectory(samples/dev)
 # add_subdirectory(samples/dev-klmb)
-add_subdirectory(samples/test-klmb)
+
+# add_subdirectory(samples/test-klmb)
+# add_subdirectory(samples/path-tracer/)
+add_subdirectory(samples/gui-test/)
 
 
 
