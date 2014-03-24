@@ -28,6 +28,8 @@
 
 #include <deque>
 
+#include <raii_use.hpp>
+
 #include <tools/execute_pack.hpp>
 
 #include <geometry/opengl_vao.hpp>
@@ -156,7 +158,7 @@ namespace neam
           // draw the object
           void draw() const
           {
-            vao.use();
+            YAGG_SCOPED_USE(vao);
             drawer.draw();
           }
 
