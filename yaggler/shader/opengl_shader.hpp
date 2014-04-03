@@ -445,7 +445,7 @@ namespace neam
             return static_cast<std::ostringstream&>(std::ostringstream() << (std::ifstream(ShaderSource::value).rdbuf())).str();
           }
 
-          inline std::string get_source_string(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::dyn_string>::value), int) = 0) const
+          inline std::string get_source_string(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::dyn_string>::value), int) = 0)
           {
             if (source.empty())
               source = ShaderSource::value;
