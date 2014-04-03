@@ -32,7 +32,7 @@ You've ever dreamed of all this in one single project ? *I've brought it to life
 
 Credits:
 -  code: **neam :)** (aka. _tim42_, aka. Timothée Feuillet)
--  GLFW, GLEW, png++ that are located in the 'third_party' folder belongs to their respective authors.
+-  GLFW, GLEW, lodePNG, that are located in the 'third_party' folder, belongs to their respective authors.
 
 -------------
 
