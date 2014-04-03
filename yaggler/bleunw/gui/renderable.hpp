@@ -36,6 +36,8 @@ namespace neam
     {
       namespace gui
       {
+        using handle_t = size_t;
+
         class renderable
         {
           public:
@@ -47,6 +49,8 @@ namespace neam
           public:
             glm::mat4 *world_pos = nullptr;
             glm::mat4 **vp_matrix = nullptr;
+
+            handle_t handle; // handle in the gui::manager
         };
       } // namespace gui
     } // namespace yaggler

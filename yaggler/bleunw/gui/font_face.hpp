@@ -121,6 +121,10 @@ namespace neam
             // char-value [ x y ]   [ x y ]  [ x y ] [ x y ] x_inc
             //           lower_pos upper_pos   dt      l-t
 
+#ifndef YAGGLER_NO_MESSAGES
+            neam::cr::chrono timer;
+#endif
+
             std::string line;
             std::ifstream file(init_file);
             if (!file)
@@ -179,6 +183,11 @@ namespace neam
 
             // create the vbo from the table (thx yaggler).
             vbo.set_data(table);
+
+#ifndef YAGGLER_NO_MESSAGES
+              std::cout << "YAGGLER: loaded font face '" << init_file << "' in " << timer.delta() << " seconds" << std::endl;
+#endif
+
           }
 
           // write the conf into the out_file and the texture into the font_texture

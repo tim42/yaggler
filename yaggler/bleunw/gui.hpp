@@ -26,9 +26,16 @@
 #ifndef __N_702277851988284911_350494955__GUI_HPP__
 # define __N_702277851988284911_350494955__GUI_HPP__
 
+#include <deque>
+#include <list>
+
+#include <bleunw/gui/renderable.hpp>
+
 #include <bleunw/gui/font_face.hpp>
 #include <bleunw/gui/font_manager.hpp>
 #include <bleunw/gui/text.hpp>
+#include "events/event_listener.hpp"
+#include <klmb/camera/camera.hpp>
 
 namespace neam
 {
@@ -38,11 +45,118 @@ namespace neam
     {
       namespace gui
       {
-        class manager
+
+        // this class implement some kind of fragmented array for O(1) insertion and suppression but delayed ids retrieving.
+        // (this mean: you can't add and delete an object without calling the non-const 'render()')
+        // (this also mean: if you call the const 'render()' you'll render the gui, but without adding/rendering any new elements in the manager,
+        //  allowing to generate changes in multiple frames and batch them in a single frame. This also allow to render an unmodified version of the GUI multiple times if changes are costly)
+        class manager : public renderable, public events::window_listener // see what could be done ;)
         {
           public:
+            manager(const manager &) = delete;
+            manager &operator =(const manager &) = delete;
+
+            manager(const glm::vec2 &framebuffer_resolution)
+            {
+              camera.min = glm::vec2(-1, -framebuffer_resolution.y / framebuffer_resolution.x);
+              camera.max = glm::vec2(framebuffer_resolution.x / framebuffer_resolution.y, 1);
+              camera.recompute_matrices();
+
+              internal_vp_ptr = &camera.vp_matrix;
+              vp_matrix = &internal_vp_ptr;
+              world_pos = &internal_world_mat;
+            }
+
+            ~manager() {}
+
+            // ghdl will held the handle to this renderable and will be set to the correct value after a call to the non-const render() method.
+            // you should set it to &(rd->handle) (and that's the default, when ghdl is == to nullptr)
+            void add_renderable(renderable *rd, handle_t *ghdl = nullptr)
+            {
+              rd->vp_matrix = vp_matrix;
+              rd->world_pos = world_pos;
+
+              if (!ghdl)
+                ghdl = &rd->handle;
+              *ghdl = -1;
+              to_add.push_back({rd, ghdl});
+              ++count;
+            }
+
+            void remove_renderable(handle_t rd)
+            {
+              if (rd < elements.size() && count)
+              {
+                elements[rd] = nullptr;
+                --count;
+              }
+            }
+
+            virtual void render() final
+            {
+              size_t i = 0;
+              size_t last = 0;
+              for (; i < elements.size(); ++i)
+              {
+                if (!elements[i] && to_add.size())
+                {
+                  elements[i] = to_add.front().first;
+                  *(to_add.front().second) = i;
+                  to_add.pop_front();
+                }
+
+                if (elements[i])
+                {
+                  last = i;
+                  elements[i]->render();
+                }
+              }
+              while (to_add.size())
+              {
+                to_add.front().first->render();
+                *(to_add.front().second) = i;
+                elements.push_back(to_add.front().first);
+                to_add.pop_front();
+                last = i;
+                ++i;
+              }
+
+              // remove trailing empty slots
+              if (last < elements.size() - 5)
+                elements.erase(elements.begin() + last, elements.end());
+            }
+
+            // prevent any modification (no add will be in effect here).
+            virtual void render() const final
+            {
+              for (size_t i = 0; i < elements.size(); ++i)
+              {
+                if (elements[i])
+                  elements[i]->render();
+              }
+            }
+
+          public: // window_listener
+            virtual void framebuffer_resized(const glm::vec2 &framebuffer_resolution)
+            {
+              camera.min = glm::vec2(-1, -framebuffer_resolution.y / framebuffer_resolution.x);
+              camera.max = glm::vec2(framebuffer_resolution.x / framebuffer_resolution.y, 1);
+              camera.recompute_matrices();
+            }
+
+            virtual void window_closed() {}
+            virtual void window_focused(bool) {}
+            virtual void window_iconified(bool) {}
+            virtual void window_resized(const glm::vec2 &) {}
 
           private:
+            neam::klmb::yaggler::ortho_camera camera;
+            glm::mat4 *internal_vp_ptr;
+            glm::mat4 internal_world_mat;
+
+            std::deque<renderable *> elements;
+            std::list<std::pair<renderable *, handle_t *>> to_add;
+            size_t count;
         };
       } // namespace gui
     } // namespace yaggler
