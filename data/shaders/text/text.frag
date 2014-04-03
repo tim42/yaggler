@@ -28,8 +28,8 @@
 KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_0);
 
 // from the geom stage
-in vec4 primitive_count;
 in vec2 uv;
+in vec3 font_scale;
 
 uniform float global_time;
 uniform vec2 screen_resolution;
@@ -44,13 +44,13 @@ void KLMB_MAIN_FUNCTION()
   float mask = texture(font_texture, uv).r;
   vec4 color = font_color;
 
-  color.a = smoothstep(0.409, 0.47, mask) * font_color.a;
-//   color.a = smoothstep(0.462, 0.47, mask) * font_color.a;
+  // take account of the scale of the font.
+  color.a = smoothstep(0.400 + clamp(length(font_scale) * 0.1, 0., 0.055), 0.47, mask) * font_color.a;
 
   if (color.a < 0.05)
     discard;
 
-  KLMB_SHARED_NAME(color_0) = vec4(color.rgba);//(vec3(primitive_count.x / 7., abs(cos(global_time)), 1. - primitive_count.x / 7));
+  KLMB_SHARED_NAME(color_0) = color.rgba;//(vec3(primitive_count.x / 7., abs(cos(global_time)), 1. - primitive_count.x / 7));
 }
 
 #else

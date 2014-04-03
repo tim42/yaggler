@@ -22,6 +22,7 @@ uniform mat4 object_matrix;
 
 // x and y displacement
 out mat4 vpo;
+out vec3 v_font_scale;
 
 out vec2 lower_pos;
 out vec2 upper_pos;
@@ -36,8 +37,14 @@ out gl_PerVertex
 
 void KLMB_MAIN_FUNCTION(void)
 {
+  // matrix computation
   vpo = (vp_matrix * object_matrix);
 
+  // extract the scale componant from the object matrix
+  // (the matrix should be a 'normal' matrix ;) )
+  v_font_scale = vec3(length(object_matrix[0]), length(object_matrix[1]), length(object_matrix[2]));
+
+  // output
   gl_Position = vec4(0, 0, 0, 1.);
 
   // forwarding
