@@ -84,7 +84,7 @@ void bruteforce_sdf(uint8_t *glyph, const glm::vec2 &dt,  uint8_t *output)
       temp[(x + (int)hdt.x + FONT_GLYPH_SIZE * (y + (int)hdt.y))] = glyph[(int)(x + (FONT_GLYPH_SIZE - dt.x) * y)];
   }
 
-  // bruteforce the SDF
+  // brute-force the SDF
   // (yep, for each pixel at (x, y) we check all (bx, by) pixels.
   for (size_t x = 0; x < FONT_GLYPH_SIZE; ++x)
   {
@@ -211,7 +211,7 @@ int main(int argc, char **argv)
   // // run the font generator
   // //
 
-  // for each chars in [0-255] bruteforce the signed distance field
+  // for each chars in [0-255] brute-force the signed distance field
   std::cout << "FONT-GENERATOR: Computing the signed distance field..." << std::endl;
 
   uint8_t *output = new uint8_t[FONT_GLYPH_SIZE * FONT_GLYPH_SIZE];
@@ -256,7 +256,7 @@ int main(int argc, char **argv)
 
   delete [] output;
 
-  std::cout << "\nFONT-GENERATOR: bluring..." << std::endl;
+  std::cout << "\nFONT-GENERATOR: blurring..." << std::endl;
 
   neam::yaggler::texture::texture<neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>, neam::yaggler::texture::options::empty_texture_init<GL_RGBA8, neam::ct::vector<FONT_TEXTURE_SIZE, FONT_TEXTURE_SIZE>> > tmp_texture;
   auto blur_compositor = neam::klmb::yaggler::make_compositor
