@@ -44,9 +44,10 @@ void KLMB_MAIN_FUNCTION()
   float mask = texture(font_texture, uv).r;
   vec4 color = font_color;
 
-  color.a = smoothstep(0.439, 0.47, mask) * font_color.a;
+  color.a = smoothstep(0.409, 0.47, mask) * font_color.a;
+//   color.a = smoothstep(0.462, 0.47, mask) * font_color.a;
 
-  if (color.a < 0.3)
+  if (color.a < 0.05)
     discard;
 
   KLMB_SHARED_NAME(color_0) = vec4(color.rgba);//(vec3(primitive_count.x / 7., abs(cos(global_time)), 1. - primitive_count.x / 7));

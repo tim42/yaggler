@@ -53,19 +53,19 @@ void KLMB_MAIN_FUNCTION()
   float y_dec = left_top[0].y + dt[0].y - ypos;
 
   // output vertices
-  uv = vec2(upper_pos[0].x, 1.-lower_pos[0].y);
+  uv = vec2(upper_pos[0].x, lower_pos[0].y);
   gl_Position = vpo[0] * vec4(1.0 + x_dec, 1.0 + y_dec, 0, 1.);
   EmitVertex();
 
-  uv = vec2(upper_pos[0].x, 1.-upper_pos[0].y);
+  uv = vec2(upper_pos[0].x, upper_pos[0].y);
   gl_Position = vpo[0] * vec4(1.0 + x_dec, 0.0 + y_dec, 0, 1.);
   EmitVertex();
 
-  uv = vec2(lower_pos[0].x, 1.-lower_pos[0].y);
+  uv = vec2(lower_pos[0].x, lower_pos[0].y);
   gl_Position = vpo[0] * vec4(0.0 + x_dec, 1.0 + y_dec, 0, 1.);
   EmitVertex();
 
-  uv = vec2(lower_pos[0].x, 1.-upper_pos[0].y);
+  uv = vec2(lower_pos[0].x, upper_pos[0].y);
   gl_Position = vpo[0] * vec4(0.0 + x_dec, 0.0 + y_dec, 0, 1.);
   EmitVertex();
 
