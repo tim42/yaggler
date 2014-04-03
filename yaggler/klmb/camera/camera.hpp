@@ -129,12 +129,12 @@ namespace neam
         glm::vec2 max = glm::vec2(1, 1);
 
         float near = 0;
-        float far = 10000;
+        float far = 100;
 
         // recompute matrices
         void recompute_matrices()
         {
-          vp_matrix = glm::ortho(min.x, min.y, max.x, max.y, near, far);
+          vp_matrix = glm::ortho(min.x, max.x, min.y, max.y, near, far);
         }
         void recompute_proj_and_vp_matrices()
         {
