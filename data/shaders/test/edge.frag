@@ -16,7 +16,8 @@
 #define KLMB_NUMBER_OF_OUTPUT_BUFFER            1
 
 // raymarcher defines
-#define RM_MAX_STEPS                    30.
+#define RM_MAX_STEPS                    22.
+// #define RM_MAX_STEPS                    40.
 #define INTO_STEP_DST                   0.35
 
 // prog defines
@@ -101,7 +102,6 @@ void main()
 
   vec3 pos = vec3(0., 5., -1. * CAM_DISTANCE + sin(global_time * ROTATION_SPEED) * CAM_DISTANCE_MVT);
   KLMB_SHARED_NAME(color_0) = vec4(raymarch(pos * rotmat, dir * rotmat), 1.0);
-
 }
 
 
