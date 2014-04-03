@@ -28,7 +28,7 @@
 # define __N_748986457882865260_592567929__PNG_LOADER_HPP__
 
 #include <GLEW/glew.h>
-#include <png++/image.hpp>
+#include <lodePNG/lodepng.h>
 #include <ct_point.hpp>
 
 #include <tools/embed.hpp>
@@ -50,124 +50,48 @@ namespace neam
         /// ### texture options
 
         // tell the texture to init, and how to init. (could be placed multiple times to init each levels and/or cubemap faces)
-        // see texture<opengl>::set_texture_data for explanation of params
+        // see texture<opengl>::set_texture_data for explanation of the tpl params
 
         // init from a png file source
-        //
-        // this isn't a good piece of code... (due to the underlying lib used here)
-        // but it works.
-        template<GLint InternalFormat, typename File, size_t Level = 0>
+        template<GLenum InternalFormat, typename File, size_t Level = 0>
         class png_texture_init
         {
           private:
-            // pixel types
-            // gray are converted to GL_RED, gray+alpha to GL_RG
-            using __types__ = neam::ct::type_list<png::gray_pixel, png::gray_pixel, png::gray_pixel_16, png::ga_pixel, png::ga_pixel, png::ga_pixel_16,
-                 png::rgb_pixel, png::rgb_pixel, png::rgb_pixel_16, png::rgba_pixel, png::rgba_pixel, png::rgba_pixel_16 >;
-            static constexpr GLenum __values__ [] = {GL_R, GL_R8, GL_R16, GL_RG, GL_RG8, GL_RG16, GL_RGB, GL_RGB8, GL_RGB16, GL_RGBA, GL_RGBA8, GL_RGBA16};
-            static constexpr size_t __default_value__ = 9; // index of png::rgba_pixel
+            static constexpr GLenum gl_color_type[] = {GL_R8, GL_R16, GL_RG8, GL_RG16, GL_RGB8, GL_RGB16, GL_RGBA8, GL_RGBA16};
+            static constexpr LodePNGColorType png_color_type[] = {LCT_GREY, LCT_GREY_ALPHA, LCT_RGB, LCT_RGBA};
+            static constexpr GLenum gl_input_color_type[] = {GL_R, GL_RG, GL_RGB, GL_RGBA};
+            static constexpr unsigned int png_depth[] = {8, 16};
+            static constexpr GLenum gl_depth[] = {GL_UNSIGNED_BYTE, GL_UNSIGNED_SHORT};
 
-            // gl format
-            static constexpr GLenum __in_gl_format__ [] = {GL_R, GL_R, GL_R, GL_RG, GL_RG, GL_RG, GL_RGB, GL_RGB, GL_RGB, GL_RGBA, GL_RGBA, GL_RGBA};
-            // gl type
-            static constexpr GLenum __in_gl_type__ [] = {GL_UNSIGNED_BYTE, GL_UNSIGNED_BYTE, GL_UNSIGNED_SHORT};
-            // comp num and size per pixel
-            static constexpr GLenum __pixel_comp_num__ [] = {1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4};
-            static constexpr GLenum __pixel_comp_size__ [] = {1, 1, 2};
-            using __pixel_types__ = neam::ct::type_list < uint8_t, uint8_t, uint16_t >;
-
-            // getter
-            static constexpr size_t __rec_get_value_index(GLenum val, size_t idx, size_t max)
+            static constexpr size_t _get_index(size_t cr_index = 0)
             {
-              return __values__[idx] == val ? idx : (idx + 1 < max ? __rec_get_value_index(val, idx + 1, max) : __default_value__);
+              return gl_color_type[cr_index] == InternalFormat ? cr_index : (cr_index + 1 < sizeof(gl_color_type) / sizeof(*gl_color_type) ? _get_index(cr_index + 1) : sizeof(gl_color_type) / sizeof(*gl_color_type) - 1);
             }
-
-            static constexpr size_t get_value_index(GLenum val)
-            {
-              return __rec_get_value_index(val, 0, sizeof(__values__) / sizeof(__values__[0]));
-            }
-
-            // types / values
-            template<typename T>
-            using remove_cref = typename std::remove_const<typename std::remove_reference<T>::type>::type;
-
-            using png_image_type = remove_cref<typename __types__::get_type<get_value_index(InternalFormat)>>;
-            using png_pixel_type = remove_cref<typename __pixel_types__::get_type<get_value_index(InternalFormat) % 3>>;
-
-            static constexpr size_t comp_size = __pixel_comp_size__[get_value_index(InternalFormat) % (sizeof(__pixel_comp_size__) / sizeof(__pixel_comp_size__[0]))];
-            static constexpr size_t comp_num = __pixel_comp_num__[get_value_index(InternalFormat) % (sizeof(__pixel_comp_num__) / sizeof(__pixel_comp_num__[0]))];
-            static constexpr size_t pixel_size = comp_size * comp_num;
 
           private:
-            png_texture_init(png_texture_init &) = delete;
-            png_texture_init & operator = (png_texture_init &) = delete;
-
-            // yes... I DO NOT EVEN copy the image pixel by pixel, but composant by composant... :'(
-            template<typename T>
-            inline static size_t copy_pixel(const png::basic_ga_pixel<T> &pxl, png_pixel_type *array)
-            {
-              array[0] = pxl.value;
-              array[1] = pxl.alpha;
-              return 2;
-            }
-            template<typename T>
-            inline static size_t copy_pixel(const png::basic_rgb_pixel<T> &pxl, png_pixel_type *array)
-            {
-              array[0] = pxl.red;
-              array[1] = pxl.green;
-              array[2] = pxl.blue;
-              return 3;
-            }
-            template<typename T>
-            inline static size_t copy_pixel(const png::basic_rgba_pixel<T> &pxl, png_pixel_type *array)
-            {
-              array[0] = pxl.red;
-              array[1] = pxl.green;
-              array[2] = pxl.blue;
-              array[3] = pxl.alpha;
-              return 4;
-            }
-            // yep, a function to do a f*cking equal...
-            inline static size_t copy_pixel(png_pixel_type pxl, png_pixel_type *array)
-            {
-              array[0] = pxl;
-              return 1;
-            }
-
-            // please, call delete [] on the returned array...
-            static GLvoid *get_data(neam::ct::vector2 &size)
+            static void *get_data(neam::ct::vector2 &size)
             {
 #ifndef YAGGLER_NO_MESSAGES
               neam::cr::chrono timer;
 #endif
-              uint8_t *ret_array = nullptr;
-              try
-              {
-                png::image<png_image_type> image(File::value);
-                size.x = image.get_width();
-                size.y = image.get_height();
 
-                ret_array = new uint8_t[pixel_size * size.x * size.y];
+              std::vector<unsigned char> image;
+              unsigned int szx = size.x;
+              unsigned int szy = size.y;
+              unsigned int ret = lodepng::decode(image, szx, szy, File::value, static_cast<LodePNGColorType>(png_color_type[_get_index() / 2]), png_depth[_get_index() % 2]);
+              size.x = szx;
+              size.y = szy;
 
-                size_t idx = 0;
+              if (ret)
+                throw runtime_error<png_texture_init>(lodepng_error_text(ret));
 
-                for (ct::fixed_t y = 0; y < size.y; ++y)
-                {
-                  for (ct::fixed_t x = 0; x < size.x; ++x)
-                  {
-                    idx += comp_size * copy_pixel(image[size.y - (y + 1)][x], reinterpret_cast<png_pixel_type *>(ret_array + idx));
-                  }
-                }
-              }
-              catch(png::std_error &e)
-              {
-                throw runtime_error<png_texture_init>(e.what());
-              }
+              uint8_t *data = new uint8_t[size.x * size.y * 8];
+              memcpy(data, image.data(), size.x * size.y * 8);
 
 #ifndef YAGGLER_NO_MESSAGES
               std::cout << "YAGGLER: loaded png image '" << File::value << "' in " << timer.delta() << " seconds" << std::endl;
 #endif
-              return ret_array;
+              return data;
             }
 
           public:
@@ -186,139 +110,81 @@ namespace neam
             static constexpr size_t level = Level;
 
             // automatically generated from the InternalFormat field and the "best" value for it in png++.
-            static constexpr GLenum format = __in_gl_format__[get_value_index(InternalFormat)];
-            static constexpr GLenum type = __in_gl_type__[get_value_index(InternalFormat) % (sizeof(__in_gl_type__) / sizeof(__in_gl_type__[0]))];
+            static constexpr GLenum format = gl_input_color_type[_get_index() / 2];
+            static constexpr GLenum type = gl_depth[_get_index() % 2];
 
             GLvoid *data;
 
             static constexpr bool is_init = true;
         };
+        template<GLenum InternalFormat, typename File, size_t Level>
+        constexpr GLenum png_texture_init<InternalFormat, File, Level>::gl_color_type[];
+        template<GLenum InternalFormat, typename File, size_t Level>
+        constexpr GLenum png_texture_init<InternalFormat, File, Level>::gl_input_color_type[];
+        template<GLenum InternalFormat, typename File, size_t Level>
+        constexpr unsigned int png_texture_init<InternalFormat, File, Level>::png_depth[];
+        template<GLenum InternalFormat, typename File, size_t Level>
+        constexpr LodePNGColorType png_texture_init<InternalFormat, File, Level>::png_color_type[];
+        template<GLenum InternalFormat, typename File, size_t Level>
+        constexpr GLenum png_texture_init<InternalFormat, File, Level>::gl_depth[];
 
 
-        // tell the texture to init, and how to init. (could be placed multiple times to init each levels and/or cubemap faces)
-        // see texture<opengl>::set_texture_data for explanation of params
+        template<GLenum InternalFormat, typename File, size_t Level>
+        constexpr GLint png_texture_init<InternalFormat, File, Level>::internal_format;
+        template<GLenum InternalFormat, typename File, size_t Level>
+        constexpr size_t png_texture_init<InternalFormat, File, Level>::level;
+        template<GLenum InternalFormat, typename File, size_t Level>
+        constexpr GLenum png_texture_init<InternalFormat, File, Level>::format;
+        template<GLenum InternalFormat, typename File, size_t Level>
+        constexpr GLenum png_texture_init<InternalFormat, File, Level>::type;
+        template<GLenum InternalFormat, typename File, size_t Level>
+        constexpr bool png_texture_init<InternalFormat, File, Level>::is_init;
 
-        // init from a png file source
-        //
-        // this isn't a good piece of code... (due to the underlying lib used here)
-        // but it works.
-        template<GLint InternalFormat, size_t Level = 0>
+        // load from a png file source
+        template<GLenum InternalFormat, size_t Level = 0>
         class png_texture_loader
         {
           private:
-            // pixel types
-            // gray are converted to GL_RED, gray+alpha to GL_RG
-            using __types__ = neam::ct::type_list<png::gray_pixel, png::gray_pixel, png::gray_pixel_16, png::ga_pixel, png::ga_pixel, png::ga_pixel_16,
-                 png::rgb_pixel, png::rgb_pixel, png::rgb_pixel_16, png::rgba_pixel, png::rgba_pixel, png::rgba_pixel_16 >;
-            static constexpr GLenum __values__ [] = {GL_R, GL_R8, GL_R16, GL_RG, GL_RG8, GL_RG16, GL_RGB, GL_RGB8, GL_RGB16, GL_RGBA, GL_RGBA8, GL_RGBA16};
-            static constexpr size_t __default_value__ = 9; // index of png::rgba_pixel
+            static constexpr GLenum gl_color_type[] = {GL_R8, GL_R16, GL_RG8, GL_RG16, GL_RGB8, GL_RGB16, GL_RGBA8, GL_RGBA16};
+            static constexpr LodePNGColorType png_color_type[] = {LCT_GREY, LCT_GREY_ALPHA, LCT_RGB, LCT_RGBA};
+            static constexpr GLenum gl_input_color_type[] = {GL_R, GL_RG, GL_RGB, GL_RGBA};
+            static constexpr unsigned int png_depth[] = {8, 16};
+            static constexpr GLenum gl_depth[] = {GL_UNSIGNED_BYTE, GL_UNSIGNED_SHORT};
 
-            // gl format
-            static constexpr GLenum __in_gl_format__ [] = {GL_R, GL_R, GL_R, GL_RG, GL_RG, GL_RG, GL_RGB, GL_RGB, GL_RGB, GL_RGBA, GL_RGBA, GL_RGBA};
-            // gl type
-            static constexpr GLenum __in_gl_type__ [] = {GL_UNSIGNED_BYTE, GL_UNSIGNED_BYTE, GL_UNSIGNED_SHORT};
-            // comp num and size per pixel
-            static constexpr GLenum __pixel_comp_num__ [] = {1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4};
-            static constexpr GLenum __pixel_comp_size__ [] = {1, 1, 2};
-            using __pixel_types__ = neam::ct::type_list < uint8_t, uint8_t, uint16_t >;
-
-            // getter
-            static constexpr size_t __rec_get_value_index(GLenum val, size_t idx, size_t max)
+            static constexpr size_t _get_index(size_t cr_index = 0)
             {
-              return __values__[idx] == val ? idx : (idx + 1 < max ? __rec_get_value_index(val, idx + 1, max) : __default_value__);
+              return gl_color_type[cr_index] == InternalFormat ? cr_index : (cr_index + 1 < sizeof(gl_color_type) / sizeof(*gl_color_type) ? _get_index(cr_index + 1) : sizeof(gl_color_type) / sizeof(*gl_color_type) - 1);
             }
-
-            static constexpr size_t get_value_index(GLenum val)
-            {
-              return __rec_get_value_index(val, 0, sizeof(__values__) / sizeof(__values__[0]));
-            }
-
-            // types / values
-            template<typename T>
-            using remove_cref = typename std::remove_const<typename std::remove_reference<T>::type>::type;
-
-            using png_image_type = remove_cref<typename __types__::get_type<get_value_index(InternalFormat)>>;
-            using png_pixel_type = remove_cref<typename __pixel_types__::get_type<get_value_index(InternalFormat) % 3>>;
-
-            static constexpr size_t comp_size = __pixel_comp_size__[get_value_index(InternalFormat) % (sizeof(__pixel_comp_size__) / sizeof(__pixel_comp_size__[0]))];
-            static constexpr size_t comp_num = __pixel_comp_num__[get_value_index(InternalFormat) % (sizeof(__pixel_comp_num__) / sizeof(__pixel_comp_num__[0]))];
-            static constexpr size_t pixel_size = comp_size * comp_num;
 
           private:
-            png_texture_loader(png_texture_loader &) = delete;
-            png_texture_loader & operator = (png_texture_loader &) = delete;
-
-            // yes... I DO NOT EVEN copy the image pixel by pixel, but composant by composant... :'(
-            template<typename T>
-            inline static size_t copy_pixel(const png::basic_ga_pixel<T> &pxl, png_pixel_type *array)
-            {
-              array[0] = pxl.value;
-              array[1] = pxl.alpha;
-              return 2;
-            }
-            template<typename T>
-            inline static size_t copy_pixel(const png::basic_rgb_pixel<T> &pxl, png_pixel_type *array)
-            {
-              array[0] = pxl.red;
-              array[1] = pxl.green;
-              array[2] = pxl.blue;
-              return 3;
-            }
-            template<typename T>
-            inline static size_t copy_pixel(const png::basic_rgba_pixel<T> &pxl, png_pixel_type *array)
-            {
-              array[0] = pxl.red;
-              array[1] = pxl.green;
-              array[2] = pxl.blue;
-              array[3] = pxl.alpha;
-              return 4;
-            }
-            // yep, a function to do a f*cking equal...
-            inline static size_t copy_pixel(png_pixel_type pxl, png_pixel_type *array)
-            {
-              array[0] = pxl;
-              return 1;
-            }
-
-            // please, call delete [] on the returned array...
-            static GLvoid *get_data(const std::string &file, neam::ct::vector2 &size)
+            static void *get_data(neam::ct::vector2 &size, const std::string &file)
             {
 #ifndef YAGGLER_NO_MESSAGES
               neam::cr::chrono timer;
 #endif
-              uint8_t *ret_array = nullptr;
-              try
-              {
-                png::image<png_image_type> image(file);
-                size.x = image.get_width();
-                size.y = image.get_height();
 
-                ret_array = new uint8_t[pixel_size * size.x * size.y];
+              std::vector<unsigned char> image;
+              unsigned int szx = size.x;
+              unsigned int szy = size.y;
+              unsigned int ret = lodepng::decode(image, szx, szy, file, static_cast<LodePNGColorType>(png_color_type[_get_index() / 2]), png_depth[_get_index() % 2]);
+              size.x = szx;
+              size.y = szy;
 
-                size_t idx = 0;
+              if (ret)
+                throw runtime_error<png_texture_loader>(lodepng_error_text(ret));
 
-                for (ct::fixed_t y = 0; y < size.y; ++y)
-                {
-                  for (ct::fixed_t x = 0; x < size.x; ++x)
-                  {
-                    idx += comp_size * copy_pixel(image[size.y - (y + 1)][x], reinterpret_cast<png_pixel_type *>(ret_array + idx));
-                  }
-                }
-              }
-              catch(png::std_error &e)
-              {
-                throw runtime_error<png_texture_loader>(e.what());
-              }
+              uint8_t *data = new uint8_t[size.x * size.y * 8];
+              memcpy(data, image.data(), image.size());
 
 #ifndef YAGGLER_NO_MESSAGES
               std::cout << "YAGGLER: loaded png image '" << file << "' in " << timer.delta() << " seconds" << std::endl;
 #endif
-              return ret_array;
+              return data;
             }
 
           public:
             png_texture_loader(const std::string &file)
-              : size(), data(get_data(file, size))
+              : size(), data(get_data(size, file))
             {
             }
 
@@ -332,11 +198,36 @@ namespace neam
             static constexpr size_t level = Level;
 
             // automatically generated from the InternalFormat field and the "best" value for it in png++.
-            static constexpr GLenum format = __in_gl_format__[get_value_index(InternalFormat)];
-            static constexpr GLenum type = __in_gl_type__[get_value_index(InternalFormat) % (sizeof(__in_gl_type__) / sizeof(__in_gl_type__[0]))];
+            static constexpr GLenum format = gl_input_color_type[_get_index() / 2];
+            static constexpr GLenum type = gl_depth[_get_index() % 2];
 
             GLvoid *data;
+
+            static constexpr bool is_init = true;
         };
+        template<GLenum InternalFormat, size_t Level>
+        constexpr GLenum png_texture_loader<InternalFormat, Level>::gl_color_type[];
+        template<GLenum InternalFormat, size_t Level>
+        constexpr GLenum png_texture_loader<InternalFormat, Level>::gl_input_color_type[];
+        template<GLenum InternalFormat, size_t Level>
+        constexpr unsigned int png_texture_loader<InternalFormat, Level>::png_depth[];
+        template<GLenum InternalFormat, size_t Level>
+        constexpr LodePNGColorType png_texture_loader<InternalFormat, Level>::png_color_type[];
+        template<GLenum InternalFormat, size_t Level>
+        constexpr GLenum png_texture_loader<InternalFormat, Level>::gl_depth[];
+
+
+        template<GLenum InternalFormat, size_t Level>
+        constexpr GLint png_texture_loader<InternalFormat, Level>::internal_format;
+        template<GLenum InternalFormat, size_t Level>
+        constexpr size_t png_texture_loader<InternalFormat, Level>::level;
+        template<GLenum InternalFormat, size_t Level>
+        constexpr GLenum png_texture_loader<InternalFormat, Level>::format;
+        template<GLenum InternalFormat, size_t Level>
+        constexpr GLenum png_texture_loader<InternalFormat, Level>::type;
+        template<GLenum InternalFormat, size_t Level>
+        constexpr bool png_texture_loader<InternalFormat, Level>::is_init;
+
       } // namespace options
     } // namespace texture
 
