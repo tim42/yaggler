@@ -78,11 +78,11 @@ namespace neam
                 frame_counter = 0;
                 chrono.reset();
 
-#ifndef YAGGLER_NO_MESSAGES
+// #ifndef YAGGLER_NO_MESSAGES
                 std::cout << "f/s: "       << std::setw(9) << std::left <<  1000.0 / mps_1s
                           << "  |  ms/f: " << std::setw(9) << std::left << mps_1s
                           << std::endl;
-#endif
+// #endif
               }
             }
 
@@ -107,7 +107,7 @@ namespace neam
             // used in shaders
             const glm::vec2 &framebuffer_resolution;
 
-          private:
+          protected:
             virtual void framebuffer_resized(const glm::vec2 &size)
             {
               if (main_smgr.camera_holder._get_std_cam())
