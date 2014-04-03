@@ -58,8 +58,9 @@ namespace neam
           virtual ~main_application() {}
 
           main_application()
-            : base_application(neam::yaggler::glfw_window(neam::yaggler::window_mode::fullscreen))
-//             : base_application(neam::yaggler::glfw_window(neam::yaggler::window_mode::windowed, {1000, 1000})), fps_gui_text("0.00 fps"), random_gui_text("miaou")
+            : base_application(neam::yaggler::glfw_window(neam::yaggler::window_mode::fullscreen)),
+//             : base_application(neam::yaggler::glfw_window(neam::yaggler::window_mode::windowed, {1000, 1000})),
+              gmgr(framebuffer_resolution, emgr)
           {
             init();
             emgr.register_keyboard_listener(this);
@@ -101,9 +102,9 @@ namespace neam
               glDisable(GL_DEPTH_TEST);
 
               fps_gui_text.set_text("fps: " + CRAP__VAR_TO_STRING(get_fps()));
-              random_gui_text.set_text("mps: " + CRAP__VAR_TO_STRING(std::fixed << std::setprecision(1) << get_mps() << "\n" << "time: " << cr::chrono::now_relative() << "\nrand: " << rand()));
-              fps_gui_text.render();
-              random_gui_text.render();
+              random_gui_text.set_text("mps: " + CRAP__VAR_TO_STRING(std::fixed << std::setprecision(1) << get_mps() << "\n" << "time: " << cr::chrono::now_relative()));
+
+              gmgr.render();
 
               // re-enable depth test
               glEnable(GL_DEPTH_TEST);
@@ -116,48 +117,32 @@ namespace neam
         private:
           void init()
           {
-            // other things
-//             main_smgr.camera_list.push_back(&camera);
-
-            // single camera, two scenes.
-            camera.min = glm::vec2(-1, -framebuffer_resolution.y / framebuffer_resolution.x);
-            camera.max = glm::vec2(framebuffer_resolution.x / framebuffer_resolution.y, 1);
-            camera.recompute_matrices();
-            main_smgr.camera_holder.use_camera(camera);
-
-            // camera stuff.
-            auto &parent_camera_node = main_smgr.transformation_tree.root.create_child();
-            parent_camera_local_node = parent_camera_node.local;
-            auto &camera_node = parent_camera_node.create_child();
-            camera_local_node = camera_node.local;
-
-            camera_node.local->position = glm::vec3(0., 0., 0.);
-
-            parent_camera_node.local->dirty = true;
-            camera_node.local->dirty = true;
-
             // TEST GUI
-            fmgr.load_font("DejaVuSans", "data/font/DejaVuSans-Bold.bfont");
-            fps_gui_text.set_font(fmgr.get_font_ptr("DejaVuSans"));
-            random_gui_text.set_font(fmgr.get_font_ptr("DejaVuSans"));
+            gmgr.fmgr.load_font("DejaVuSans", "data/font/DejaVuSans.bfont");
+            gmgr.fmgr.load_font("DejaVuSans-Oblique", "data/font/DejaVuSans-Oblique.bfont");
+            gmgr.fmgr.load_font("DejaVuSans-Bold", "data/font/DejaVuSans-Bold.bfont");
 
-            auto &text_node = main_smgr.transformation_tree.root.create_child();
+            gmgr.add_renderable(&fps_gui_text);
+            gmgr.add_renderable(&random_gui_text);
+
+            fps_gui_text.set_font(gmgr.fmgr.get_font_ptr("DejaVuSans"));
+            random_gui_text.set_font(gmgr.fmgr.get_font_ptr("DejaVuSans-Oblique"));
+
+            auto &text_node = gmgr.transformation_tree.root.create_child();
             text_local_node = text_node.local;
             text_node.local->position = 0._vec3_z -1.0_vec3_x +0.90_vec3_y;
             text_node.local->scale = 0.05_vec3_xyz;
             text_node.local->dirty = true;
 
-            auto &chtext_node = text_node.create_child();
-            chtext_node.local->position = 0.00_vec3_y +0.1_vec3_x;
-            chtext_node.local->scale = 0.5_vec3_xyz;
-            chtext_node.local->dirty = true;
+            auto &ch_text_node = text_node.create_child();
+            ch_text_node.local->position = 0.00_vec3_y +0.1_vec3_x;
+            ch_text_node.local->scale = 0.5_vec3_xyz;
+            ch_text_node.local->dirty = true;
 
             // links
-            fps_gui_text.vp_matrix = &main_smgr.camera_holder.vp_matrix;
             fps_gui_text.world_pos = &text_node.world->matrix;
             fps_gui_text.color = glm::vec4(1., 1., 1., 0.5f);
-            random_gui_text.vp_matrix = &main_smgr.camera_holder.vp_matrix;
-            random_gui_text.world_pos = &chtext_node.world->matrix;
+            random_gui_text.world_pos = &ch_text_node.world->matrix;
             random_gui_text.color = glm::vec4(1., 0.9, 0.5, 1.f);
 
             // yay: gl calls :D
@@ -168,15 +153,6 @@ namespace neam
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
           }
 
-          virtual void framebuffer_resized(const glm::vec2 &size)
-          {
-            base_application::framebuffer_resized(size);
-
-            camera.min = glm::vec2(-1, -framebuffer_resolution.y / framebuffer_resolution.x);
-            camera.max = glm::vec2(framebuffer_resolution.x / framebuffer_resolution.y, 1);
-            camera.recompute_matrices();
-          }
-
           virtual void button_pressed(const bleunw::yaggler::events::mouse_status &ms, bleunw::yaggler::events::mouse_buttons::mouse_buttons mb);
           virtual void button_released(const bleunw::yaggler::events::mouse_status &ms, bleunw::yaggler::events::mouse_buttons::mouse_buttons mb);
           virtual void mouse_moved(const bleunw::yaggler::events::mouse_status &ms);
@@ -185,11 +161,9 @@ namespace neam
           virtual void key_released(const bleunw::yaggler::events::keyboard_status &ks, bleunw::yaggler::events::key_code::key_code kc);
 
         private:
-          neam::klmb::yaggler::ortho_camera camera;
-
           neam::bleunw::yaggler::gui::text fps_gui_text;
           neam::bleunw::yaggler::gui::text random_gui_text;
-          neam::bleunw::yaggler::gui::font_manager fmgr;
+          neam::bleunw::yaggler::gui::manager gmgr;
 
           neam::klmb::yaggler::transformation_node::default_node *parent_camera_local_node;
           neam::klmb::yaggler::transformation_node::default_node *camera_local_node;
