@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 2.8)
 include_directories(./)
 
 # version changing
-add_custom_target(invalidate_version ALL COMMAND ${CMAKE_COMMAND} -E touch version.hpp WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+# add_custom_target(invalidate_version ALL COMMAND ${CMAKE_COMMAND} -E touch version.hpp WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # I build an ~empty lib, just to allow kdevelop to parse correctly these files
 #
@@ -23,5 +23,5 @@ add_definitions(${YAGGLER_FLAGS})
 
 # and "build" yaggler
 add_library(${PROJ_APP} STATIC ${srcs})
-add_dependencies(${PROJ_APP} invalidate_version)
+#add_dependencies(${PROJ_APP} invalidate_version)
 
