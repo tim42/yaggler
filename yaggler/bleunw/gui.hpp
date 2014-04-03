@@ -34,7 +34,8 @@
 #include <bleunw/gui/font_face.hpp>
 #include <bleunw/gui/font_manager.hpp>
 #include <bleunw/gui/text.hpp>
-#include "events/event_listener.hpp"
+#include <bleunw/events/event_listener.hpp>
+#include <bleunw/events.hpp>
 #include <klmb/camera/camera.hpp>
 
 namespace neam
@@ -56,7 +57,7 @@ namespace neam
             manager(const manager &) = delete;
             manager &operator =(const manager &) = delete;
 
-            manager(const glm::vec2 &framebuffer_resolution)
+            manager(const glm::vec2 &framebuffer_resolution, events::manager &_emgr) : emgr(_emgr)
             {
               camera.min = glm::vec2(-1, -framebuffer_resolution.y / framebuffer_resolution.x);
               camera.max = glm::vec2(framebuffer_resolution.x / framebuffer_resolution.y, 1);
@@ -65,16 +66,20 @@ namespace neam
               internal_vp_ptr = &camera.vp_matrix;
               vp_matrix = &internal_vp_ptr;
               world_pos = &internal_world_mat;
+
+              emgr.register_window_listener(this);
             }
 
-            ~manager() {}
+            ~manager()
+            {
+              emgr.unregister_window_listener(this);
+            }
 
             // ghdl will held the handle to this renderable and will be set to the correct value after a call to the non-const render() method.
             // you should set it to &(rd->handle) (and that's the default, when ghdl is == to nullptr)
             void add_renderable(renderable *rd, handle_t *ghdl = nullptr)
             {
               rd->vp_matrix = vp_matrix;
-              rd->world_pos = world_pos;
 
               if (!ghdl)
                 ghdl = &rd->handle;
@@ -96,6 +101,9 @@ namespace neam
             {
               size_t i = 0;
               size_t last = 0;
+
+              transformation_tree.root.recompute_matrices();
+
               for (; i < elements.size(); ++i)
               {
                 if (!elements[i] && to_add.size())
@@ -122,7 +130,7 @@ namespace neam
               }
 
               // remove trailing empty slots
-              if (last < elements.size() - 5)
+              if (elements.size() > 5 && last < elements.size() - 5)
                 elements.erase(elements.begin() + last, elements.end());
             }
 
@@ -149,7 +157,13 @@ namespace neam
             virtual void window_iconified(bool) {}
             virtual void window_resized(const glm::vec2 &) {}
 
+          public:
+            // the font manager
+            font_manager fmgr;
+            neam::klmb::yaggler::transformation_tree<neam::klmb::yaggler::transformation_node::default_node> transformation_tree;
+
           private:
+            events::manager &emgr;
             neam::klmb::yaggler::ortho_camera camera;
             glm::mat4 *internal_vp_ptr;
             glm::mat4 internal_world_mat;
