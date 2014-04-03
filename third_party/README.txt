@@ -13,6 +13,9 @@ Modified libs are:
 
   - GLM: removed unused directories/CMakeFiles.
 
+  - lodePNG: created a simple CMakeLists.txt the create a static library.
+    Added a LICENSE file.
+
 I do not own those libs, see the copying/license file in their folders.
 You can download the original version on their respective author/official
 website.
