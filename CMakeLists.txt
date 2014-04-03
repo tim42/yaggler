@@ -50,6 +50,7 @@ set(YAGGLER_SRCS "")
 # build some third party libs
 add_subdirectory("./third_party/glew")
 add_subdirectory("./third_party/glfw")
+add_subdirectory("./third_party/lodePNG")
 
 set(YAGGLER_INCLUDE_DIRS "")
 set(YAGGLER_DEPS_LIBS "")
@@ -62,7 +63,7 @@ include_directories(SYSTEM ${GLFW_INCLUDE_DIRS})
 # include_directories(SYSTEM "./third_party/fncw/")
 include_directories(SYSTEM "./third_party/glfw/include/")
 include_directories(SYSTEM "./third_party/glew/include/")
-include_directories(SYSTEM "./third_party/png++/include/")
+include_directories(SYSTEM "./third_party/lodePNG/include/")
 include_directories(SYSTEM "./third_party/glm/")
 
 # create the YAGGLER_FLAGS variable
@@ -75,7 +76,7 @@ include_directories("./")
 add_subdirectory(yaggler)
 
 # build the tools
-# add_subdirectory(tools/font-generator/)
+add_subdirectory(tools/font-generator/)
 
 
 # build the samples
