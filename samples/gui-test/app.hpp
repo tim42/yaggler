@@ -40,7 +40,7 @@
 #define CRAP__VAR_TO_STRING(var)              static_cast<std::ostringstream&>(std::ostringstream() << var).str()
 
 
-constexpr neam::string_t test_frag = "data/shaders/test/edge.frag";
+constexpr neam::string_t test_frag = "data/shaders/test/fract.frag";
 
 namespace neam
 {
@@ -94,8 +94,8 @@ namespace neam
 
               simple_compositor.render();
 
-              text_local_node->rotation = glm::rotate<float>(text_local_node->rotation, M_PI / 10.f * chrono.delta(), glm::vec3(1, 1, 0));
-              text_local_node->dirty = true;
+//               text_local_node->rotation = glm::rotate<float>(text_local_node->rotation, M_PI / 10.f * chrono.delta(), glm::vec3(0, 0, 1));
+//               text_local_node->dirty = true;
 
               // disable depth test for THIS 3D text rendering. (only in this case: we render over a fullscreen quad in Z = 0)
               glDisable(GL_DEPTH_TEST);
@@ -117,10 +117,11 @@ namespace neam
           void init()
           {
             // other things
-            main_smgr.camera_list.push_back(&camera);
+//             main_smgr.camera_list.push_back(&camera);
 
             // single camera, two scenes.
-            camera.look_at = -10._vec3_z;
+            camera.min = glm::vec2(-1, -framebuffer_resolution.y / framebuffer_resolution.x);
+            camera.max = glm::vec2(framebuffer_resolution.x / framebuffer_resolution.y, 1);
             camera.recompute_matrices();
             main_smgr.camera_holder.use_camera(camera);
 
@@ -135,22 +136,20 @@ namespace neam
             parent_camera_node.local->dirty = true;
             camera_node.local->dirty = true;
 
-            // make the link.
-            camera.world_matrix = &camera_node.world->matrix;
-
             // TEST GUI
-            fmgr.load_font("FreeSans", "data/font/FreeSans.bfont");
-            fps_gui_text.set_font(fmgr.get_font_ptr("FreeSans"));
-            random_gui_text.set_font(fmgr.get_font_ptr("FreeSans"));
+            fmgr.load_font("DejaVuSans", "data/font/DejaVuSans-Bold.bfont");
+            fps_gui_text.set_font(fmgr.get_font_ptr("DejaVuSans"));
+            random_gui_text.set_font(fmgr.get_font_ptr("DejaVuSans"));
 
             auto &text_node = main_smgr.transformation_tree.root.create_child();
             text_local_node = text_node.local;
-            text_node.local->position = -10._vec3_z -0._vec3_x -1._vec3_y;
+            text_node.local->position = 0._vec3_z -1.0_vec3_x +0.90_vec3_y;
+            text_node.local->scale = 0.05_vec3_xyz;
             text_node.local->dirty = true;
 
             auto &chtext_node = text_node.create_child();
-            chtext_node.local->position = 0.25_vec3_y +0.1_vec3_x;
-            chtext_node.local->scale = 0.25_vec3_xyz;
+            chtext_node.local->position = 0.00_vec3_y +0.1_vec3_x;
+            chtext_node.local->scale = 0.5_vec3_xyz;
             chtext_node.local->dirty = true;
 
             // links
@@ -159,7 +158,7 @@ namespace neam
             fps_gui_text.color = glm::vec4(1., 1., 1., 0.5f);
             random_gui_text.vp_matrix = &main_smgr.camera_holder.vp_matrix;
             random_gui_text.world_pos = &chtext_node.world->matrix;
-//             random_gui_text.color = glm::vec4(0, 0, 0, 1.f);
+            random_gui_text.color = glm::vec4(1., 0.9, 0.5, 1.f);
 
             // yay: gl calls :D
             glEnable(GL_DEPTH_TEST);
@@ -167,6 +166,15 @@ namespace neam
 
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+          }
+
+          virtual void framebuffer_resized(const glm::vec2 &size)
+          {
+            base_application::framebuffer_resized(size);
+
+            camera.min = glm::vec2(-1, -framebuffer_resolution.y / framebuffer_resolution.x);
+            camera.max = glm::vec2(framebuffer_resolution.x / framebuffer_resolution.y, 1);
+            camera.recompute_matrices();
           }
 
           virtual void button_pressed(const bleunw::yaggler::events::mouse_status &ms, bleunw::yaggler::events::mouse_buttons::mouse_buttons mb);
@@ -177,7 +185,7 @@ namespace neam
           virtual void key_released(const bleunw::yaggler::events::keyboard_status &ks, bleunw::yaggler::events::key_code::key_code kc);
 
         private:
-          neam::klmb::yaggler::camera camera;
+          neam::klmb::yaggler::ortho_camera camera;
 
           neam::bleunw::yaggler::gui::text fps_gui_text;
           neam::bleunw::yaggler::gui::text random_gui_text;
