@@ -21,15 +21,15 @@ in vec4 gbuffer_position;
 // the number of output buffers
 #define KLMB_NUMBER_OF_OUTPUT_BUFFER            2
 
-KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_0); // color          (rgba)
-KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_1); // normal + depth (rgb + a)
+KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_0); // color                        (rgba)
+KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_1); // normal + depth               (rgb + a)
 
 // color_0 is computed by the other shader, color_1 is computed by this one.
 
 void KLMB_MAIN_FUNCTION()
 {
   KLMB_SHARED_NAME(color_1).rgb = gbuffer_normal;
-  KLMB_SHARED_NAME(color_1).a = gbuffer_position.z; // .w ?
+  KLMB_SHARED_NAME(color_1).a = gbuffer_position.w; // .w ?
 }
 
 #else
