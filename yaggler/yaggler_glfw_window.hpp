@@ -154,10 +154,14 @@ namespace neam
 
       public:
         // window_size MUST be an integer, NOT a fixed point size.
-        glfw_window(window_mode::windowed_t, const neam::ct::vector2 &window_size, const std::string &title = "[ neam/yaggler")
+        // w_hints is a list of additional window creation hints
+        glfw_window(window_mode::windowed_t, const neam::ct::vector2 &window_size, const std::string &title = "[ neam/yaggler", std::initializer_list<std::pair<int, int>> w_hints = {})
           : win(nullptr), link(false)
         {
           init_glfw_hints();
+          // init additional hints
+          for (auto &it : w_hints)
+            glfwWindowHint(it.first, it.second);
 
           if (!(win = glfwCreateWindow(window_size.x, window_size.y, title.data(), 0, 0)))
             throw glfw_exception("GLFW: glfwCreateWindow call failed");
@@ -176,10 +180,13 @@ namespace neam
 
           init_debug();
         }
-        glfw_window(window_mode::fullscreen_t, const std::string &title = "[ neam/yaggler")
+        glfw_window(window_mode::fullscreen_t, const std::string &title = "[ neam/yaggler", std::initializer_list<std::pair<int, int>> w_hints = {})
         : win(nullptr), link(false)
         {
           init_glfw_hints();
+          // init additional hints
+          for (auto & it : w_hints)
+            glfwWindowHint(it.first, it.second);
 
           const GLFWvidmode *vmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
