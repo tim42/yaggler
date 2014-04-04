@@ -46,12 +46,12 @@ namespace neam
         // (the bb is aligned AND 'centered' around the origin --> not moved)
         aabb bounding_box;
 
-        // transformations
+        // transformifications (inverted)
         glm::vec3 position = 0_vec3_xyz;
         glm::vec3 scale = 1_vec3_xyz;
         glm::quat rotation = glm::quat();
 
-        // orig_* are non-inversed transforms
+        // orig_* are non-inverted transformations
         glm::quat orig_rotation = glm::quat();
         glm::vec3 orig_scale = 1_vec3_xyz;
 
@@ -116,20 +116,71 @@ namespace neam
           return bounding_box.intersect(untransform_position(pos), untransform_direction(dir), distances);
         }
 
+        // add a point (in world coords) to the obb
+        void add_world_vertex(const glm::vec3 &point)
+        {
+          bounding_box.add_vertex(untransform_position(point));
+        }
+
+        // add a point (in local coords) to the obb
+        void add_local_vertex(const glm::vec3 &point)
+        {
+          bounding_box.add_vertex(point);
+        }
+
+        // add an aabb to the obb
+        // in world coords
+        void add_world_aabb(const aabb &aa)
+        {
+          bounding_box.add_vertex(untransform_position(aa.max));
+          bounding_box.add_vertex(untransform_position(aa.min));
+        }
+
+        // in local coords
+        void add_local_aabb(const aabb &aa)
+        {
+          bounding_box.add_aabb(aa);
+        }
+
+        // add an obb to the obb (yo dawg!)
+        // in world coords
+        void add_world_obb(const obb &o)
+        {
+          bounding_box.add_vertex(untransform_position(o.transform_direction(o.bounding_box.max)));
+          bounding_box.add_vertex(untransform_position(o.transform_direction(o.bounding_box.min)));
+        }
+
+        // in local coords. Faster.
+        void add_local_obb(const obb &o)
+        {
+          bounding_box.add_vertex(o.transform_direction(o.bounding_box.max));
+          bounding_box.add_vertex(o.transform_direction(o.bounding_box.min));
+        }
 
         // utility functions
+        // world -> local
         glm::vec3 untransform_position(const glm::vec3 &pos) const
         {
           return  rotation * ((pos - position) * scale);
         }
+        // local -> world
+        glm::vec3 transform_position(const glm::vec3 &pos) const
+        {
+          return (orig_rotation * pos) * orig_scale + position;;
+        }
 
         // only apply scale and reverse rotation.
         // no translation
+        // world -> local
         glm::vec3 untransform_direction(const glm::vec3 &dir) const
         {
           return rotation * (dir * scale);
         }
-
+        // local -> world
+        glm::vec3 transform_direction(const glm::vec3 &dir) const
+        {
+          return (orig_rotation * dir) * orig_scale;
+        }
 
         // project this obb and return an AABB (the 2D bounding box + depth)
         // FIXME: does this function works ???
