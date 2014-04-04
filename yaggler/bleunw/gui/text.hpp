@@ -62,9 +62,12 @@ namespace neam
         class base_text : public renderable
         {
           public:
-            base_text(const std::string &_value, font_face *_font = nullptr)
+            explicit base_text(const std::string &_value = "", font_face *_font = nullptr)
               : font(nullptr), changed(true), value(_value), drawer(neam::yaggler::geometry::draw_method::indexed)
             {
+              bounding_box.min = 0._vec3_xyz;
+              bounding_box.max = 0.1_vec3_z;
+
               init_shader();
 
               drawer.set_index_type(GL_UNSIGNED_BYTE);
@@ -76,22 +79,11 @@ namespace neam
               vao.add_buffer(indices);
             }
 
-            base_text()
-              : font(nullptr), changed(true), value(), drawer(neam::yaggler::geometry::draw_method::indexed)
-            {
-              init_shader();
-
-              drawer.set_index_type(GL_UNSIGNED_BYTE);
-
-              x_pos.set_binding_point(1);
-              vao.add_buffer(indices);
-            }
-
             // this is dangerous: in YägGLer, this is used to create a "link".
             // There is no such things here: You copy a text, you also copy/recreate everything in it.
             // NOTE: custom uniforms won't get copied.
             base_text(const base_text &o)
-              : font(nullptr), changed(true), value(o.value)
+              : bounding_box(o.bounding_box), font(nullptr), changed(true), value(o.value)
             {
               init_shader();
 
@@ -107,6 +99,7 @@ namespace neam
 
             base_text &operator = (const base_text &o)
             {
+              bounding_box = o.bounding_box;
               color = o.color;
               set_text(o.value);
               set_font(o.font);
@@ -147,6 +140,16 @@ namespace neam
             void set_dirty()
             {
               changed = true;
+            }
+
+            bool has_changed() const
+            {
+              return changed;
+            }
+
+            bool is_dirty() const
+            {
+              return changed;
             }
 
             FragmentShader &get_fragment_shader()
@@ -222,6 +225,8 @@ namespace neam
                   acc += font->table[static_cast<unsigned int>(value[i])].x_inc;
               }
 
+              bounding_box.max = glm::vec3(acc, yacc, 0.1);
+
               // setup buffers (send directly the string to openGL ;) )
               indices.set_data(array_wrapper<const GLubyte>(reinterpret_cast<const unsigned char *>(value.data()), value.size()));
               x_pos.set_data(array_wrapper<GLfloat>(ar_xypos, value.size() * 2 + (value.size() * 2) % 4));
@@ -236,6 +241,8 @@ namespace neam
 
           public:
             glm::vec4 color = glm::vec4(1., 1., 1., 1.);
+
+            klmb::yaggler::aabb bounding_box;
 
           private:
             void init_shader()
