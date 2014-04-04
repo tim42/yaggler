@@ -26,8 +26,10 @@
 #ifndef __N_178120621236830485_1940062634__AABB_HPP__
 # define __N_178120621236830485_1940062634__AABB_HPP__
 
-#include <algorithm>
+#include <glm_udl.hpp>
+
 #include <glm/glm.hpp>
+#include <algorithm>
 
 namespace neam
 {
@@ -43,6 +45,12 @@ namespace neam
         aabb() {}
         aabb(const aabb &o) : min(o.min), max(o.max) {}
         aabb(const glm::vec3 &_min, const glm::vec3 &_max) : min(_min), max(_max) {}
+
+        void add_aabb(const aabb &o)
+        {
+          add_vertex(o.min);
+          add_vertex(o.max);
+        }
 
         void add_vertex(const glm::vec3 &point)
         {
