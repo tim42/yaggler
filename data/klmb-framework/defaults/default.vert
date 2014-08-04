@@ -15,7 +15,7 @@
 in vec3 in_position;
 
 out vec3 orig_vertex_position;
-out vec3 vertex_position;
+out vec4 vertex_position;
 
 uniform mat4 vp_matrix;
 uniform mat4 object_matrix;
@@ -29,6 +29,6 @@ void KLMB_MAIN_FUNCTION(void)
 {
     gl_Position = (vp_matrix * object_matrix) * vec4(in_position, 1.);
     orig_vertex_position = in_position;
-    tvertex_position = gl_Position.xyz / gl_Position.w;
+    vertex_position = ((object_matrix) * vec4(in_position, 1.));
 }
 

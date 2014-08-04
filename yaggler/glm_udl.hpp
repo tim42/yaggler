@@ -30,8 +30,8 @@
 
 // this is SO MUCH EASIER than hitting your keyboard for the same things, ever and ever... (poor keyboard... :/ )
 
-namespace neam
-{
+// namespace neam
+// {
   // 2D glm::vec
   static glm::vec2 operator "" _vec2_x(long double val)
   {
@@ -264,7 +264,7 @@ namespace neam
   {
     return glm::vec4((val), (val), (val), (val));
   }
-} // namespace neam
+// } // namespace neam
 
 #endif /*__N_1814989461818831215_234927224__GLM_UDL_HPP__*/
 

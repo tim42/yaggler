@@ -87,8 +87,8 @@ namespace neam
             void set_screen_size(const ct::vector2 &screen_size)
             {
               color_0.set_texture_sampler(0);
-              color_1.set_texture_sampler(0);
-              color_2.set_texture_sampler(0);
+              color_1.set_texture_sampler(1);
+              color_2.set_texture_sampler(2);
 
               color_0.set_gl_parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
               color_0.set_gl_parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -103,10 +103,10 @@ namespace neam
 
               depthbuffer.set_storage(screen_size, GL_DEPTH_COMPONENT24);
 
+              fbo.bind_renderbuffer(depthbuffer, GL_DEPTH_ATTACHMENT);
               fbo.bind_texture_color(color_0, 0);
               fbo.bind_texture_color(color_1, 1);
-              fbo.bind_texture_color(color_1, 2);
-              fbo.bind_renderbuffer(depthbuffer, GL_DEPTH_ATTACHMENT);
+              fbo.bind_texture_color(color_2, 2);
 
               GLenum bufs[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
               glDrawBuffers(3, bufs);

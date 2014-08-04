@@ -27,22 +27,25 @@ KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_0); // color                (rgba)
 uniform sampler2D scene;                        // color                (rgba)
 uniform sampler2D geometry;                     // normal + depth       (rgb + a)
 
+uniform mat4 cam_view;
+uniform mat4 cam_vp;
+
 uniform vec2 buffer_size;                       // screen size
 
-uniform float cRange = 1.0; // the three(four) autistic (but not artistic at all) parameters
+uniform float cRange = 1.0; // the three(four) autistic (and not artistic at all) parameters
 uniform float cBias = 1.7;
 uniform float cAverager = 25.0;
 uniform float cMinimumCrease = 0.1;
-uniform float cKernelSize = 2.5; // Bias for the kernel size, Hack for the fixed size 11x11 stipple kernel
+uniform float cKernelSize = 2.5; // Bias for the kernel size, HACK for the fixed size 11x11 stipple kernel
 
 
 
 vec3 coordtopos(vec2 coord, float depth, vec2 inv_buffer_size)
 {
-  vec3 screencoord = vec3(((coord.x * inv_buffer_size.x) - 0.5) * 2.0 * (buffer_size.x / buffer_size.y), ((-coord.y * inv_buffer_size.y) + 0.5) * 2.0/* / (buffer_size.x * inv_buffer_size.y)*/, (depth));
+  vec3 screencoord = vec3(((coord.x * inv_buffer_size.x) - 0.5) * 2.0 * (buffer_size.x * inv_buffer_size.y), ((-coord.y * inv_buffer_size.y) + 0.5) * 2.0 / (buffer_size.x * inv_buffer_size.y), (depth));
   screencoord.x *= -screencoord.z;
-  screencoord.y *= -screencoord.z;
-  return -screencoord;
+  screencoord.y *= screencoord.z;
+  return (vec4(-screencoord, 0) * cam_view).xyz;
 }
 
 void KLMB_MAIN_FUNCTION()
@@ -52,12 +55,11 @@ void KLMB_MAIN_FUNCTION()
 
     // get the view space position and normal of the fragment
     vec4 geom = texture(geometry, uv);
-    geom.z *= -1;
-    geom.y *= -1;
-    vec3 fragmentNormal = (geom.xyz);
+    vec3 fragmentNormal = -geom.xyz;
 
     float distance = geom.w;
-    vec3 fragmentPosition = coordtopos(gl_FragCoord.xy, distance, inv_buffer_size);
+    vec3 fragmentPosition = (vec4(coordtopos(gl_FragCoord.xy, distance, inv_buffer_size), 0) ).xyz;
+
 
     float totalGI = 0.0;
 
@@ -88,11 +90,11 @@ void KLMB_MAIN_FUNCTION()
             float depth = texture(geometry, sampleUV).w;
             vec3 samplePos = coordtopos(sampleOffset * cKernelSize + gl_FragCoord.xy, depth, inv_buffer_size);
 
-            vec3 toCenter = samplePos - fragmentPosition;
+            vec3 toCenter = (samplePos - fragmentPosition);
             float distance = length(toCenter);
 
             toCenter = normalize(toCenter);
-            float centerContrib = clamp((dot(toCenter, fragmentNormal) - cMinimumCrease) * cBias, 0., 1.);
+            float centerContrib = clamp(((dot(toCenter, ((fragmentNormal)))) - cMinimumCrease) * cBias, 0., 1.);
             float rangeAttenuation = 1.0f - clamp(distance / cRange, 0., 1.);
 
             totalGI += centerContrib * rangeAttenuation;
@@ -103,13 +105,15 @@ void KLMB_MAIN_FUNCTION()
 
     // remove OC where the scene is well lit (next lights)
 //     vec3 scene_color = texture(sColor, uv).rgb;
-   vec3 lit_scene_color = texture(scene, uv).rgb;
+   vec4 lit_scene_color = texture(scene, uv);
 
    float factor = 1.0 - length(abs(lit_scene_color/* - scene_color*/));
 
-   totalGI *= clamp(factor + 0.5, 0.0, 1.0);
+   totalGI *= clamp(factor + .5, .0, 1.); // .5
 
-   KLMB_SHARED_NAME(color_0).xyz = (lit_scene_color - (vec3(totalGI,totalGI,totalGI)));
+   /*vec4(geom.xyz, 1) ;*//* 0.5 + 0.5;*/
+   KLMB_SHARED_NAME(color_0) = (lit_scene_color - (vec4(vec3(totalGI), 0)));
+//    KLMB_SHARED_NAME(color_0) = 1- vec4(vec3(totalGI), 0.);
 }
 
 #endif

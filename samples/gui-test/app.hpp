@@ -41,6 +41,7 @@
 
 
 constexpr neam::string_t test_frag = "data/shaders/test/fract.frag";
+constexpr neam::string_t yaggler_logo = "data/yaggler.png";
 
 namespace neam
 {
@@ -58,8 +59,8 @@ namespace neam
           virtual ~main_application() {}
 
           main_application()
-            : base_application(neam::yaggler::glfw_window(neam::yaggler::window_mode::fullscreen)),
-//             : base_application(neam::yaggler::glfw_window(neam::yaggler::window_mode::windowed, {1000, 1000})),
+//             : base_application(neam::yaggler::glfw_window(neam::yaggler::window_mode::fullscreen)),
+            : base_application(neam::yaggler::glfw_window(neam::yaggler::window_mode::windowed, {8192, 8192})),
               gmgr(framebuffer_resolution, emgr)
           {
             init();
@@ -101,8 +102,8 @@ namespace neam
               // disable depth test for THIS 3D text rendering. (only in this case: we render over a fullscreen quad in Z = 0)
               glDisable(GL_DEPTH_TEST);
 
-              fps_gui_text.set_text("fps: " + CRAP__VAR_TO_STRING(get_fps()));
-              random_gui_text.set_text("mps: " + CRAP__VAR_TO_STRING(std::fixed << std::setprecision(1) << get_mps() << "\n" << "time: " << cr::chrono::now_relative()));
+              fps_gui_text.set_text("fps: " + CRAP__VAR_TO_STRING(std::fixed << std::setprecision(1) << 1000.0 / get_imediate_mps()));
+              random_gui_text.set_text("mps: " + CRAP__VAR_TO_STRING(std::fixed << std::setprecision(2) << get_imediate_mps() << "\n" << "time: " << cr::chrono::now_relative()));
 
               gmgr.render();
 
@@ -130,12 +131,12 @@ namespace neam
 
             auto &text_node = gmgr.transformation_tree.root.create_child();
             text_local_node = text_node.local;
-            text_node.local->position = 0._vec3_z -1.0_vec3_x +0.90_vec3_y;
+            text_node.local->position = 0._vec3_xyz;
             text_node.local->scale = 0.05_vec3_xyz;
             text_node.local->dirty = true;
 
             auto &ch_text_node = text_node.create_child();
-            ch_text_node.local->position = 0.00_vec3_y +0.1_vec3_x;
+            ch_text_node.local->position = -0.10_vec3_y +0.1_vec3_x;
             ch_text_node.local->scale = 0.5_vec3_xyz;
             ch_text_node.local->dirty = true;
 

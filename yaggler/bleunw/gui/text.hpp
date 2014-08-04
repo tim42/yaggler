@@ -48,14 +48,17 @@ namespace neam
         // a text, rendered with a geometry shader.
         namespace defaults
         {
-          constexpr neam::string_t text_fragment_shader_file = "data/shaders/text/text.frag";
+          constexpr neam::string_t text_fragment_shader_file = "data/shaders/bleunw/text/text.frag";
           using text_fragment_shader = klmb::yaggler::auto_file_shader<text_fragment_shader_file>;
         } // namespace default
 
         namespace internal
         {
-          constexpr neam::string_t vertex_frag = "data/shaders/text/text.vert";
-          constexpr neam::string_t geom_frag = "data/shaders/text/text.geom";
+          constexpr neam::string_t text_vertex_file = "data/shaders/bleunw/text/text.vert";
+          constexpr neam::string_t text_geom_file = "data/shaders/bleunw/text/text.geom";
+
+          using text_vertex_shader = klmb::yaggler::auto_shared_file_shader<text_vertex_file>;
+          using text_geom_shader = klmb::yaggler::auto_shared_file_shader<text_geom_file>;
         } // namespace internal
 
         template<typename FragmentShader>
@@ -126,6 +129,13 @@ namespace neam
                   font->init_vao(vao);
                 }
               }
+            }
+
+            // -1 to: no width limit
+            void set_max_width(float _max_width = -1)
+            {
+              max_width = _max_width;
+              changed = true;
             }
 
             void set_text(const std::string &_value)
@@ -208,28 +218,36 @@ namespace neam
               // compute indexes and x pos
               GLfloat acc = 0.;
               GLfloat yacc = 0.;
-              for (size_t i = 0; i < value.size(); ++i)
+              size_t idx = 0;
+              for (size_t i = 0; i < value.size(); ++i, ++idx)
               {
                 ar_xypos[i * 2 + 0] = acc;
                 ar_xypos[i * 2 + 1] = yacc;
                 if (value[i] == '\n')
                 {
                   acc = 0;
+                  idx = 0;
                   ++yacc;
                 }
                 else if (value[i] == '\v')
                   ++yacc;
                 else if (value[i] == '\t')
-                  acc += 4 - (i % 4);
+                  acc = 4 - (idx % 4) + round(acc);
                 else
                   acc += font->table[static_cast<unsigned int>(value[i])].x_inc;
+
+                if (max_width > 0 && acc > max_width)
+                {
+                  acc = 0;
+                  ++yacc;
+                }
               }
 
               bounding_box.max = glm::vec3(acc, yacc, 0.1);
 
               // setup buffers (send directly the string to openGL ;) )
-              indices.set_data(array_wrapper<const GLubyte>(reinterpret_cast<const unsigned char *>(value.data()), value.size()));
-              x_pos.set_data(array_wrapper<GLfloat>(ar_xypos, value.size() * 2 + (value.size() * 2) % 4));
+              indices.set_data(array_wrapper<const GLubyte>(reinterpret_cast<const unsigned char *>(value.data()), value.size()), GL_DYNAMIC_DRAW);
+              x_pos.set_data(array_wrapper<GLfloat>(ar_xypos, value.size() * 2 + (value.size() * 2) % 4), GL_DYNAMIC_DRAW);
 
               // setup drawer
               drawer.set_draw_points(value.size());
@@ -253,8 +271,8 @@ namespace neam
                 neam::klmb::yaggler::shader_list
                 <
                   FragmentShader,
-                  neam::klmb::yaggler::auto_file_shader<internal::vertex_frag>,
-                  neam::klmb::yaggler::auto_file_shader<internal::geom_frag>
+                  internal::text_geom_shader,
+                  internal::text_vertex_shader
                 >,
                 // TEXTURES
                 neam::klmb::yaggler::no_textures
@@ -279,6 +297,7 @@ namespace neam
             font_face *font = nullptr;
             bool changed = true;
             std::string value;
+            float max_width = -1.f;
 
             // // GL (klmb/YägGLer) stuff
             FragmentShader *fragment_shader;

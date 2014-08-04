@@ -24,8 +24,8 @@
 //
 
 
-#ifndef __N_15663693851872442693_772963530__YAGGLER_GLUT_WINDOW_HPP__
-# define __N_15663693851872442693_772963530__YAGGLER_GLUT_WINDOW_HPP__
+#ifndef __N_15663693851872442693_772963530__YAGGLER_GLFW_WINDOW_HPP__
+# define __N_15663693851872442693_772963530__YAGGLER_GLFW_WINDOW_HPP__
 
 #include <string>
 
@@ -155,7 +155,7 @@ namespace neam
       public:
         // window_size MUST be an integer, NOT a fixed point size.
         // w_hints is a list of additional window creation hints
-        glfw_window(window_mode::windowed_t, const neam::ct::vector2 &window_size, const std::string &title = "[ neam/yaggler", std::initializer_list<std::pair<int, int>> w_hints = {})
+        glfw_window(window_mode::windowed_t, const neam::ct::vector2 &window_size, const std::string &title = "[ neam/yaggler", std::initializer_list<std::pair<int, int>> w_hints = std::initializer_list<std::pair<int, int>>())
           : win(nullptr), link(false)
         {
           init_glfw_hints();
@@ -180,7 +180,7 @@ namespace neam
 
           init_debug();
         }
-        glfw_window(window_mode::fullscreen_t, const std::string &title = "[ neam/yaggler", std::initializer_list<std::pair<int, int>> w_hints = {})
+        glfw_window(window_mode::fullscreen_t, const std::string &title = "[ neam/yaggler", std::initializer_list<std::pair<int, int>> w_hints = std::initializer_list<std::pair<int, int>>())
         : win(nullptr), link(false)
         {
           init_glfw_hints();
@@ -359,7 +359,7 @@ namespace neam
   } // namespace yaggler
 } // namespace neam
 
-#endif /*__N_15663693851872442693_772963530__YAGGLER_GLUT_WINDOW_HPP__*/
+#endif /*__N_15663693851872442693_772963530__YAGGLER_GLFW_WINDOW_HPP__*/
 
 // kate: indent-mode cstyle; indent-width 2; replace-tabs on; 
 

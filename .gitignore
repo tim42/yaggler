@@ -65,3 +65,10 @@ build-clang/
 ###############
 
 documentation/*/*
+
+# screenshots #
+###############
+
+
+screenshot*.png
+

@@ -40,16 +40,25 @@ in vec3 tri_distance;
 float amplify(float d, float scale, float offset)
 {
   d = scale * d + offset;
-  d = clamp(d, 0, 1);
-  d = 1 - exp2(-2*d*d);
+  d = clamp(d, 0., 1.);
+  d = 1. - exp2(-2. * d * d);
   return d;
 }
 
 void KLMB_MAIN_FUNCTION()
 {
   float d1 = min(min(tri_distance.x, tri_distance.y), tri_distance.z);
-  d1 = amplify(d1, 10, 0.0);
-  KLMB_SHARED_NAME(color_0).rgb = (clamp(d1 , 0, 100) * 1.3 * (1 - gbuffer_position.z / 25.5) * (vec3(0.5, 0.9, 1.70)) * length(gbuffer_normal.xy));
+  d1 = clamp(amplify(d1, 8., 0.0), 0., 100.) * 1.3;
+
+  const float dst = 10.;
+  if (gbuffer_position.z > dst)
+  {
+    float dt = clamp(dst + 5. - gbuffer_position.z, 0., 5.) / 5.;
+    d1 = dt * d1 + 1. - dt;
+  }
+
+  KLMB_SHARED_NAME(color_0).rgb = /*d1*/ /** (1 - gbuffer_position.z / 25.5)*/  (vec3(0.9, 0.9, 1.0)) * (dot(gbuffer_normal.xy,gbuffer_normal.xy) * 1.2) / 1.5;
+//   KLMB_SHARED_NAME(color_0).rgb = vec3(0, abs(cos(global_time)), abs(sin(global_time * 2.)));
 }
 
 #else

@@ -26,7 +26,7 @@ in gl_PerVertex
   vec4 gl_Position;
 } gl_in[];
 
-in vec3 orig_vertex_position[];
+in vec4 vertex_position[];
 
 #endif
 
@@ -34,6 +34,7 @@ in vec3 orig_vertex_position[];
 // to the frag stage
 out vec3 gbuffer_normal;
 out vec4 gbuffer_position;
+out vec4 gbuffer_vertex_position;
 
 // TODO:remove
 out vec3 tri_distance;
@@ -61,20 +62,27 @@ vec3 gbuffer_compute_normal(vec4 v1, vec4 v2, vec4 v3)
 void KLMB_MAIN_FUNCTION()
 {
 #if KLMB_PROG_NUMBER == 1
-  gbuffer_compute_normal(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_in[2].gl_Position);
+  gbuffer_compute_normal(vertex_position[0], vertex_position[1], vertex_position[2]);
 
   gl_Position = gl_in[0].gl_Position + vec4(0, 0, 0, 1.);
   gbuffer_set_position(gl_Position);
+  gbuffer_vertex_position = vertex_position[0];
   tri_distance = vec3(1, 0, 0);
   EmitVertex();
 
+  gbuffer_compute_normal(vertex_position[0], vertex_position[1], vertex_position[2]);
+
   gl_Position = gl_in[1].gl_Position + vec4(0, 0, 0, 1.);
   gbuffer_set_position(gl_Position);
+  gbuffer_vertex_position = vertex_position[1];
   tri_distance = vec3(0, 1, 0);
   EmitVertex();
 
+  gbuffer_compute_normal(vertex_position[0], vertex_position[1], vertex_position[2]);
+
   gl_Position = gl_in[2].gl_Position + vec4(0, 0, 0, 1.);
   gbuffer_set_position(gl_Position);
+  gbuffer_vertex_position = vertex_position[2];
   tri_distance = vec3(0, 0, 1);
   EmitVertex();
 

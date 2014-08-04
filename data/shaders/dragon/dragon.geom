@@ -20,7 +20,7 @@ in gl_PerVertex
     vec4 gl_Position;
 } gl_in[];
 
-in vec4 orig_vertex_position[];
+in vec3 orig_vertex_position[];
 
 // outputs
 out gl_PerVertex
@@ -43,19 +43,22 @@ void KLMB_MAIN_FUNCTION()
   vec3 normal = gbuffer_compute_normal(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_in[2].gl_Position);
 
   vec4 n = /*vec4(0, 0, 0, orig_vertex_position[0].w);//*/0.05 / (vec4((normal), orig_vertex_position[0].w)) * abs(1. - cos((global_time/ 2. - length(orig_vertex_position[0]) / 3.5))) * 3.1;
-  // n = sign(n) * (sqrt(abs(n) * 0.07));
+//   n = sign(n) * (sqrt(abs(n) * 0.07));
 
   gl_Position = gl_in[0].gl_Position + n;
+  gl_Position.w = gl_in[0].gl_Position.w + 1.;
   gbuffer_set_position(gl_Position);
   tri_distance = vec3(1, 0, 0);
   EmitVertex();
 
   gl_Position = gl_in[1].gl_Position + n;
+  gl_Position.w = gl_in[1].gl_Position.w + 1.;
   gbuffer_set_position(gl_Position);
   tri_distance = vec3(0, 1, 0);
   EmitVertex();
 
   gl_Position = gl_in[2].gl_Position + n;
+  gl_Position.w = gl_in[2].gl_Position.w + 1.;
   gbuffer_set_position(gl_Position);
   tri_distance = vec3(0, 0, 1);
   EmitVertex();

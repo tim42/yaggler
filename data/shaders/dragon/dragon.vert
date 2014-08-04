@@ -13,12 +13,12 @@
 
 
 in vec3 in_position;
+
+out vec3 orig_vertex_position;
+out vec4 vertex_position;
+
 uniform mat4 vp_matrix;
 uniform mat4 object_matrix;
-
-out vec4 orig_vertex_position;
-
-uniform float global_time;
 
 out gl_PerVertex
 {
@@ -28,8 +28,7 @@ out gl_PerVertex
 void KLMB_MAIN_FUNCTION(void)
 {
     gl_Position = (vp_matrix * object_matrix) * vec4(in_position, 1.);
-//     gl_Position.x +=  cos(global_time * 5 + (50 * in_position.y)) * length(in_position) * 5;
-//     gl_Position.y +=  sin(global_time * 5 + (50 * in_position.x)) * length(in_position) * 5;
-    orig_vertex_position = vec4(in_position, 1.0);
+    orig_vertex_position = in_position;
+    vertex_position = ((object_matrix) * vec4(in_position, 1.));
 }
 

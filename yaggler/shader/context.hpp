@@ -136,7 +136,7 @@ namespace neam
 
           // on functions/functors
           template<size_t Idx, typename Arg>
-          void _binder(typename neam::cr::enable_if < neam::cr::is_function_pointer<Arg>::value || std::is_member_function_pointer<Arg>::value, __LINE__, int >::type)
+          void _binder(typename neam::cr::enable_if < neam::ct::is_function_pointer<Arg>::value || std::is_member_function_pointer<Arg>::value, __LINE__, int >::type)
           {
             vars[Idx] = (values.template get<Idx>())();
           }
@@ -144,7 +144,7 @@ namespace neam
           // on a classic var (use affectation directly)
           // NOTE: ref<> and pointers won't be here as the uniform is setted only one time
           template<size_t Idx, typename Arg>
-          void _binder(typename neam::cr::enable_if < !neam::cr::is_function_pointer<Arg>::value && !std::is_member_function_pointer<Arg>::value, __LINE__, int >::type)
+          void _binder(typename neam::cr::enable_if < !neam::ct::is_function_pointer<Arg>::value && !std::is_member_function_pointer<Arg>::value, __LINE__, int >::type)
           {
             vars[Idx] = (values.template get<Idx>());
           }

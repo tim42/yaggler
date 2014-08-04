@@ -38,6 +38,7 @@ namespace neam
       namespace object_data
       {
         // The fullscreen quad
+        // [-1..1] quad
         GLfloat fs_quad [] __attribute__((unused)) =
         {
           -1.0f, -1.f, 0.0f,
@@ -47,7 +48,18 @@ namespace neam
           1.0f, -1.0f, 0.0f,
           1.0f,  1.0f, 0.0f,
         };
-      } // namespace internal
+
+        // [0..1] quad
+        GLfloat positive_quad [] __attribute__((unused)) =
+        {
+          0.0f, 0.f, 0.0f,
+          1.0f, 0.0f, 0.0f,
+          0.0f,  1.0f, 0.0f,
+          0.0f,  1.0f, 0.0f,
+          1.0f, 0.0f, 0.0f,
+          1.0f,  1.0f, 0.0f,
+        };
+      } // namespace object_data
 
       // non indexed data
       template<size_t Size>

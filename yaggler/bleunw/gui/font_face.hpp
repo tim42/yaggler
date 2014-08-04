@@ -105,7 +105,8 @@ namespace neam
             // use the png loader (to load something grey. Distance field.)
             neam::yaggler::texture::options::png_texture_loader<GL_RGBA8> loader(font_texture);
             font.set_texture_data(loader);
-            font.set_gl_parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            font.generate_mipmaps();
+            font.set_gl_parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             font.set_gl_parameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
           }
 
@@ -223,7 +224,7 @@ namespace neam
             file.close();
 
             // use the png writer
-            if (!(neam::yaggler::texture::options::png_texture_writer<GL_RGBA>::write(font, font_texture)))
+            if (!(neam::yaggler::texture::options::png_texture_writer<GL_RGB8>::write(font, font_texture)))
               return false;
 
             return true;

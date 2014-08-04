@@ -104,10 +104,10 @@ namespace neam
             return *this;
           }
           template<typename Etype>
-          inline uniform_variable &operator = (const neam::cr::ref<Etype *> &t)
+          inline uniform_variable &operator = (Etype *t)
           {
-            if (t.value)
-              *this = *t.value;
+            if (t)
+              *this = *t;
             return *this;
           }
 

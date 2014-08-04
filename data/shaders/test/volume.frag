@@ -16,19 +16,19 @@
 #define KLMB_NUMBER_OF_OUTPUT_BUFFER            1
 
 // raymarcher defines
-#define RM_MAX_STEPS                    30.
-#define INTO_STEP_DST                   0.35
+#define RM_MAX_STEPS                    90.
+#define INTO_STEP_DST                   0.135
 
 // prog defines
 #define ROTATION_SPEED                  0.2000
 
-#define CAM_DISTANCE                    30.
+#define CAM_DISTANCE                    40.
 #define CAM_DISTANCE_MVT                10.
 
 // glow
-#define GLOW_MAX_DST                    1.0
+#define GLOW_MAX_DST                    0.010
 #define GLOW_COLOR                      vec3(0.7, 0.70, 1.5)
-#define GLOW_STRENGTH                   0.04
+#define GLOW_STRENGTH                   0.3
 
 
 uniform float global_time;
@@ -57,17 +57,23 @@ mat3 rotation_matrix_xY(float angle)
 // where the computations (the distance field) are
 float map(vec3 position)
 {
-  const float c = 15.;
+  float c = 15.;
 
-  vec3 p = mod(position, 50.) - 50. * 0.5;
+  const float dd = 75;
+  vec3 p = mod(position + dd * 0.5, dd) - dd * 0.5;
+//   vec3 p = position;
 
-  float d = length(p) - c;
+  float d = length(max(abs(p) - c, 0.0));
 
   float td;
 
-  p = mod(position, c) - c * 0.5;
-  td = length(p) - c / 1.8;
-  return max(-td, d);
+//   p = mod(p + c * 0.5, c) - c * 0.5;
+  td = max(-(length(p) - c / 1.1), d);
+  c *= 0.5;
+  p = mod(p, c) - c * 0.5;
+  td = max(-(length(p) - c / 2.8), td);
+//   c *= 0.5;
+  return td;
 }
 
 // do the raymarch

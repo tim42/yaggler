@@ -19,7 +19,10 @@
 
 #include <setup.hpp>
 
-using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::opengl_profile::core, neam::yaggler::setup::opengl_context_flag::debug>;
+using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::opengl_profile::core/*, neam::yaggler::setup::opengl_context_flag::debug*/>;
+
+// disable messages
+#define YAGGLER_NO_MESSAGES
 
 #include <yaggler.hpp>
 

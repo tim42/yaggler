@@ -189,6 +189,13 @@ namespace neam
         klmb_default_vert
       >;
 
+      namespace special_shaders
+      {
+        constexpr neam::string_t klmb_fsquad_vert_files = "data/shaders/fsquad/fsquad.vert";
+
+        using klmb_fsquad_vert = auto_shared_file_shader<klmb_fsquad_vert_files>;
+      } // namespace special_shaders
+
     } // namespace yaggler
   } // namespace klmb
 } // namespace neam

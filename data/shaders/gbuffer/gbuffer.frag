@@ -29,7 +29,7 @@ KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_1); // normal + depth               
 void KLMB_MAIN_FUNCTION()
 {
   KLMB_SHARED_NAME(color_1).rgb = gbuffer_normal;
-  KLMB_SHARED_NAME(color_1).a = gbuffer_position.w; // .w ?
+  KLMB_SHARED_NAME(color_1).a = (gbuffer_position.z /*/ gbuffer_position.w*/)/* * 10000.*/;
 }
 
 #else

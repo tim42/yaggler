@@ -52,7 +52,7 @@ namespace neam
         float aspect = 4. / 3.;
 
         float near = 0.1;
-        float far = 1000.;
+        float far = 10000.;
 
         // camera specifics
         glm::vec3 position = glm::vec3(0.0, 0.0, 0.0);

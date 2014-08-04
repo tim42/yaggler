@@ -84,9 +84,10 @@ add_subdirectory(tools/font-generator/)
 # add_subdirectory(samples/dev)
 # add_subdirectory(samples/dev-klmb)
 
-# add_subdirectory(samples/test-klmb)
-# add_subdirectory(samples/path-tracer/)
+#add_subdirectory(samples/test-klmb)
+add_subdirectory(samples/path-tracer/)
 add_subdirectory(samples/gui-test/)
+#add_subdirectory(samples/editor/)
 
 
 

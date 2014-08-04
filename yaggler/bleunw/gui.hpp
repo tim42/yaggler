@@ -30,12 +30,16 @@
 #include <list>
 
 #include <bleunw/gui/renderable.hpp>
-
 #include <bleunw/gui/font_face.hpp>
 #include <bleunw/gui/font_manager.hpp>
 #include <bleunw/gui/text.hpp>
+#include <bleunw/gui/layout_descriptor.hpp>
+#include <bleunw/gui/tr_node.hpp>
+#include <bleunw/gui/image.hpp>
+
 #include <bleunw/events/event_listener.hpp>
 #include <bleunw/events.hpp>
+
 #include <klmb/camera/camera.hpp>
 
 namespace neam
@@ -59,9 +63,7 @@ namespace neam
 
             manager(const glm::vec2 &framebuffer_resolution, events::manager &_emgr) : emgr(_emgr)
             {
-              camera.min = glm::vec2(-1, -framebuffer_resolution.y / framebuffer_resolution.x);
-              camera.max = glm::vec2(framebuffer_resolution.x / framebuffer_resolution.y, 1);
-              camera.recompute_matrices();
+              framebuffer_resized(framebuffer_resolution);
 
               internal_vp_ptr = &camera.vp_matrix;
               vp_matrix = &internal_vp_ptr;
@@ -147,9 +149,14 @@ namespace neam
           public: // window_listener
             virtual void framebuffer_resized(const glm::vec2 &framebuffer_resolution)
             {
-              camera.min = glm::vec2(-1, -framebuffer_resolution.y / framebuffer_resolution.x);
-              camera.max = glm::vec2(framebuffer_resolution.x / framebuffer_resolution.y, 1);
+//               camera.min = glm::vec2(-1, -framebuffer_resolution.y / framebuffer_resolution.x);
+//               camera.max = glm::vec2(framebuffer_resolution.x / framebuffer_resolution.y, 1);
+              camera.min = glm::vec2(0, 0);
+              camera.max = glm::vec2(1.f + framebuffer_resolution.x / framebuffer_resolution.y, 1.f + framebuffer_resolution.y / framebuffer_resolution.x);
               camera.recompute_matrices();
+
+              // dirty the root (but do not recompute matrices here).
+              transformation_tree.root.local->dirty = true;
             }
 
             virtual void window_closed() {}
@@ -160,7 +167,7 @@ namespace neam
           public:
             // the font manager
             font_manager fmgr;
-            neam::klmb::yaggler::transformation_tree<neam::klmb::yaggler::transformation_node::default_node> transformation_tree;
+            neam::klmb::yaggler::transformation_tree</*transformation_node::gui_node*/klmb::yaggler::transformation_node::default_node> transformation_tree;
 
           private:
             events::manager &emgr;

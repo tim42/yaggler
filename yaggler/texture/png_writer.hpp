@@ -50,6 +50,7 @@ namespace neam
         {
           private:
             static constexpr GLenum gl_color_type[] = {GL_R8, GL_R16, GL_RG8, GL_RG16, GL_RGB8, GL_RGB16, GL_RGBA8, GL_RGBA16};
+            static constexpr size_t pixel_sz[] = {1, 2, 2, 4, 3, 6, 4, 8};
             static constexpr LodePNGColorType png_color_type[] = {LCT_GREY, LCT_GREY_ALPHA, LCT_RGB, LCT_RGBA};
             static constexpr GLenum gl_input_color_type[] = {GL_R, GL_RG, GL_RGB, GL_RGBA};
             static constexpr int png_depth[] = {8, 16};
@@ -62,7 +63,7 @@ namespace neam
 
           public:
             template<typename Texture>
-            static bool write(const Texture &txt, const std::string &file)
+            static bool write(const Texture &txt, const std::string &file, bool invert_y = false)
             {
 #ifndef YAGGLER_NO_MESSAGES
               neam::cr::chrono timer;
@@ -80,11 +81,26 @@ namespace neam
               if (!size.x || !size.y)
                 return false;
 
-              uint8_t *data = new uint8_t[size.x * size.y * 4];
+              uint8_t *data = new uint8_t[size.x * size.y * pixel_sz[_get_index()]];
 
-              glGetTexImage(txt.get_texture_type(), Level, InternalFormat, GL_UNSIGNED_BYTE, data);
+              glGetTexImage(txt.get_texture_type(), Level, gl_input_color_type[_get_index() / 2], gl_depth[_get_index() % 2], data);
 
-              unsigned int ret = lodepng_encode_file(file.data(), data, size.x, size.y, LCT_RGBA, 8);
+              // swap y pixels
+              if (invert_y)
+              {
+                for (neam::ct::vector2 it(0, 0); it.y < size.y / 2; ++it.y)
+                {
+                  for (it.x = 0; it.x < size.x; ++it.x)
+                  {
+                    for (size_t i = 0; i < pixel_sz[_get_index()]; ++i)
+                      std::swap((data)[(it.x + size.x * it.y) * pixel_sz[_get_index()] + i], (data)[(it.x + size.x * (size.y - it.y - 1)) * pixel_sz[_get_index()] + i]);
+                  }
+                }
+              }
+
+              unsigned int ret = lodepng_encode_file(file.data(), data, size.x, size.y, png_color_type[_get_index() / 2], png_depth[_get_index() % 2]);
+
+              delete [] data;
 
               if (ret)
                 throw runtime_error<png_texture_writer>(lodepng_error_text(ret));
@@ -96,6 +112,13 @@ namespace neam
               return true;
             }
         };
+        template<GLint InternalFormat, size_t Level> constexpr GLenum png_texture_writer<InternalFormat, Level>::gl_color_type[];
+        template<GLint InternalFormat, size_t Level> constexpr size_t png_texture_writer<InternalFormat, Level>::pixel_sz[];
+        template<GLint InternalFormat, size_t Level> constexpr LodePNGColorType png_texture_writer<InternalFormat, Level>::png_color_type[];
+        template<GLint InternalFormat, size_t Level> constexpr GLenum png_texture_writer<InternalFormat, Level>::gl_input_color_type[];
+        template<GLint InternalFormat, size_t Level> constexpr int png_texture_writer<InternalFormat, Level>::png_depth[];
+        template<GLint InternalFormat, size_t Level> constexpr GLenum png_texture_writer<InternalFormat, Level>::gl_depth[];
+
       } // namespace options
     } // namespace texture
   } // namespace yaggler

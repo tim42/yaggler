@@ -28,6 +28,7 @@
 
 #include <deque>
 #include <vector>
+#include <list>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
 
@@ -49,7 +50,7 @@ namespace neam
           class node_holder
           {
             private:
-              using child_container = std::deque<node_holder>;
+              using child_container = std::list<node_holder>;
 
             public:
               Node *local; // local will be used to _overwrite_ world (if dirty is setted to true, or if the parent has been updated).
@@ -80,8 +81,12 @@ namespace neam
                 if (parent)
                 {
                   auto it = std::find(parent->childs.begin(), parent->childs.end(), *this);
-                  parent->childs.erase(it);
+                  if (it != parent->childs.end())
+                    parent->childs.erase(it);
+                  // here the node is deleted.
                 }
+                else
+                  std::cout << "[Y]: trying to remove root" << std::endl;
               }
 
               // compute and propagate matrices transformations to every childs
@@ -110,34 +115,39 @@ namespace neam
                   world_recompute = 1;
                 }
 
-                std::vector<size_t> idxs;
+                std::vector<decltype(childs.begin())> idxs;
                 idxs.reserve(100);
-                idxs.push_back(0);
+                idxs.push_back(childs.begin());
 
                 node_holder *hldr = this;
 
+                bool deinc = false;
                 while (idxs.size())
                 {
-                  size_t *current = &idxs.back();
+                  deinc = false;
 
-                  while (*current < hldr->childs_cont.size())
+                  auto *current = &idxs.back();
+
+                  while (*current != hldr->childs_cont.end())
                   {
                     bool inc = false;
-                    if (hldr->childs_cont[*current].local->dirty || world_recompute)
+                    if ((*current)->local->dirty || world_recompute)
                     {
                       // we recompute world here.
                       ++world_recompute;
                       inc = true;
 
-                      hldr->childs_cont[*current].local->compute_matrix();
-                      hldr->childs_cont[*current].local->compute_world(hldr->world, hldr->childs_cont[*current].world);
+                      (*current)->local->compute_matrix();
+                      (*current)->local->compute_world(hldr->world, (*current)->world);
 
-                      hldr->childs_cont[*current].local->dirty = false;
+                      (*current)->local->dirty = false;
+                      (*current)->world->dirty = false;
                     }
                     // only 'world' has been touched
-                    if (hldr->childs_cont[*current].world->dirty)
+                    if ((*current)->world->dirty)
                     {
-                      hldr->childs_cont[*current].world->compute_matrix();
+                      (*current)->world->compute_matrix();
+                      (*current)->world->dirty = false;
 
                       ++world_recompute;
                       inc = true;
@@ -145,22 +155,25 @@ namespace neam
 
 
                     // iterate over the childs.
-                    if (hldr->childs_cont[*current].childs_cont.size())
+                    if ((*current)->childs_cont.size())
                     {
-                      hldr = &hldr->childs_cont[*current];
+                      hldr = &(**current);
                       ++*current;
-                      idxs.push_back(0);
+                      idxs.push_back(hldr->childs.begin());
                       current = &idxs.back();
                       continue;
                     }
 
                     if (inc) // no childs. undo incrementation.
+                    {
+                      deinc = true;
                       --world_recompute;
+                    }
 
                     ++*current;
                   }
 
-                  if (world_recompute)
+                  if (world_recompute && !deinc)
                     --world_recompute;
 
                   idxs.pop_back();
@@ -285,14 +298,20 @@ namespace neam
 
           obb transformed_bounding_box;
 
+          // called when the node is dirty
+          // re-compute the matrix,
+          // re-init the obb.
           void compute_matrix()
           {
             matrix = glm::translate(position) * glm::mat4_cast(rotation) * glm::scale(scale);
 
             if (initial_bounding_box)
               transformed_bounding_box.set_transform_from(*initial_bounding_box, position, scale, rotation);
+            else
+              transformed_bounding_box.set_transform_from(aabb(), position, scale, rotation);
           }
 
+          // called to retransform the world node.
           void compute_world(const default_node *parent_world, default_node *world_dest) const
           {
             if (parent_world)

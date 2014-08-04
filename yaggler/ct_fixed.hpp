@@ -123,5 +123,14 @@ namespace neam
   } // namespace ct
 } // namespace neam
 
+#include <tools/embed.hpp>
+namespace neam
+{
+  namespace embed
+  {
+    N_EMBED_USING(fixed_t, ct::fixed_t);
+  } // namespace embed
+} // namespace neam
+
 #endif /*__CT_FIXED_HPP__*/
 // kate: indent-mode cstyle; indent-width 2; replace-tabs on;

@@ -28,12 +28,15 @@
 
 // glow
 #define GLOW_MAX_DST                    1.0
-#define GLOW_COLOR                      vec3(0.7, 0.70, 1.5)
+/*vec3(0.7, 0.70, 1.5)*/
+#define GLOW_COLOR                      scene_color
+// #define GLOW_STRENGTH                   0.04
 #define GLOW_STRENGTH                   0.04
 
 
 uniform float global_time;
 uniform vec2 screen_resolution;
+uniform vec3 scene_color = vec3(0.7, 0.70, 1.5);
 
 in vec3 vertex_position;
 

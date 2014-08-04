@@ -71,6 +71,8 @@ namespace neam
               window.swap_buffers();
               glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+              mps_immediate = 1000.0 * immed_chrono.delta();
+
               ++frame_counter;
               if (chrono.get_accumulated_time() >= max_acc_time)
               {
@@ -92,6 +94,11 @@ namespace neam
               return mps_1s;
             }
 
+            double get_imediate_mps() const
+            {
+              return mps_immediate;
+            }
+
             // return frames per seconds (averaged on 1s)
             double get_fps() const
             {
@@ -108,7 +115,7 @@ namespace neam
             const glm::vec2 &framebuffer_resolution;
 
           protected:
-            virtual void framebuffer_resized(const glm::vec2 &size)
+            virtual void framebuffer_resized(const glm::vec2 &size) override
             {
               if (main_smgr.camera_holder._get_std_cam())
                 main_smgr.camera_holder._get_std_cam()->aspect = static_cast<float>(size.x / size.y);
@@ -123,8 +130,10 @@ namespace neam
           private:
             glm::vec2 _framebuffer_resolution;
             cr::chrono chrono;
+            cr::chrono immed_chrono;
 
             double mps_1s;
+            double mps_immediate;
             size_t frame_counter;
         };
 

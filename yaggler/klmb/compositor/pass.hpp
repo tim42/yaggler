@@ -40,11 +40,6 @@ namespace neam
   {
     namespace yaggler
     {
-      namespace internal
-      {
-        constexpr neam::string_t fsquad_vert = "data/shaders/fsquad/fsquad.vert";
-      } // namespace internal
-
       // a single pass in a compositor
       class compositor_pass
       {
@@ -93,7 +88,7 @@ namespace neam
               neam::klmb::yaggler::shader_list
               <
                 // we could share this stage across other instance: no changes will be done.
-                neam::klmb::yaggler::auto_shared_file_shader<internal::fsquad_vert>,
+                neam::klmb::yaggler::special_shaders::klmb_fsquad_vert,
                 Shader
               >,
               // TEXTURES

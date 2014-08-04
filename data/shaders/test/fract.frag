@@ -16,10 +16,10 @@
 #define KLMB_NUMBER_OF_OUTPUT_BUFFER            1
 
 // raymarcher defines
-#define RM_MAX_STEPS                    30.
+#define RM_MAX_STEPS                    100.
 #define INTO_STEP_DST                   .0035
 
-#define FRACT_DEPTH                     3
+#define FRACT_DEPTH                     8
 /*#define FRACT_DEPTH                     sin(global_time) * 4 + 3*/
 
 // prog defines
@@ -43,17 +43,15 @@ in vec3 vertex_position;
 KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_0); // color                (rgba)
 
 
-mat3 rotation_matrix_xY(float angle)
+mat3 rotation_matrix_y(float angle)
 {
-  vec3 axis = vec3(0, 1, 0);
   float s = sin(angle);
   float c = cos(angle);
-  float oc = 1.0 - c;
   return mat3
   (
-    c,          0.0,                            axis.y * s,
-    0.0,        oc * axis.y * axis.y + c,       0.0,
-    -axis.y * s, 0.0,                           c
+    c,          0.0,                           s,
+    0.0,        1.0,                           0.0,
+    -s,         0.0,                           c
   );
 }
 
@@ -92,31 +90,30 @@ vec3 raymarch(vec3 from, in vec3 dir)
   vec3 color = vec3(0, 0, 0);
 
   float dst_acc = 0.;
-  float dst_rmg = 0.;
+  float dst_rmg = 0.5;
 
-  for(int it = 0; it < RM_MAX_STEPS; ++it)
+  for(int it = 0; it < RM_MAX_STEPS && dst_rmg > 0.01; ++it)
   {
     dst_rmg = map(from + dir * dst_acc) * 0.50;
     dst_acc += max(INTO_STEP_DST, (dst_rmg));
 
-    if (dst_rmg <= 0.01)
-      color += vec3(0.01, 0.01, 0.2)*2;
 //       color = vec3(0, 0, 1);
-    else if (/*abs*/(dst_rmg) <= GLOW_MAX_DST)
-      color += GLOW_STRENGTH * GLOW_COLOR * (GLOW_MAX_DST - /*abs*/(dst_rmg)) * 10. / ((dst_acc + 1.)); // "glow"
+      color += GLOW_STRENGTH * GLOW_COLOR * max(0., GLOW_MAX_DST - /*abs*/(dst_rmg)) * 10. / ((dst_acc + 1.)); // "glow"
   }
+  if (dst_rmg <= 0.01)
+    color += vec3(0.01, 0.01, 0.2) * 2.;
 
   return sqrt(color);
 }
 
 #define PI      3.1415927
-void main()
+void KLMB_MAIN_FUNCTION()
 {
   vec2 uv = (vertex_position.xy); // some good trick for a fs quad :)
   uv.x *= screen_resolution.x / screen_resolution.y;
   vec3 dir = normalize(vec3(uv * 1.0, 1.0));
 
-  mat3 rotmat = rotation_matrix_xY(mod(global_time * ROTATION_SPEED, 2. * PI));
+  mat3 rotmat = rotation_matrix_y(mod(global_time * ROTATION_SPEED, 2. * PI));
 
   vec3 pos = vec3(0., 5., -1. * CAM_DISTANCE + sin(global_time * ROTATION_SPEED) * CAM_DISTANCE_MVT);
   KLMB_SHARED_NAME(color_0) = vec4(raymarch(pos * rotmat, dir * rotmat), 1.0);

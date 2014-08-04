@@ -59,6 +59,12 @@ namespace neam
       } // namespace opengl
     } // namespace shader
   } // namespace yaggler
+
+  namespace embed
+  {
+    N_EMBED_USING(GLenum, GLenum);
+  } // namespace embed
+
 } // namespace neam
 #undef NYST_CLASS
 

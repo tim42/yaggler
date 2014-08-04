@@ -74,12 +74,19 @@ int main(int argc, char **argv)
 
   // the shader
   neam::yaggler::shader::program<neam::yaggler::type::opengl,
-       neam::yaggler::shader::shader < neam::yaggler::type::opengl, neam::embed::GLenum<GL_FRAGMENT_SHADER>,
-       neam::yaggler::shader::opengl::file, neam::embed::string<frag>,
-       neam::embed::shader::option<neam::yaggler::shader::shader_option::reload_on_change> > ,
-       neam::yaggler::shader::shader < neam::yaggler::type::opengl, neam::embed::GLenum<GL_VERTEX_SHADER>,
-       neam::yaggler::shader::opengl::file, neam::embed::string<vert>,
-       neam::embed::shader::option<neam::yaggler::shader::shader_option::reload_on_change> >> prog;
+       neam::yaggler::shader::shader
+       <
+        neam::yaggler::type::opengl, neam::embed::GLenum<GL_FRAGMENT_SHADER>,
+        neam::yaggler::shader::opengl::file, neam::embed::string<frag>,
+        neam::embed::shader::option<neam::yaggler::shader::shader_option::reload_on_change>
+       >,
+       neam::yaggler::shader::shader
+       <
+        neam::yaggler::type::opengl, neam::embed::GLenum<GL_VERTEX_SHADER>,
+        neam::yaggler::shader::opengl::file, neam::embed::string<vert>,
+        neam::embed::shader::option<neam::yaggler::shader::shader_option::reload_on_change>
+       >
+  > prog;
 
   prog.bind_attribute_location("in_position", 0);
 
