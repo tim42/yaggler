@@ -14,14 +14,14 @@ include_directories(./)
 #
 # [here I could not use 'set(...)', and I had to use file(GLOB_RECURSE ...) to
 #  have kdevelop parsing and pushing include directories]
-file(GLOB_RECURSE srcs ./*.cpp ./*.hpp)
+# file(GLOB_RECURSE srcs ./*.cpp ./*.hpp)
 
 
 # set(YAGGLER_SRCS ${srcs} PARENT_SCOPE)
 
-add_definitions(${YAGGLER_FLAGS})
+# add_definitions(${YAGGLER_FLAGS})
 
 # and "build" yaggler
-add_library(${PROJ_APP} STATIC ${srcs})
+# add_library(${PROJ_APP} STATIC ${srcs})
 #add_dependencies(${PROJ_APP} invalidate_version)
 
