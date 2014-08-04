@@ -33,8 +33,8 @@
 #include <bleunw/gui/font_face.hpp>
 #include <bleunw/gui/font_manager.hpp>
 #include <bleunw/gui/text.hpp>
-#include <bleunw/gui/layout_descriptor.hpp>
-#include <bleunw/gui/tr_node.hpp>
+// #include <bleunw/gui/layout_descriptor.hpp>
+// #include <bleunw/gui/tr_node.hpp>
 #include <bleunw/gui/image.hpp>
 
 #include <bleunw/events/event_listener.hpp>
