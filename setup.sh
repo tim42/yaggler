@@ -45,13 +45,20 @@ fi
 
 function fetch_and_extract # $1: project ftp path (eg: neam/tools), $2: base folder
 {
-  echo "fetching $1..."
+  echo " -- fetching $1..."
   cd $2
   curl -# ftp://neam.co/projects/$1.tar.$ext | $cmd -d | tar -x
 }
 
 if [ $use_submodules = 0 ]
 then
+  echo " -- fetching subprojects from ftp://neam.co..."
+
+  if ! hash curl 2>/dev/null
+  then
+    echo 1>&2 " ** missing the curl command... :'("
+    exit 1
+  fi
   if ! hash $cmd 2>/dev/null
   then
     cmd=bzip2
@@ -59,22 +66,25 @@ then
 
     if ! hash $cmd 2>/dev/null
     then
-      echo 1>&2 "missing xz or bzip2 commands... :("
+      echo 1>&2 " ** missing xz or bzip2 commands... :("
       exit 1
     fi
   fi
+
+  echo " -- using $cmd to decompress the archives"
+  echo
 
   # fetching and extracting modules
   fetch_and_extract 'neam/tools' 'yaggler'
 
 else
-  echo "using git submodules..."
+  echo " -- using git submodules..."
   git submodule init
   git submodule update
 fi
 
 
 
-echo "YagGLer is now setup"
+echo " -- YagGLer is now setup"
 
 
