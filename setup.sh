@@ -4,15 +4,15 @@
 #
 
 # params
-use_submodules=0
+use_submodules=0        # whether or not use git submodules
 show_help=0
 
-# extraction progs
+# extraction vars (command and archive extension)
 cmd=xz
 ext=xz
 
-# help
-if (( $# == 1 ))
+# arguments
+if (( $# >= 1 ))
 then
   case $1 in
     '--use-git-submodules')
@@ -39,17 +39,14 @@ then
   fi
 fi
 
-#
-# setup submodules
-#
-
+# fetch submodules from the ftp
 function fetch_and_extract # $1: project ftp path (eg: neam/tools), $2: base folder
 {
   echo " -- fetching $1..."
-  cd $2
-  curl -# ftp://neam.co/projects/$1.tar.$ext | $cmd -d | tar -x
+  ( cd "$2" ; curl -# "ftp://neam.co/projects/$1.tar.$ext" | $cmd -d | tar -x )
 }
 
+# setup submodules
 if [ $use_submodules = 0 ]
 then
   echo " -- fetching subprojects from ftp://neam.co..."
@@ -83,8 +80,7 @@ else
   git submodule update
 fi
 
-
-
 echo " -- YagGLer is now setup"
 
 
+# EOF
