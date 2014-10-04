@@ -11,22 +11,19 @@ _(should build on g++ 4.8+ and clang 3.2/3.3)_
 
 -------------
 
-about
------
+NOTE
+----
 
-YägGLer is composed of three levels of code:
-- **YägGLer** : what's directly over openGL functions and provide some tools to deal with openGL. Their is almost no additional code, and the generated code aim to be the same as the one that you would have if ou do the same job in pure openGL.
-- **K:LMB** : _"the usable YägGLer"_. add some overhead (as little as possible, but it still exists) to YägGLer but provide more functionality and an easier way to deal with the renderer. This mostly include camera, _transformation tree_, objects (_mesh_), models (_instances_) and materials (_shaders framework_)
-- **:bleunw** : On top of _K:LMB_ there's a set of tools that deal with rendering, events, GUI, ... Here, there's a little more overhead (inheritance, interfaces, ...) , but it provide a flexible/easy way to deal with some concepts (application, events, GUI, _"scene manager"_ (probably not what you want)).
+Please note that this project is an experiement about making an really fast
+renderer which resulting assembly code would be as simple as possible.
+This project is unfinished yet, un-commented yet, and is not meant for
+everyday use. 
 
-The main YägGLer conception pattern is the concept of _ownership_ (and the _use()_ / _bind()_ methods)
-It's a bit like reference counting, but without the counter. There's an 'owner' of the underlying openGL object that is responsible to destroy the object,
-and there is 0 or more 'links': objects that share the openGL ID but will not destroy it when their life come to an end.
+For an example, you should look at the sample and the material code (in yaggler/klmb/material).
 
-The worst thing is you can do almost everything you want.
-There's no encapsulation, no _explicit_ inheritance (at least in YägGLer and K:LMB), thousand of characters long type names, only headers, dozens of namespaces, hideous class names that doesn't reflect the concept behind them, a really bad English, ...
+I have some code yet un-commited, and plans for the future ( *including*
+some doxygen comments ;) )
 
-You've ever dreamed of all this in one single project ? *I've brought it to life*.
 
 -------------
 
