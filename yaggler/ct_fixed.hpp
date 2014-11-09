@@ -22,8 +22,7 @@
 
 #include <stdint.h>
 
-// fixed point for neam/yaggler
-// TODO: doc ?
+// CT fixed point math for neam/yaggler
 namespace neam
 {
   namespace ct
@@ -41,23 +40,23 @@ namespace neam
     constexpr char fixed_fractionnal_bits = 10;
     constexpr char fixed_integer_bits = sizeof(fixed_t) * 8 - fixed_fractionnal_bits;
 #endif
-    // simple check (else you cannon correctly do a square)
+    // simple check (else you cannot correctly do a square)
     static_assert(!(fixed_fractionnal_bits % 2), "the fractional part MUST be a multiple of 2");
 
     // inline/constexpr operations
     // http://en.wikipedia.org/wiki/Q_%28number_format%29
-    constexpr fixed_t mul(fixed_t a, fixed_t b)
+    constexpr static inline fixed_t mul(fixed_t a, fixed_t b)
     {
       return (static_cast<__upper_t>(a) * static_cast<__upper_t>(b) >> (fixed_fractionnal_bits + 1));
     }
-    constexpr fixed_t div(fixed_t a, fixed_t b)
+    constexpr static inline fixed_t div(fixed_t a, fixed_t b)
     {
       return (static_cast<__upper_t>(a << (fixed_fractionnal_bits + 1))) / b;
     }
 
-    namespace __internal // for sine(cos)/sqrt computation use only
+    namespace __internal // for sine(cos)/sqrt computation only usage
     {
-      // sine (cos)
+      // sine (and cos)
 
       constexpr int qN = fixed_fractionnal_bits + 1;
       constexpr int qA = fixed_fractionnal_bits + 1;
@@ -71,31 +70,31 @@ namespace neam
 // NOTE:         x = (1 << 31) - x;
 // NOTE:       x = x >> (30 - qN);
 
-      constexpr __fixed32_t _sine_quadrant_test(__fixed32_t x)
+      constexpr static inline __fixed32_t _sine_quadrant_test(__fixed32_t x)
       {
         return ((x ^ (x << 1)) < 0 ? (1 << 31) - x : x) >> (30 - qN);
       }
-      constexpr __fixed32_t _sine_compute(__fixed32_t x)
+      constexpr static inline __fixed32_t _sine_compute(__fixed32_t x)
       {
         return (x) * ((3 << qP) - ((x) * (x) >> qR)) >> qS;
       }
-      constexpr __fixed32_t _sine_boot(__fixed32_t x)
+      constexpr static inline __fixed32_t _sine_boot(__fixed32_t x)
       {
         return _sine_compute(_sine_quadrant_test(x << (30 - qN)));
       }
     } // namespace __internal
 
-    constexpr fixed_t sin(fixed_t x)
+    constexpr static inline fixed_t sin(fixed_t x)
     {
       return __internal::_sine_boot(x);
     }
-    constexpr fixed_t cos(fixed_t x)
+    constexpr static inline fixed_t cos(fixed_t x)
     {
       return __internal::_sine_boot(x + (2 << fixed_fractionnal_bits));
     }
 
     // square with a loss of precision (and long conversion)
-    constexpr fixed_t sqwl(__upper_t x)
+    constexpr static inline fixed_t sqwl(__upper_t x)
     {
       return ((x >> (fixed_fractionnal_bits / 2)) * (x >> (fixed_fractionnal_bits / 2)));
     }
@@ -104,12 +103,12 @@ namespace neam
     namespace conversion
     {
       template<typename Conv>
-      constexpr Conv to(fixed_t x)
+      constexpr static inline Conv to(fixed_t x)
       {
         return static_cast<Conv>(x) / static_cast<Conv>(2ul << fixed_fractionnal_bits);
       }
       template<typename Conv>
-      constexpr fixed_t from(Conv x)
+      constexpr static inline fixed_t from(Conv x)
       {
         return static_cast<Conv>(x) * static_cast<Conv>(2ul << fixed_fractionnal_bits);
       }
@@ -128,7 +127,73 @@ namespace neam
 {
   namespace embed
   {
+    // embed a fixed_t
     N_EMBED_USING(fixed_t, ct::fixed_t);
+
+    // convert a fixed_t to a floating point
+    template<typename Type, ct::fixed_t FP>
+    struct _fixed_to_floating_point {};
+
+    template<ct::fixed_t FP>
+    struct _fixed_to_floating_point<double, FP>
+    {
+      constexpr _fixed_to_floating_point() {}
+
+      constexpr static double get_val()
+      {
+        return ct::conversion::to<double>(FP);
+      }
+
+      constexpr operator double()
+      {
+        return get_val();
+      }
+
+      // the preferred way to use this class :)
+      constexpr static double get()
+      {
+        return get_val();
+      }
+
+      using type = double;
+      static constexpr double value __attribute__((deprecated)) = get_val();
+      static constexpr ct::fixed_t fixed_value = FP;
+    };
+    template<ct::fixed_t FP>
+    struct _fixed_to_floating_point<float, FP>
+    {
+      constexpr _fixed_to_floating_point() {}
+
+      constexpr static float get_val()
+      {
+        return ct::conversion::to<float>(FP);
+      }
+
+      constexpr operator float()
+      {
+        return get_val();
+      }
+
+      // the preferred way to use this class :)
+      constexpr static float get()
+      {
+        return get_val();
+      }
+
+      using type = float;
+      static constexpr float value __attribute__((deprecated)) = get_val();
+      static constexpr ct::fixed_t fixed_value = FP;
+    };
+
+    // embedding for floats/doubles
+    template<ct::fixed_t FP>
+    using fixed_to_float = _fixed_to_floating_point< float, FP >;
+    template<ct::fixed_t FP>
+    using fixed_to_double = _fixed_to_floating_point< double, FP >;
+
+#define N_EMBED_FIXED_TO_FLOAT(FP_VALUE)        neam::embed::fixed_to_float<FP_VALUE>
+#define N_EMBED_FIXED_TO_DOUBLE(FP_VALUE)        neam::embed::fixed_to_double<FP_VALUE>
+
   } // namespace embed
 } // namespace neam
 
