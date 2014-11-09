@@ -26,6 +26,8 @@
 #ifndef __N_1295324869188544720_1988340647__RAII_UNUSER_HPP__
 # define __N_1295324869188544720_1988340647__RAII_UNUSER_HPP__
 
+#include <tools/ownership.hpp>
+
 namespace neam
 {
   namespace yaggler
@@ -37,6 +39,10 @@ namespace neam
         scoped_use(const Class &_cl) : cl(_cl)
         {
           cl.use();
+        }
+
+        scoped_use(const Class &_cl, neam::assume_ownership_t) : cl(_cl)
+        {
         }
 
         ~scoped_use()
@@ -54,6 +60,9 @@ namespace neam
         scoped_bind(const Class &_cl) : cl(_cl)
         {
           cl.bind();
+        }
+        scoped_bind(const Class &_cl, neam::assume_ownership_t) : cl(_cl)
+        {
         }
 
         ~scoped_bind()
