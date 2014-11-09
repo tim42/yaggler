@@ -28,6 +28,7 @@
 # define __N_17818792821539412134_1983288025__CONTEXT_HPP__
 
 #include <initializer_list>
+#include <list>
 
 #include <tools/execute_pack.hpp>
 #include <tools/tuple.hpp>
@@ -70,11 +71,13 @@ namespace neam
 
       // context impl
 
-      // the context will could not be changed.
-      // Args... are 'embeds' (see neam::embed::embed) or functions
+      // this context could not be changed.
+      // Args... are 'embeds' (see neam::embed::embed) or functions pointers
       // (embeded functions will be called to get the result, each time 'use()' is called)
       //
-      // This class could be seen as a 'type saver'
+      // This class could be seen as a shortcut.
+      // The assembly code of this class will be almost the same as the one generated if you
+      // do the binding 'by hands'
       template<typename... Args>
       class variable_context<contexts::fixed, Args...>
       {
@@ -159,6 +162,40 @@ namespace neam
           neam::cr::array<uniform_variable, sizeof...(Args)> vars;
           neam::cr::tuple<Args...> values;
       };
+
+
+      // this context is dynamic and thus could be modified at runtime.
+      // TODO: a proper implementation of this class :)
+      // NOTE: it'll generate more code than the fixed one, but it's a more flexible way to use contexts
+      // NOTE: materials use fixed contexts
+     /* template<>
+      class variable_context<contexts::dynamic>
+      {
+        private:
+          
+        public:
+          variable_context() {}
+          variable_context(variable_context && o) : vars(std::move(o.vars)), values(std::move(o.values)) {}
+          variable_context(const variable_context &o) : vars(o.vars), values(o.values) {}
+
+          void use() const
+          {
+          }
+
+          size_t get_number_of_variables()
+          {
+          }
+
+          template<typename Value>
+          void add_variable(const uniform_variable &var, Value val)
+          {
+            vars.push_back(var);
+          }
+
+        private:
+          std::list<uniform_variable> vars;
+      };*/
+
     } // namespace shader
   } // namespace yaggler
 } // namespace neam

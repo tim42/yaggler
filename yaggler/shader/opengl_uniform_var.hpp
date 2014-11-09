@@ -47,11 +47,16 @@ namespace neam
     {
 
 #ifndef YAGGLER_NO_FUCKING_TESTS
-#define CHECK_ID            if (static_cast<GLint>(id) == -1)return *this
-#define CHECK_PGID          if (static_cast<GLint>(pgid) == -1)return *this
+# ifdef YAGGLER_NO_MESSAGES
+#  define CHECK_ID            if (static_cast<GLint>(id) == -1){return *this;}
+#  define CHECK_PGID          if (static_cast<GLint>(pgid) == -1){return *this;}
+# else
+#  define CHECK_ID            if (static_cast<GLint>(id) == -1){if (::opengl_version::debug){std::cerr << __FILE__ << ": " << __LINE__ << ": setting a value with a invalid uniform variable ID..." << std::endl;}return *this;}
+#  define CHECK_PGID          if (static_cast<GLint>(pgid) == -1){if (::opengl_version::debug){std::cerr << __FILE__ << ": " << __LINE__ << ": setting an uniform block with a invalid shader program ID..." << std::endl;}return *this;}
+# endif
 #else
-#define CHECK_ID
-#define CHECK_PGID
+# define CHECK_ID
+# define CHECK_PGID
 #endif
 
       // this class could be used to set both uniform variables and uniform blocks
@@ -306,20 +311,29 @@ namespace neam
             delete [] tmp_value;
             return *this;
           }
+//           static_assert(sizeof(glm::vec2) == sizeof(GLfloat[2]), "YAY :)");
           template<size_t Size>
           inline uniform_variable &operator = (const glm::vec2 (&value)[Size])
           {
             CHECK_ID;
-            GLfloat *tmp_value = new GLfloat[Size * 2];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::vec2) == sizeof(GLfloat[2]))
             {
-              tmp_value[i * 2 + 0] = value[i].x;
-              tmp_value[i * 2 + 1] = value[i].y;
+              // faster version
+              glUniform2fv(id, Size, reinterpret_cast<GLfloat *>(value));
             }
+            else
+            {
+              GLfloat *tmp_value = new GLfloat[Size * 2];
 
-            glUniform2fv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 2 + 0] = value[i].x;
+                tmp_value[i * 2 + 1] = value[i].y;
+              }
+
+              glUniform2fv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
           template<size_t Size>
@@ -349,16 +363,24 @@ namespace neam
           inline uniform_variable &operator = (const std::array<glm::vec2, Size> &value)
           {
             CHECK_ID;
-            GLfloat *tmp_value = new GLfloat[Size * 2];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::vec2) == sizeof(GLfloat[2]))
             {
-              tmp_value[i * 2 + 0] = (value[i].x);
-              tmp_value[i * 2 + 1] = (value[i].y);
+              // faster version
+              glUniform2fv(id, Size, reinterpret_cast<const GLfloat *>(value.data()));
             }
+            else
+            {
+              GLfloat *tmp_value = new GLfloat[Size * 2];
 
-            glUniform2fv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 2 + 0] = (value[i].x);
+                tmp_value[i * 2 + 1] = (value[i].y);
+              }
+
+              glUniform2fv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -389,18 +411,25 @@ namespace neam
           inline uniform_variable &operator = (const std::vector<glm::vec2> &value)
           {
             CHECK_ID;
-
-            const size_t size = value.size();
-            GLfloat *tmp_value = new GLfloat[size * 2];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::vec2) == sizeof(GLfloat[2]))
             {
-              tmp_value[i * 2 + 0] = (value[i].x);
-              tmp_value[i * 2 + 1] = (value[i].y);
+              // faster version
+              glUniform2fv(id, value.size(), reinterpret_cast<const GLfloat *>(value.data()));
             }
+            else
+            {
+              const size_t size = value.size();
+              GLfloat *tmp_value = new GLfloat[size * 2];
 
-            glUniform2fv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 2 + 0] = (value[i].x);
+                tmp_value[i * 2 + 1] = (value[i].y);
+              }
+
+              glUniform2fv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -430,17 +459,25 @@ namespace neam
           inline uniform_variable &operator = (const array_wrapper<glm::vec2> &value)
           {
             CHECK_ID;
-            const size_t size = value.size;
-            GLfloat *tmp_value = new GLfloat[size * 2];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::vec2) == sizeof(GLfloat[2]))
             {
-              tmp_value[i * 2 + 0] = (value.array[i].x);
-              tmp_value[i * 2 + 1] = (value.array[i].y);
+              // faster version
+              glUniform2fv(id, value.size, reinterpret_cast<GLfloat *>(value.array));
             }
+            else
+            {
+              const size_t size = value.size;
+              GLfloat *tmp_value = new GLfloat[size * 2];
 
-            glUniform2fv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 2 + 0] = (value.array[i].x);
+                tmp_value[i * 2 + 1] = (value.array[i].y);
+              }
+
+              glUniform2fv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -510,16 +547,24 @@ namespace neam
           inline uniform_variable &operator =(const glm::ivec2 (&value)[Size])
           {
             CHECK_ID;
-            GLint *tmp_value = new GLint[Size * 2];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::ivec2) == sizeof(GLint[2]))
             {
-              tmp_value[i * 2 + 0] = (value[i].x);
-              tmp_value[i * 2 + 1] = (value[i].y);
+              // faster version
+              glUniform2iv(id, Size, reinterpret_cast<GLint *>(value));
             }
+            else
+            {
+              GLint *tmp_value = new GLint[Size * 2];
 
-            glUniform2iv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 2 + 0] = (value[i].x);
+                tmp_value[i * 2 + 1] = (value[i].y);
+              }
+
+              glUniform2iv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
           template<size_t Size>
@@ -565,16 +610,24 @@ namespace neam
           inline uniform_variable &operator = (const std::array<glm::ivec2, Size> &value)
           {
             CHECK_ID;
-            GLint *tmp_value = new GLint[Size * 2];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::ivec2) == sizeof(GLint[2]))
             {
-              tmp_value[i * 2 + 0] = (value[i].x);
-              tmp_value[i * 2 + 1] = (value[i].y);
+              // faster version
+              glUniform2iv(id, Size, reinterpret_cast<const GLint *>(value.data()));
             }
+            else
+            {
+              GLint *tmp_value = new GLint[Size * 2];
 
-            glUniform2iv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 2 + 0] = (value[i].x);
+                tmp_value[i * 2 + 1] = (value[i].y);
+              }
+
+              glUniform2iv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -622,18 +675,25 @@ namespace neam
           inline uniform_variable &operator = (const std::vector<glm::ivec2> &value)
           {
             CHECK_ID;
-
-            const size_t size = value.size();
-            GLint *tmp_value = new GLint[size * 2];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::ivec2) == sizeof(GLint[2]))
             {
-              tmp_value[i * 2 + 0] = (value[i].x);
-              tmp_value[i * 2 + 1] = (value[i].y);
+              // faster version
+              glUniform2iv(id, value.size(), reinterpret_cast<const GLint *>(value.data()));
             }
+            else
+            {
+              const size_t size = value.size();
+              GLint *tmp_value = new GLint[size * 2];
 
-            glUniform2iv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 2 + 0] = (value[i].x);
+                tmp_value[i * 2 + 1] = (value[i].y);
+              }
+
+              glUniform2iv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -679,17 +739,25 @@ namespace neam
           inline uniform_variable &operator = (const array_wrapper<glm::ivec2> &value)
           {
             CHECK_ID;
-            const size_t size = value.size;
-            GLint *tmp_value = new GLint[size * 2];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::ivec2) == sizeof(GLint[2]))
             {
-              tmp_value[i * 2 + 0] = (value.array[i].x);
-              tmp_value[i * 2 + 1] = (value.array[i].y);
+              // faster version
+              glUniform2iv(id, value.size, reinterpret_cast<GLint *>(value.array));
             }
+            else
+            {
+              const size_t size = value.size;
+              GLint *tmp_value = new GLint[size * 2];
 
-            glUniform2iv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 2 + 0] = (value.array[i].x);
+                tmp_value[i * 2 + 1] = (value.array[i].y);
+              }
+
+              glUniform2iv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -759,16 +827,24 @@ namespace neam
           inline uniform_variable &operator = (const glm::uvec2 (&value)[Size])
           {
             CHECK_ID;
-            GLuint *tmp_value = new GLuint[Size * 2];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::uvec2) == sizeof(GLuint[2]))
             {
-              tmp_value[i * 2 + 0] = (value[i].x);
-              tmp_value[i * 2 + 1] = (value[i].y);
+              // faster version
+              glUniform2uiv(id, Size, reinterpret_cast<GLuint *>(value));
             }
+            else
+            {
+              GLuint *tmp_value = new GLuint[Size * 2];
 
-            glUniform2uiv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 2 + 0] = (value[i].x);
+                tmp_value[i * 2 + 1] = (value[i].y);
+              }
+
+              glUniform2uiv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
           template<size_t Size>
@@ -814,16 +890,24 @@ namespace neam
           inline uniform_variable &operator = (const std::array<glm::uvec2, Size> &value)
           {
             CHECK_ID;
-            GLuint *tmp_value = new GLuint[Size * 2];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::uvec2) == sizeof(GLuint[2]))
             {
-              tmp_value[i * 2 + 0] = (value[i].x);
-              tmp_value[i * 2 + 1] = (value[i].y);
+              // faster version
+              glUniform2uiv(id, Size, reinterpret_cast<const GLuint *>(value.data()));
             }
+            else
+            {
+              GLuint *tmp_value = new GLuint[Size * 2];
 
-            glUniform2uiv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 2 + 0] = (value[i].x);
+                tmp_value[i * 2 + 1] = (value[i].y);
+              }
+
+              glUniform2uiv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -871,18 +955,25 @@ namespace neam
           inline uniform_variable &operator = (const std::vector<glm::uvec2> &value)
           {
             CHECK_ID;
-
-            const size_t size = value.size();
-            GLuint *tmp_value = new GLuint[size * 2];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::uvec2) == sizeof(GLuint[2]))
             {
-              tmp_value[i * 2 + 0] = (value[i].x);
-              tmp_value[i * 2 + 1] = (value[i].y);
+              // faster version
+              glUniform2uiv(id, value.size(), reinterpret_cast<const GLuint *>(value.data()));
             }
+            else
+            {
+              const size_t size = value.size();
+              GLuint *tmp_value = new GLuint[size * 2];
 
-            glUniform2uiv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 2 + 0] = (value[i].x);
+                tmp_value[i * 2 + 1] = (value[i].y);
+              }
+
+              glUniform2uiv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -928,17 +1019,25 @@ namespace neam
           inline uniform_variable &operator = (const array_wrapper<glm::uvec2> &value)
           {
             CHECK_ID;
-            const size_t size = value.size;
-            GLuint *tmp_value = new GLuint[size * 2];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::uvec2) == sizeof(GLuint[2]))
             {
-              tmp_value[i * 2 + 0] = (value.array[i].x);
-              tmp_value[i * 2 + 1] = (value.array[i].y);
+              // faster version
+              glUniform2uiv(id, value.size, reinterpret_cast<GLuint *>(value.array));
             }
+            else
+            {
+              const size_t size = value.size;
+              GLuint *tmp_value = new GLuint[size * 2];
 
-            glUniform2uiv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 2 + 0] = (value.array[i].x);
+                tmp_value[i * 2 + 1] = (value.array[i].y);
+              }
+
+              glUniform2uiv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -988,17 +1087,25 @@ namespace neam
           inline uniform_variable &operator = (const glm::vec3 (&value)[Size])
           {
             CHECK_ID;
-            GLfloat *tmp_value = new GLfloat[Size * 3];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::vec3) == sizeof(GLfloat[3]))
             {
-              tmp_value[i * 3 + 0] = (value[i].x);
-              tmp_value[i * 3 + 1] = (value[i].y);
-              tmp_value[i * 3 + 2] = (value[i].z);
+              // faster version
+              glUniform3fv(id, Size, reinterpret_cast<GLfloat *>(value));
             }
+            else
+            {
+              GLfloat *tmp_value = new GLfloat[Size * 3];
 
-            glUniform3fv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 3 + 0] = (value[i].x);
+                tmp_value[i * 3 + 1] = (value[i].y);
+                tmp_value[i * 3 + 2] = (value[i].z);
+              }
+
+              glUniform3fv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
           template<size_t Size>
@@ -1029,17 +1136,25 @@ namespace neam
           inline uniform_variable &operator = (const std::array<glm::vec3, Size> &value)
           {
             CHECK_ID;
-            GLfloat *tmp_value = new GLfloat[Size * 3];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::vec3) == sizeof(GLfloat[3]))
             {
-              tmp_value[i * 3 + 0] = (value[i].x);
-              tmp_value[i * 3 + 1] = (value[i].y);
-              tmp_value[i * 3 + 2] = (value[i].z);
+              // faster version
+              glUniform3fv(id, Size, reinterpret_cast<const GLfloat *>(value.data()));
             }
+            else
+            {
+              GLfloat *tmp_value = new GLfloat[Size * 3];
 
-            glUniform3fv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 3 + 0] = (value[i].x);
+                tmp_value[i * 3 + 1] = (value[i].y);
+                tmp_value[i * 3 + 2] = (value[i].z);
+              }
+
+              glUniform3fv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -1070,18 +1185,26 @@ namespace neam
           inline uniform_variable &operator = (const std::vector<glm::vec3> &value)
           {
             CHECK_ID;
-            const size_t size = value.size();
-            GLfloat *tmp_value = new GLfloat[size * 3];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::vec3) == sizeof(GLfloat[3]))
             {
-              tmp_value[i * 3 + 0] = (value[i].x);
-              tmp_value[i * 3 + 1] = (value[i].y);
-              tmp_value[i * 3 + 2] = (value[i].z);
+              // faster version
+              glUniform3fv(id, value.size(), reinterpret_cast<const GLfloat *>(value.data()));
             }
+            else
+            {
+              const size_t size = value.size();
+              GLfloat *tmp_value = new GLfloat[size * 3];
 
-            glUniform3fv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 3 + 0] = (value[i].x);
+                tmp_value[i * 3 + 1] = (value[i].y);
+                tmp_value[i * 3 + 2] = (value[i].z);
+              }
+
+              glUniform3fv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -1113,19 +1236,26 @@ namespace neam
           inline uniform_variable &operator = (const array_wrapper<glm::vec3> &value)
           {
             CHECK_ID;
-
-            const size_t size = value.size;
-            GLfloat *tmp_value = new GLfloat[size * 3];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::vec3) == sizeof(GLfloat[3]))
             {
-              tmp_value[i * 3 + 0] = (value.array[i].x);
-              tmp_value[i * 3 + 1] = (value.array[i].y);
-              tmp_value[i * 3 + 2] = (value.array[i].z);
+              // faster version
+              glUniform3fv(id, value.size, reinterpret_cast<const GLfloat *>(value.array));
             }
+            else
+            {
+              const size_t size = value.size;
+              GLfloat *tmp_value = new GLfloat[size * 3];
 
-            glUniform3fv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 3 + 0] = (value.array[i].x);
+                tmp_value[i * 3 + 1] = (value.array[i].y);
+                tmp_value[i * 3 + 2] = (value.array[i].z);
+              }
+
+              glUniform3fv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -1197,17 +1327,25 @@ namespace neam
           inline uniform_variable &operator = (const glm::ivec3 (&value)[Size])
           {
             CHECK_ID;
-            GLint *tmp_value = new GLint[Size * 3];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::ivec3) == sizeof(GLint[3]))
             {
-              tmp_value[i * 3 + 0] = (value[i].x);
-              tmp_value[i * 3 + 1] = (value[i].y);
-              tmp_value[i * 3 + 2] = (value[i].z);
+              // faster version
+              glUniform3iv(id, Size, reinterpret_cast<GLint *>(value));
             }
+            else
+            {
+              GLint *tmp_value = new GLint[Size * 3];
 
-            glUniform3iv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 3 + 0] = (value[i].x);
+                tmp_value[i * 3 + 1] = (value[i].y);
+                tmp_value[i * 3 + 2] = (value[i].z);
+              }
+
+              glUniform3iv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
           template<size_t Size>
@@ -1255,17 +1393,25 @@ namespace neam
           inline uniform_variable &operator = (const std::array<glm::ivec3, Size> &value)
           {
             CHECK_ID;
-            GLint *tmp_value = new GLint[Size * 3];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::ivec3) == sizeof(GLint[3]))
             {
-              tmp_value[i * 3 + 0] = (value[i].x);
-              tmp_value[i * 3 + 1] = (value[i].y);
-              tmp_value[i * 3 + 2] = (value[i].z);
+              // faster version
+              glUniform3iv(id, Size, reinterpret_cast<const GLint *>(value.data()));
             }
+            else
+            {
+              GLint *tmp_value = new GLint[Size * 3];
 
-            glUniform3iv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 3 + 0] = (value[i].x);
+                tmp_value[i * 3 + 1] = (value[i].y);
+                tmp_value[i * 3 + 2] = (value[i].z);
+              }
+
+              glUniform3iv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -1313,18 +1459,26 @@ namespace neam
           inline uniform_variable &operator = (const std::vector<glm::ivec3> &value)
           {
             CHECK_ID;
-            const size_t size = value.size();
-            GLint *tmp_value = new GLint[size * 3];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::ivec3) == sizeof(GLint[3]))
             {
-              tmp_value[i * 3 + 0] = (value[i].x);
-              tmp_value[i * 3 + 1] = (value[i].y);
-              tmp_value[i * 3 + 2] = (value[i].z);
+              // faster version
+              glUniform3iv(id, value.size(), reinterpret_cast<const GLint *>(value.data()));
             }
+            else
+            {
+              const size_t size = value.size();
+              GLint *tmp_value = new GLint[size * 3];
 
-            glUniform3iv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 3 + 0] = (value[i].x);
+                tmp_value[i * 3 + 1] = (value[i].y);
+                tmp_value[i * 3 + 2] = (value[i].z);
+              }
+
+              glUniform3iv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -1372,18 +1526,26 @@ namespace neam
           inline uniform_variable &operator = (const array_wrapper<glm::ivec3> &value)
           {
             CHECK_ID;
-            const size_t size = value.size;
-            GLint *tmp_value = new GLint[size * 3];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::ivec3) == sizeof(GLint[3]))
             {
-              tmp_value[i * 3 + 0] = (value.array[i].x);
-              tmp_value[i * 3 + 1] = (value.array[i].y);
-              tmp_value[i * 3 + 2] = (value.array[i].z);
+              // faster version
+              glUniform3iv(id, value.size, reinterpret_cast<GLint *>(value.array));
             }
+            else
+            {
+              const size_t size = value.size;
+              GLint *tmp_value = new GLint[size * 3];
 
-            glUniform3iv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 3 + 0] = (value.array[i].x);
+                tmp_value[i * 3 + 1] = (value.array[i].y);
+                tmp_value[i * 3 + 2] = (value.array[i].z);
+              }
+
+              glUniform3iv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -1455,17 +1617,25 @@ namespace neam
           inline uniform_variable &operator = (const glm::uvec3 (&value)[Size])
           {
             CHECK_ID;
-            GLuint *tmp_value = new GLuint[Size * 3];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::uvec3) == sizeof(GLuint[3]))
             {
-              tmp_value[i * 3 + 0] = (value[i].x);
-              tmp_value[i * 3 + 1] = (value[i].y);
-              tmp_value[i * 3 + 2] = (value[i].z);
+              // faster version
+              glUniform3uiv(id, Size, reinterpret_cast<GLuint *>(value));
             }
+            else
+            {
+              GLuint *tmp_value = new GLuint[Size * 3];
 
-            glUniform3uiv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 3 + 0] = (value[i].x);
+                tmp_value[i * 3 + 1] = (value[i].y);
+                tmp_value[i * 3 + 2] = (value[i].z);
+              }
+
+              glUniform3uiv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
           template<size_t Size>
@@ -1513,17 +1683,25 @@ namespace neam
           inline uniform_variable &operator = (const std::array<glm::uvec3, Size> &value)
           {
             CHECK_ID;
-            GLuint *tmp_value = new GLuint[Size * 3];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::uvec3) == sizeof(GLuint[3]))
             {
-              tmp_value[i * 3 + 0] = (value[i].x);
-              tmp_value[i * 3 + 1] = (value[i].y);
-              tmp_value[i * 3 + 2] = (value[i].z);
+              // faster version
+              glUniform3uiv(id, Size, reinterpret_cast<const GLuint *>(value.data()));
             }
+            else
+            {
+              GLuint *tmp_value = new GLuint[Size * 3];
 
-            glUniform3uiv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 3 + 0] = (value[i].x);
+                tmp_value[i * 3 + 1] = (value[i].y);
+                tmp_value[i * 3 + 2] = (value[i].z);
+              }
+
+              glUniform3uiv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -1571,18 +1749,26 @@ namespace neam
           inline uniform_variable &operator = (const std::vector<glm::uvec3> &value)
           {
             CHECK_ID;
-            const size_t size = value.size();
-            GLuint *tmp_value = new GLuint[size * 3];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::uvec3) == sizeof(GLuint[3]))
             {
-              tmp_value[i * 3 + 0] = (value[i].x);
-              tmp_value[i * 3 + 1] = (value[i].y);
-              tmp_value[i * 3 + 2] = (value[i].z);
+              // faster version
+              glUniform3uiv(id, value.size(), reinterpret_cast<const GLuint *>(value.data()));
             }
+            else
+            {
+              const size_t size = value.size();
+              GLuint *tmp_value = new GLuint[size * 3];
 
-            glUniform3uiv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 3 + 0] = (value[i].x);
+                tmp_value[i * 3 + 1] = (value[i].y);
+                tmp_value[i * 3 + 2] = (value[i].z);
+              }
+
+              glUniform3uiv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -1632,19 +1818,26 @@ namespace neam
           inline uniform_variable &operator = (const array_wrapper<glm::uvec3> &value)
           {
             CHECK_ID;
-
-            const size_t size = value.size;
-            GLuint *tmp_value = new GLuint[size * 3];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::uvec3) == sizeof(GLuint[3]))
             {
-              tmp_value[i * 3 + 0] = (value.array[i].x);
-              tmp_value[i * 3 + 1] = (value.array[i].y);
-              tmp_value[i * 3 + 2] = (value.array[i].z);
+              // faster version
+              glUniform3uiv(id, value.size, reinterpret_cast<GLuint *>(value.array));
             }
+            else
+            {
+              const size_t size = value.size;
+              GLuint *tmp_value = new GLuint[size * 3];
 
-            glUniform3uiv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 3 + 0] = (value.array[i].x);
+                tmp_value[i * 3 + 1] = (value.array[i].y);
+                tmp_value[i * 3 + 2] = (value.array[i].z);
+              }
+
+              glUniform3uiv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -1695,18 +1888,26 @@ namespace neam
           inline uniform_variable &operator = (const glm::vec4 (&value)[Size])
           {
             CHECK_ID;
-            GLfloat *tmp_value = new GLfloat[Size * 4];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::vec4) == sizeof(GLfloat[4]))
             {
-              tmp_value[i * 4 + 0] = (value[i].x);
-              tmp_value[i * 4 + 1] = (value[i].y);
-              tmp_value[i * 4 + 2] = (value[i].z);
-              tmp_value[i * 4 + 3] = (value[i].w);
+              // faster version
+              glUniform4fv(id, Size, reinterpret_cast<const GLfloat *>(value));
             }
+            else
+            {
+              GLfloat *tmp_value = new GLfloat[Size * 4];
 
-            glUniform4fv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 4 + 0] = (value[i].x);
+                tmp_value[i * 4 + 1] = (value[i].y);
+                tmp_value[i * 4 + 2] = (value[i].z);
+                tmp_value[i * 4 + 3] = (value[i].w);
+              }
+
+              glUniform4fv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
           template<size_t Size>
@@ -1738,18 +1939,26 @@ namespace neam
           inline uniform_variable &operator = (const std::array<glm::vec4, Size> &value)
           {
             CHECK_ID;
-            GLfloat *tmp_value = new GLfloat[Size * 4];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::vec4) == sizeof(GLfloat[4]))
             {
-              tmp_value[i * 4 + 0] = (value[i].x);
-              tmp_value[i * 4 + 1] = (value[i].y);
-              tmp_value[i * 4 + 2] = (value[i].z);
-              tmp_value[i * 4 + 3] = (value[i].w);
+              // faster version
+              glUniform4fv(id, Size, reinterpret_cast<const GLfloat *>(value.data()));
             }
+            else
+            {
+              GLfloat *tmp_value = new GLfloat[Size * 4];
 
-            glUniform4fv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 4 + 0] = (value[i].x);
+                tmp_value[i * 4 + 1] = (value[i].y);
+                tmp_value[i * 4 + 2] = (value[i].z);
+                tmp_value[i * 4 + 3] = (value[i].w);
+              }
+
+              glUniform4fv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -1781,19 +1990,27 @@ namespace neam
           inline uniform_variable &operator = (const std::vector<glm::vec4> &value)
           {
             CHECK_ID;
-            const size_t size = value.size();
-            GLfloat *tmp_value = new GLfloat[size * 4];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::vec4) == sizeof(GLfloat[4]))
             {
-              tmp_value[i * 4 + 0] = (value[i].x);
-              tmp_value[i * 4 + 1] = (value[i].y);
-              tmp_value[i * 4 + 2] = (value[i].z);
-              tmp_value[i * 4 + 3] = (value[i].w);
+              // faster version
+              glUniform4fv(id, value.size(), reinterpret_cast<const GLfloat *>(value.data()));
             }
+            else
+            {
+              const size_t size = value.size();
+              GLfloat *tmp_value = new GLfloat[size * 4];
 
-            glUniform4fv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 4 + 0] = (value[i].x);
+                tmp_value[i * 4 + 1] = (value[i].y);
+                tmp_value[i * 4 + 2] = (value[i].z);
+                tmp_value[i * 4 + 3] = (value[i].w);
+              }
+
+              glUniform4fv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -1826,24 +2043,31 @@ namespace neam
           inline uniform_variable &operator = (const array_wrapper<glm::vec4> &value)
           {
             CHECK_ID;
-
-            const size_t size = value.size;
-            GLfloat *tmp_value = new GLfloat[size * 4];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::vec4) == sizeof(GLfloat[4]))
             {
-              tmp_value[i * 4 + 0] = (value.array[i].x);
-              tmp_value[i * 4 + 1] = (value.array[i].y);
-              tmp_value[i * 4 + 2] = (value.array[i].z);
-              tmp_value[i * 4 + 3] = (value.array[i].w);
+              // faster version
+              glUniform4fv(id, value.size, reinterpret_cast<const GLfloat *>(value.array));
             }
+            else
+            {
+              const size_t size = value.size;
+              GLfloat *tmp_value = new GLfloat[size * 4];
 
-            glUniform4fv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 4 + 0] = (value.array[i].x);
+                tmp_value[i * 4 + 1] = (value.array[i].y);
+                tmp_value[i * 4 + 2] = (value.array[i].z);
+                tmp_value[i * 4 + 3] = (value.array[i].w);
+              }
+
+              glUniform4fv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
-          /// INT 3V ///
+          /// INT 4V ///
 
           // set the value
           inline uniform_variable &set_as_int(const ct::vector4 &value)
@@ -1913,18 +2137,26 @@ namespace neam
           inline uniform_variable &operator = (const glm::ivec4 (&value)[Size])
           {
             CHECK_ID;
-            GLint *tmp_value = new GLint[Size * 4];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::ivec4) == sizeof(GLint[4]))
             {
-              tmp_value[i * 4 + 0] = (value[i].x);
-              tmp_value[i * 4 + 1] = (value[i].y);
-              tmp_value[i * 4 + 2] = (value[i].z);
-              tmp_value[i * 4 + 3] = (value[i].w);
+              // faster version
+              glUniform4iv(id, Size, reinterpret_cast<const GLint *>(value));
             }
+            else
+            {
+              GLint *tmp_value = new GLint[Size * 4];
 
-            glUniform4iv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 4 + 0] = (value[i].x);
+                tmp_value[i * 4 + 1] = (value[i].y);
+                tmp_value[i * 4 + 2] = (value[i].z);
+                tmp_value[i * 4 + 3] = (value[i].w);
+              }
+
+              glUniform4iv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
           template<size_t Size>
@@ -1974,18 +2206,26 @@ namespace neam
           inline uniform_variable &operator = (const std::array<glm::ivec4, Size> &value)
           {
             CHECK_ID;
-            GLint *tmp_value = new GLint[Size * 4];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::ivec4) == sizeof(GLint[4]))
             {
-              tmp_value[i * 4 + 0] = (value[i].x);
-              tmp_value[i * 4 + 1] = (value[i].y);
-              tmp_value[i * 4 + 2] = (value[i].z);
-              tmp_value[i * 4 + 3] = (value[i].w);
+              // faster version
+              glUniform4iv(id, Size, reinterpret_cast<const GLint *>(value.data()));
             }
+            else
+            {
+              GLint *tmp_value = new GLint[Size * 4];
 
-            glUniform4iv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 4 + 0] = (value[i].x);
+                tmp_value[i * 4 + 1] = (value[i].y);
+                tmp_value[i * 4 + 2] = (value[i].z);
+                tmp_value[i * 4 + 3] = (value[i].w);
+              }
+
+              glUniform4iv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -2035,19 +2275,27 @@ namespace neam
           inline uniform_variable &operator = (const std::vector<glm::ivec4> &value)
           {
             CHECK_ID;
-            const size_t size = value.size();
-            GLint *tmp_value = new GLint[size * 4];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::ivec4) == sizeof(GLint[4]))
             {
-              tmp_value[i * 4 + 0] = (value[i].x);
-              tmp_value[i * 4 + 1] = (value[i].y);
-              tmp_value[i * 4 + 2] = (value[i].z);
-              tmp_value[i * 4 + 3] = (value[i].w);
+              // faster version
+              glUniform4iv(id, value.size(), reinterpret_cast<const GLint *>(value.data()));
             }
+            else
+            {
+              const size_t size = value.size();
+              GLint *tmp_value = new GLint[size * 4];
 
-            glUniform4iv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 4 + 0] = (value[i].x);
+                tmp_value[i * 4 + 1] = (value[i].y);
+                tmp_value[i * 4 + 2] = (value[i].z);
+                tmp_value[i * 4 + 3] = (value[i].w);
+              }
+
+              glUniform4iv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -2097,23 +2345,31 @@ namespace neam
           inline uniform_variable &operator = (const array_wrapper<glm::ivec4> &value)
           {
             CHECK_ID;
-            const size_t size = value.size;
-            GLint *tmp_value = new GLint[size * 4];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::ivec4) == sizeof(GLint[4]))
             {
-              tmp_value[i * 4 + 0] = (value.array[i].x);
-              tmp_value[i * 4 + 1] = (value.array[i].y);
-              tmp_value[i * 4 + 2] = (value.array[i].z);
-              tmp_value[i * 4 + 3] = (value.array[i].w);
+              // faster version
+              glUniform4iv(id, value.size, reinterpret_cast<const GLint *>(value.array));
             }
+            else
+            {
+              const size_t size = value.size;
+              GLint *tmp_value = new GLint[size * 4];
 
-            glUniform4iv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 4 + 0] = (value.array[i].x);
+                tmp_value[i * 4 + 1] = (value.array[i].y);
+                tmp_value[i * 4 + 2] = (value.array[i].z);
+                tmp_value[i * 4 + 3] = (value.array[i].w);
+              }
+
+              glUniform4iv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
-          /// UNSIGNED INT 3V ///
+          /// UNSIGNED INT 4V ///
 
           // set the value
           inline uniform_variable &set_as_uint(const ct::vector4 &value)
@@ -2183,18 +2439,26 @@ namespace neam
           inline uniform_variable &operator = (const glm::uvec4 (&value)[Size])
           {
             CHECK_ID;
-            GLuint *tmp_value = new GLuint[Size * 4];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::uvec4) == sizeof(GLuint[4]))
             {
-              tmp_value[i * 4 + 0] = (value[i].x);
-              tmp_value[i * 4 + 1] = (value[i].y);
-              tmp_value[i * 4 + 2] = (value[i].z);
-              tmp_value[i * 4 + 3] = (value[i].w);
+              // faster version
+              glUniform4uiv(id, Size, reinterpret_cast<const GLuint *>(value));
             }
+            else
+            {
+              GLuint *tmp_value = new GLuint[Size * 4];
 
-            glUniform4uiv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 4 + 0] = (value[i].x);
+                tmp_value[i * 4 + 1] = (value[i].y);
+                tmp_value[i * 4 + 2] = (value[i].z);
+                tmp_value[i * 4 + 3] = (value[i].w);
+              }
+
+              glUniform4uiv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
           template<size_t Size>
@@ -2244,18 +2508,26 @@ namespace neam
           inline uniform_variable &operator = (const std::array<glm::uvec4, Size> &value)
           {
             CHECK_ID;
-            GLuint *tmp_value = new GLuint[Size * 4];
-
-            for (unsigned int i = 0; i < Size; ++i)
+            if (sizeof(glm::uvec4) == sizeof(GLuint[4]))
             {
-              tmp_value[i * 4 + 0] = (value[i].x);
-              tmp_value[i * 4 + 1] = (value[i].y);
-              tmp_value[i * 4 + 2] = (value[i].z);
-              tmp_value[i * 4 + 3] = (value[i].w);
+              // faster version
+              glUniform4uiv(id, Size, reinterpret_cast<const GLuint *>(value.data()));
             }
+            else
+            {
+              GLuint *tmp_value = new GLuint[Size * 4];
 
-            glUniform4uiv(id, Size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < Size; ++i)
+              {
+                tmp_value[i * 4 + 0] = (value[i].x);
+                tmp_value[i * 4 + 1] = (value[i].y);
+                tmp_value[i * 4 + 2] = (value[i].z);
+                tmp_value[i * 4 + 3] = (value[i].w);
+              }
+
+              glUniform4uiv(id, Size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -2305,19 +2577,27 @@ namespace neam
           inline uniform_variable &operator = (const std::vector<glm::uvec4> &value)
           {
             CHECK_ID;
-            const size_t size = value.size();
-            GLuint *tmp_value = new GLuint[size * 4];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::uvec4) == sizeof(GLuint[4]))
             {
-              tmp_value[i * 4 + 0] = (value[i].x);
-              tmp_value[i * 4 + 1] = (value[i].y);
-              tmp_value[i * 4 + 2] = (value[i].z);
-              tmp_value[i * 4 + 3] = (value[i].w);
+              // faster version
+              glUniform4uiv(id, value.size(), reinterpret_cast<const GLuint *>(value.data()));
             }
+            else
+            {
+              const size_t size = value.size();
+              GLuint *tmp_value = new GLuint[size * 4];
 
-            glUniform4uiv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 4 + 0] = (value[i].x);
+                tmp_value[i * 4 + 1] = (value[i].y);
+                tmp_value[i * 4 + 2] = (value[i].z);
+                tmp_value[i * 4 + 3] = (value[i].w);
+              }
+
+              glUniform4uiv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 
@@ -2350,39 +2630,53 @@ namespace neam
           inline uniform_variable &set_as_uint(const array_wrapper<glm::vec4> &value)
           {
             CHECK_ID;
-
-            const size_t size = value.size;
-            GLuint *tmp_value = new GLuint[size * 4];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::uvec4) == sizeof(GLuint[4]))
             {
-              tmp_value[i * 4 + 0] = (value.array[i].x);
-              tmp_value[i * 4 + 1] = (value.array[i].y);
-              tmp_value[i * 4 + 2] = (value.array[i].z);
-              tmp_value[i * 4 + 3] = (value.array[i].w);
+              // faster version
+              glUniform4uiv(id, value.size, reinterpret_cast<const GLuint *>(value.array));
             }
+            else
+            {
+              const size_t size = value.size;
+              GLuint *tmp_value = new GLuint[size * 4];
 
-            glUniform4uiv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 4 + 0] = (value.array[i].x);
+                tmp_value[i * 4 + 1] = (value.array[i].y);
+                tmp_value[i * 4 + 2] = (value.array[i].z);
+                tmp_value[i * 4 + 3] = (value.array[i].w);
+              }
+
+              glUniform4uiv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
           inline uniform_variable &operator = (const array_wrapper<glm::uvec4> &value)
           {
             CHECK_ID;
-
-            const size_t size = value.size;
-            GLuint *tmp_value = new GLuint[size * 4];
-
-            for (unsigned int i = 0; i < size; ++i)
+            if (sizeof(glm::uvec4) == sizeof(GLuint[4]))
             {
-              tmp_value[i * 4 + 0] = (value.array[i].x);
-              tmp_value[i * 4 + 1] = (value.array[i].y);
-              tmp_value[i * 4 + 2] = (value.array[i].z);
-              tmp_value[i * 4 + 3] = (value.array[i].w);
+              // faster version
+              glUniform4uiv(id, value.size, reinterpret_cast<const GLuint *>(value.array));
             }
+            else
+            {
+              const size_t size = value.size;
+              GLuint *tmp_value = new GLuint[size * 4];
 
-            glUniform4uiv(id, size, tmp_value);
-            delete [] tmp_value;
+              for (unsigned int i = 0; i < size; ++i)
+              {
+                tmp_value[i * 4 + 0] = (value.array[i].x);
+                tmp_value[i * 4 + 1] = (value.array[i].y);
+                tmp_value[i * 4 + 2] = (value.array[i].z);
+                tmp_value[i * 4 + 3] = (value.array[i].w);
+              }
+
+              glUniform4uiv(id, size, tmp_value);
+              delete [] tmp_value;
+            }
             return *this;
           }
 

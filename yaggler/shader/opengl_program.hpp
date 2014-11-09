@@ -52,7 +52,7 @@ namespace neam
       // shaders could be dynamically attached/detached, but the ones that are in CTShaders are attached at creation.
       // shaders in CTShaders are removed/deleted when the program is destructed, not the other attached ones.
       //        (a solution to this is to attach locally created shaders to the program, they will be kept in memory
-      //         until the program is destructed)
+      //         until the program is destructed / relinked (this is a std openGL behavior))
       // there's no shared instances (as with shaders) here.
       template<typename... CTShaders>
       class program<type::opengl, CTShaders...>
@@ -81,19 +81,19 @@ namespace neam
         public:
           // create a link to the original shader
           explicit program(GLuint _pg_id)
-          : shaders(), pg_id(_pg_id), symlink(true)
+          : shaders(), pg_id(_pg_id), ownership(false)
           {
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
           }
 
           program(GLuint _pg_id, assume_ownership_t)
-          : shaders(), pg_id(_pg_id), symlink(false)
+          : shaders(), pg_id(_pg_id), ownership(true)
           {
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
           }
 
           program()
-          : shaders(), pg_id(0), symlink(false)
+          : shaders(), pg_id(0), ownership(true)
           {
             if (!(pg_id = glCreateProgram()))
             {
@@ -105,45 +105,45 @@ namespace neam
           }
 
           program(program &p, stole_ownership_t)
-          : shaders(p.shaders), pg_id(p.get_id()), symlink(p.is_link())
+          : shaders(p.shaders), pg_id(p.get_id()), ownership(p.has_ownership())
           {
             p.give_up_ownership();
           }
           template<typename... OCTShaders>
           program(program<type::opengl, OCTShaders...> &p, stole_ownership_t)
-            : shaders(), pg_id(p.get_id()), symlink(p.is_link())
+            : shaders(), pg_id(p.get_id()), ownership(p.has_ownership())
           {
             p.give_up_ownership();
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
           }
 
           program(program &&p)
-            : shaders(std::move(p.shaders)), pg_id(p.get_id()), symlink(p.is_link())
+            : shaders(std::move(p.shaders)), pg_id(p.get_id()), ownership(p.has_ownership())
           {
             p.give_up_ownership();
           }
           template<typename... OCTShaders>
           program(program<type::opengl, OCTShaders...> && p)
-            : shaders(), pg_id(p.get_id()), symlink(p.is_link())
+            : shaders(), pg_id(p.get_id()), ownership(p.has_ownership())
           {
             p.give_up_ownership();
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
           }
 
           program(const program &p)
-            : shaders(p.shaders), pg_id(p.get_id()), symlink(true)
+            : shaders(p.shaders), pg_id(p.get_id()), ownership(false)
           {
           }
           template<typename... OCTShaders>
           program(const program<type::opengl, OCTShaders...> &p)
-            : shaders(), pg_id(p.get_id()), symlink(true)
+            : shaders(), pg_id(p.get_id()), ownership(false)
           {
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
           }
 
           ~program()
           {
-            if (pg_id && !symlink)
+            if (pg_id && ownership)
               glDeleteProgram(pg_id);
           }
 
@@ -151,13 +151,13 @@ namespace neam
           // (simply become a link)
           program &give_up_ownership()
           {
-            symlink = true;
+            ownership = false;
             return *this;
           }
 
           program &assume_ownership()
           {
-            symlink = false;
+            ownership = true;
             return *this;
           }
 
@@ -167,10 +167,10 @@ namespace neam
           {
             if (&t != this)
             {
-              if (!symlink)
+              if (ownership)
                 glDeleteProgram(pg_id);
 
-              symlink = t.is_link();
+              ownership = t.has_ownership();
               pg_id = t.get_id();
               t.give_up();
             }
@@ -183,10 +183,10 @@ namespace neam
           {
             if (&t != this)
             {
-              if (!symlink)
+              if (ownership)
                 glDeleteProgram(pg_id);
 
-              symlink = true;
+              ownership = false;
               pg_id = t.get_id();
             }
             return *this;
@@ -203,10 +203,10 @@ namespace neam
             return pg_id;
           }
 
-          // this is NOT if the shader is linked, but if it's a linked 'copy'
-          bool is_link() const
+          // return true if this instance has the ownership of the resource
+          bool has_ownership() const
           {
-            return symlink;
+            return ownership;
           }
 
           void recompile_cts_shader_if_changed()
@@ -350,7 +350,7 @@ namespace neam
         private: // vars.
           cr::tuple<CTShaders...> shaders; // ct shaders
           GLuint pg_id;
-          bool symlink;
+          bool ownership;
           bool failed = false;
       };
     } // namespace shader

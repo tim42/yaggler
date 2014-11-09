@@ -33,7 +33,7 @@
 #include <type_traits>
 #include <mutex>
 
-#ifndef _WIN32
+#ifndef _WIN32 // WARNING: untested yet :)
 # include <sys/types.h>
 # include <sys/stat.h>
 # include <unistd.h>
@@ -59,11 +59,9 @@ namespace neam
     {
       // template types:
       //        shadertype:             neam::embed::GLenum
-      //        ShaderSourceType:       [...] (see shader/shader_type.hpp)
-      //        ShaderSource:           neam::embed::string or neam::yaggler::embed::shader::function_ptr_* (see shader/shader_type.hpp)
-      //        ShaderOption:           neam::embed::shader::option
-      //
-      // (not) thread safe !!! (no spinlock & cpu burns)
+      //        ShaderSourceType:       [...] (see yaggler_type.hpp)
+      //        ShaderSource:           neam::embed::string or neam::yaggler::embed::shader::function_ptr_* (see yaggler_type.hpp)
+      //        ShaderOption:           neam::embed::shader::option (see shader/shader_options.hpp)
       template<typename ShaderType, typename ShaderSourceType, typename ShaderSource, typename ShaderOption>
       class shader<type::opengl, ShaderType, ShaderSourceType, ShaderSource, ShaderOption>
       {
@@ -71,13 +69,15 @@ namespace neam
           shader()
             : shader_id(0), source()
           {
+            ownership = true;
+
             // the ressource could be shared for file / constexpr strings. (yes, I can do that :D )
             // NOTE: this is probably not what you want.
             if (ShaderOption::value == shader_option::shared_instance)
             {
               static GLuint static_shader_id = 0;
 
-              link = true;
+              ownership = false;
 
               if (static_shader_id)
                 shader_id = static_shader_id;
@@ -104,14 +104,14 @@ namespace neam
           }
 
           shader(GLuint _id)
-            : shader_id(_id), source(), link(true)
+            : shader_id(_id), source(), ownership(false)
           {
             has_source_changed(0);      // init this func;
             changed = true;
           }
 
           shader(GLuint _id, assume_ownership_t)
-            : shader_id(_id), source(), link(false)
+            : shader_id(_id), source(), ownership(true)
           {
             has_source_changed(0);      // init this func;
             changed = true;
@@ -119,21 +119,21 @@ namespace neam
 
           // we keep the same ShaderType
           shader(const shader &o)
-          : shader_id(o.get_id()), source(o.source), additional_str(o.get_additional_strings()), link(true)
+          : shader_id(o.get_id()), source(o.source), additional_str(o.get_additional_strings()), ownership(false)
           {
             has_source_changed(0);      // init this func;
             changed = false;
           }
           template<typename OShaderSourceType, typename OShaderSource, typename OShaderOption>
           shader(const shader<ShaderType, OShaderSourceType, OShaderSource, OShaderOption> &o)
-            : shader_id(o.get_id()), source(), additional_str(o.get_additional_strings()), link(true)
+            : shader_id(o.get_id()), source(), additional_str(o.get_additional_strings()), ownership(true)
           {
             has_source_changed(0);      // init this func;
             changed = true;
           }
 
           shader(shader &o, stole_ownership_t)
-          : shader_id(o.get_id()), source(o.source), additional_str(o.get_additional_strings()), link(o.is_link())
+          : shader_id(o.get_id()), source(o.source), additional_str(o.get_additional_strings()), ownership(o.has_ownership())
           {
             o.give_up_ownership();
             has_source_changed(0);      // init this func;
@@ -141,7 +141,7 @@ namespace neam
           }
           template<typename OShaderSourceType, typename OShaderSource, typename OShaderOption>
           shader(shader<ShaderType, OShaderSourceType, OShaderSource, OShaderOption> &o, stole_ownership_t)
-            : shader_id(o.get_id()), source(), additional_str(o.get_additional_strings()), link(o.is_link())
+            : shader_id(o.get_id()), source(), additional_str(o.get_additional_strings()), ownership(o.has_ownership())
           {
             o.give_up_ownership();
             has_source_changed(0);      // init this func;
@@ -149,7 +149,7 @@ namespace neam
           }
 
           shader(shader &&o)
-          : shader_id(o.shader_id), source(std::move(o.source)), additional_str(std::move(o.additional_str)), link(o.link)
+          : shader_id(o.shader_id), source(std::move(o.source)), additional_str(std::move(o.additional_str)), ownership(o.ownership)
           {
             o.give_up_ownership();
             has_source_changed(0);      // init this func;
@@ -157,7 +157,7 @@ namespace neam
           }
           template<typename OShaderSourceType, typename OShaderSource, typename OShaderOption>
           shader(shader<ShaderType, OShaderSourceType, OShaderSource, OShaderOption> &&o)
-            : shader_id(o.get_id()), source(), additional_str(o.get_additional_strings()), link(o.is_link())
+            : shader_id(o.get_id()), source(), additional_str(o.get_additional_strings()), ownership(o.has_ownership())
           {
             o.give_up_ownership();
             has_source_changed(0);      // init this func;
@@ -166,7 +166,7 @@ namespace neam
 
           ~shader()
           {
-            if (shader_id && !link && ShaderOption::value != shader_option::shared_instance)
+            if (shader_id && ownership && ShaderOption::value != shader_option::shared_instance)
             {
               glDeleteShader(shader_id);
             }
@@ -174,7 +174,7 @@ namespace neam
 
           shader &give_up_ownership()
           {
-            link = true;
+            ownership = false;
             return *this;
           }
 
@@ -184,13 +184,13 @@ namespace neam
             // but this mean that you explicitly ask YägGler to break this
             // (by assigning a 'shared' shader to a 'non-shared' one).
             if (ShaderOption::value != shader_option::shared_instance)
-              link = false;
+              ownership = true;
             return *this;
           }
 
-          bool is_link() const
+          bool has_ownership() const
           {
-            return link;
+            return ownership;
           }
 
           const std::string &get_source() const
@@ -400,12 +400,16 @@ namespace neam
               strcat(message, get_source_name());
               strcat(message, "'");
 
-              strcat(message, ":\n");
-              glGetShaderInfoLog(shader_id, max_len - strlen(message), &status, message + strlen(message));
+              if (::opengl_version::debug)
+              {
+                strcat(message, ":\n");
+                glGetShaderInfoLog(shader_id, max_len - strlen(message), &status, message + strlen(message));
+              }
               throw shader_exception(message, true);
             }
 #ifndef YAGGLER_NO_MESSAGES
-            std::cout << "YAGGLER: compiled shader  '" << get_source_name() << "'" << std::endl;
+            if (::opengl_version::debug)
+              std::cout << "YAGGLER: compiled shader  '" << get_source_name() << "'" << std::endl;
 #endif
             failed = false;
           }
@@ -520,7 +524,7 @@ namespace neam
           std::string version_str;
           std::string additional_str;
 
-          bool link = false;
+          bool ownership;
 
           bool failed = false;
           bool changed = false;
