@@ -155,7 +155,8 @@ namespace neam
       public:
         // window_size MUST be an integer, NOT a fixed point size.
         // w_hints is a list of additional window creation hints
-        glfw_window(window_mode::windowed_t, const neam::ct::vector2 &window_size, const std::string &title = "[ neam/yaggler", std::initializer_list<std::pair<int, int>> w_hints = std::initializer_list<std::pair<int, int>>())
+        glfw_window(window_mode::windowed_t, const neam::ct::vector2 &window_size, const std::string &title = "[ neam/yaggler",
+                    std::initializer_list<std::pair<int, int>> w_hints = std::initializer_list<std::pair<int, int>>())
           : win(nullptr), link(false)
         {
           init_glfw_hints();
@@ -180,7 +181,8 @@ namespace neam
 
           init_debug();
         }
-        glfw_window(window_mode::fullscreen_t, const std::string &title = "[ neam/yaggler", std::initializer_list<std::pair<int, int>> w_hints = std::initializer_list<std::pair<int, int>>())
+        glfw_window(window_mode::fullscreen_t, const std::string &title = "[ neam/yaggler",
+                    std::initializer_list<std::pair<int, int>> w_hints = std::initializer_list<std::pair<int, int>>())
         : win(nullptr), link(false)
         {
           init_glfw_hints();
