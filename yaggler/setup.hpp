@@ -37,15 +37,15 @@ namespace neam
     {
       enum class opengl_profile
       {
-        any,
-        core,
-        compat
+        any = 0,
+        core = 1 << 1,
+        compat = 1 << 2,
       };
       enum class opengl_context_flag
       {
-        none,
-        forward_compat,
-        debug,
+        none = 0,
+        forward_compat = 1 << 1,
+        debug = 1 << 2,
       };
 
       template<size_t GlMajor, size_t GlMinor, opengl_profile Profile = opengl_profile::core, opengl_context_flag CtxFlags = opengl_context_flag::none>
