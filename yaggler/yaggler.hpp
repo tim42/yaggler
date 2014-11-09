@@ -36,7 +36,7 @@
 //
 // #include <yaggler/yaggler.hpp>
 
-#error (see the comment above)
+#error (see the comment above for an example)
 #endif
 
 // some defines/switches
