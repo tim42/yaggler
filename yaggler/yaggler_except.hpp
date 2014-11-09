@@ -45,12 +45,18 @@ namespace neam
       base_runtime_error(const std::string &s) noexcept
         : str(s)
       {
-        std::cerr << "\n[EXCEPTION]: " << s << std::endl << std::endl;
+#ifndef YAGGLER_NO_MESSAGES
+        if (::opengl_version::debug)
+          std::cerr << "\n[EXCEPTION]: " << s << std::endl << std::endl;
+#endif
       }
       base_runtime_error(std::string &&s) noexcept
         : str(s)
       {
-        std::cerr << "\n[EXCEPTION]: " << s << std::endl << std::endl;
+#ifndef YAGGLER_NO_MESSAGES
+        if (::opengl_version::debug)
+          std::cerr << "\n[EXCEPTION]: " << s << std::endl << std::endl;
+#endif
       }
 
       virtual ~base_runtime_error()
