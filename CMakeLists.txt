@@ -13,18 +13,21 @@ add_definitions(-D_PROJ_VERSION_MAJOR=${PROJ_VERSION_MAJOR})
 add_definitions(-D_PROJ_VERSION_MINOR=${PROJ_VERSION_MINOR})
 add_definitions(-D_PROJ_VERSION_SUPERMINOR=${PROJ_VERSION_SUPERMINOR})
 
-set(PROJ_VERSION_NAME duck)
+set(PROJ_VERSION_NAME "")
 
 set(PROJ_NAME yaggler)
 
-set(PROJ_APP ${PROJ_NAME}-${PROJ_VERSION_NAME}-${PROJ_VERSION_MAJOR}.${PROJ_VERSION_MINOR}.${PROJ_VERSION_SUPERMINOR})
+if (PROJ_VERSION_NAME STREQUAL "")
+  set(PROJ_APP ${PROJ_NAME}-${PROJ_VERSION_MAJOR}.${PROJ_VERSION_MINOR}.${PROJ_VERSION_SUPERMINOR})
+else ()
+  set(PROJ_APP ${PROJ_NAME}-${PROJ_VERSION_NAME}-${PROJ_VERSION_MAJOR}.${PROJ_VERSION_MINOR}.${PROJ_VERSION_SUPERMINOR})
+endif()
+
 project(${PROJ_APP})
 
 message(STATUS "-----------------------------------------------")
 message(STATUS "Building neam/${PROJ_NAME} :: ${PROJ_APP}")
 message(STATUS "-----------------------------------------------")
-message(STATUS "")
-message(STATUS "")
 
 
 if (CMAKE_BUILD_TYPE STREQUAL "")
@@ -72,12 +75,25 @@ include(cmake/flags.cmake)
 include_directories("./yaggler/")
 include_directories("./")
 
-# build yaggler dummy "lib"
-add_subdirectory(yaggler)
+include_directories("./${PROJ_NAME}/")
+include_directories("./")
 
 # build the tools
 add_subdirectory(tools/font-generator/)
 
+# build a static lib (if needed)
+#add_subdirectory(${PROJ_NAME})
+
+# export project name to parent project
+if (NOT ${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+  set(lib${PROJ_NAME} ${PROJ_APP} PARENT_SCOPE)
+endif()
+
+# build the samples
+if (${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+  add_subdirectory(samples/path-tracer/)
+  add_subdirectory(samples/gui-test/)
+endif()
 
 # build the samples
 # add_subdirectory(samples/test)
@@ -85,8 +101,6 @@ add_subdirectory(tools/font-generator/)
 # add_subdirectory(samples/dev-klmb)
 
 #add_subdirectory(samples/test-klmb)
-add_subdirectory(samples/path-tracer/)
-add_subdirectory(samples/gui-test/)
 #add_subdirectory(samples/editor/)
 
 

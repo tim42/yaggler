@@ -19,5 +19,3 @@ add_executable(${SAMPLE_NAME} ${srcs} ${YAGGLER_SRCS})
 
 target_link_libraries(${SAMPLE_NAME} ${YAGGLER_DEPS_LIBS})
 
-add_dependencies(${SAMPLE_NAME} ${PROJ_APP})
-

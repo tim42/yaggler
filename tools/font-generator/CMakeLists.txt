@@ -23,8 +23,6 @@ if(FREETYPE_FOUND)
   add_executable(${SAMPLE_NAME} ${srcs} ${YAGGLER_SRCS})
 
   target_link_libraries(${SAMPLE_NAME} ${YAGGLER_DEPS_LIBS} ${FREETYPE_LIBRARIES})
-
-  add_dependencies(${SAMPLE_NAME} ${PROJ_APP})
 else ()
   message(WARNING "Disabling the font-generator: missing FreeType library.")
 endif ()
