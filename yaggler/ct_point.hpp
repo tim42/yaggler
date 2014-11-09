@@ -58,7 +58,7 @@ namespace neam
     struct vector3
     {
       private: // constexpr helpers
-        constexpr static vector2 _project(const vector3 &p, fixed_t x_factor)
+        constexpr static inline vector2 _project(const vector3 &p, fixed_t x_factor)
         {
           return p.z ? vector2
           {
@@ -68,7 +68,7 @@ namespace neam
         :
           vector2 { -1, -1};
         }
-        constexpr vector3 _transform_last(const vector3 &p, const vector3 &a, const vector3 &t, const vector3 &/*s*/) const // FIXME: why s is unused ???
+        constexpr vector3 inline _transform_last(const vector3 &p, const vector3 &a, const vector3 &t, const vector3 &/*s*/) const // FIXME: why s is unused ???
         {
           return
           {
@@ -77,7 +77,7 @@ namespace neam
             mul(p.y, sin(a.x)) + mul(p.z, cos(a.x)) + t.z
           };
         }
-        constexpr vector3 _transform(const vector3 &p, const vector3 &a, const vector3 &t, const vector3 &s) const
+        constexpr inline vector3 _transform(const vector3 &p, const vector3 &a, const vector3 &t, const vector3 &s) const
         {
           return _transform_last(
           {
@@ -104,7 +104,7 @@ namespace neam
         }
 
         // FIXME: is the sin/cos twice calls worth a copy + a single sin/cos call ??
-        constexpr vector3 transform(const vector3 &a, const vector3 &t, const vector3 &s) const
+        constexpr inline vector3 transform(const vector3 &a, const vector3 &t, const vector3 &s) const
         {
           return _transform(
           {
@@ -113,11 +113,11 @@ namespace neam
             mul(mul(s.x, x + t.x), sin(a.y)) + mul(mul(s.z, z), cos(a.y))
           }, a, t, s);
         }
-        constexpr vector2 project(const vector3 &a, const vector3 &t, const vector3 &s, fixed_t x_factor) const
+        constexpr inline vector2 project(const vector3 &a, const vector3 &t, const vector3 &s, fixed_t x_factor) const
         {
           return _project(transform(a, t, s), x_factor);
         }
-        constexpr vector3 convert_to_fixed() const
+        constexpr inline vector3 convert_to_fixed() const
         {
           return vector3
           {
@@ -126,7 +126,7 @@ namespace neam
             conversion::from<fixed_t>(z)
           };
         }
-        constexpr vector3 convert_to_integer() const
+        constexpr inline vector3 convert_to_integer() const
         {
           return vector3
           {
@@ -147,7 +147,7 @@ namespace neam
       constexpr vector4(fixed_t _x = conversion::from(0), fixed_t _y = conversion::from(0), fixed_t _z = conversion::from(0), fixed_t _w = conversion::from(0)) : x(_x), y(_y), z(_z), w(_w) {}
       constexpr vector4(const vector4 &_v) : x(_v.x), y(_v.y), z(_v.z), w(_v.w) {}
 
-      constexpr vector4 convert_to_fixed() const
+      constexpr inline vector4 convert_to_fixed() const
       {
         return vector4
         {
@@ -157,7 +157,7 @@ namespace neam
           conversion::from<fixed_t>(w),
         };
       }
-      constexpr vector4 convert_to_integer() const
+      constexpr inline vector4 convert_to_integer() const
       {
         return vector4
         {
@@ -188,6 +188,12 @@ namespace neam
 
         static constexpr vec_type value = vec_type{Vals...};
         static constexpr size_t dimensionality = sizeof...(Vals);
+
+        // implicit conversion
+        constexpr operator vec_type()
+        {
+          return value;
+        }
     };
 
     template<fixed_t... Vals>

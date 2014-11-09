@@ -34,244 +34,244 @@ namespace neam
   namespace ct
   {
     // 1D vector
-    static constexpr fixed_t operator "" _fixed(long double val)
+    static inline constexpr fixed_t operator "" _fixed(long double val)
     {
       return conversion::from(val);
     }
-    static constexpr fixed_t operator "" _fixed(unsigned long long val)
+    static inline constexpr fixed_t operator "" _fixed(unsigned long long val)
     {
       return conversion::from(val);
     }
 
     // 2D vector
-    static constexpr vector2 operator "" _2d_x(long double val)
+    static inline constexpr vector2 operator "" _2d_x(long double val)
     {
       return vector2(conversion::from(val), conversion::from(0));
     }
-    static constexpr vector2 operator "" _2d_x(unsigned long long val)
+    static inline constexpr vector2 operator "" _2d_x(unsigned long long val)
     {
       return vector2(conversion::from(val), conversion::from(0));
     }
 
-    static constexpr vector2 operator "" _2d_y(long double val)
+    static inline constexpr vector2 operator "" _2d_y(long double val)
     {
       return vector2(conversion::from(0), conversion::from(val));
     }
-    static constexpr vector2 operator "" _2d_y(unsigned long long val)
+    static inline constexpr vector2 operator "" _2d_y(unsigned long long val)
     {
       return vector2(conversion::from(0), conversion::from(val));
     }
 
-    static constexpr vector2 operator "" _2d_xy(long double val)
+    static inline constexpr vector2 operator "" _2d_xy(long double val)
     {
       return vector2(conversion::from(val), conversion::from(val));
     }
-    static constexpr vector2 operator "" _2d_xy(unsigned long long val)
+    static inline constexpr vector2 operator "" _2d_xy(unsigned long long val)
     {
       return vector2(conversion::from(val), conversion::from(val));
     }
 
     // 3D vector
-    static constexpr vector3 operator "" _3d_x(long double val)
+    static inline constexpr vector3 operator "" _3d_x(long double val)
     {
       return vector3(conversion::from(val), conversion::from(0), conversion::from(0));
     }
-    static constexpr vector3 operator "" _3d_x(unsigned long long val)
+    static inline constexpr vector3 operator "" _3d_x(unsigned long long val)
     {
       return vector3(conversion::from(val), conversion::from(0), conversion::from(0));
     }
 
-    static constexpr vector3 operator "" _3d_y(long double val)
+    static inline constexpr vector3 operator "" _3d_y(long double val)
     {
       return vector3(conversion::from(0), conversion::from(val), conversion::from(0));
     }
-    static constexpr vector3 operator "" _3d_y(unsigned long long val)
+    static inline constexpr vector3 operator "" _3d_y(unsigned long long val)
     {
       return vector3(conversion::from(0), conversion::from(val), conversion::from(0));
     }
 
-    static constexpr vector3 operator "" _3d_z(long double val)
+    static inline constexpr vector3 operator "" _3d_z(long double val)
     {
       return vector3(conversion::from(0), conversion::from(0), conversion::from(val));
     }
-    static constexpr vector3 operator "" _3d_z(unsigned long long val)
+    static inline constexpr vector3 operator "" _3d_z(unsigned long long val)
     {
       return vector3(conversion::from(0), conversion::from(0), conversion::from(val));
     }
 
-    static constexpr vector3 operator "" _3d_xy(long double val)
+    static inline constexpr vector3 operator "" _3d_xy(long double val)
     {
       return vector3(conversion::from(val), conversion::from(val), conversion::from(0));
     }
-    static constexpr vector3 operator "" _3d_xy(unsigned long long val)
+    static inline constexpr vector3 operator "" _3d_xy(unsigned long long val)
     {
       return vector3(conversion::from(val), conversion::from(val), conversion::from(0));
     }
 
-    static constexpr vector3 operator "" _3d_xz(long double val)
+    static inline constexpr vector3 operator "" _3d_xz(long double val)
     {
       return vector3(conversion::from(val), conversion::from(0), conversion::from(val));
     }
-    static constexpr vector3 operator "" _3d_xz(unsigned long long val)
+    static inline constexpr vector3 operator "" _3d_xz(unsigned long long val)
     {
       return vector3(conversion::from(val), conversion::from(0), conversion::from(val));
     }
 
-    static constexpr vector3 operator "" _3d_yz(long double val)
+    static inline constexpr vector3 operator "" _3d_yz(long double val)
     {
       return vector3(conversion::from(0), conversion::from(val), conversion::from(val));
     }
-    static constexpr vector3 operator "" _3d_yz(unsigned long long val)
+    static inline constexpr vector3 operator "" _3d_yz(unsigned long long val)
     {
       return vector3(conversion::from(0), conversion::from(val), conversion::from(val));
     }
 
-    static constexpr vector3 operator "" _3d_xyz(long double val)
+    static inline constexpr vector3 operator "" _3d_xyz(long double val)
     {
       return vector3(conversion::from(val), conversion::from(val), conversion::from(val));
     }
-    static constexpr vector3 operator "" _3d_xyz(unsigned long long val)
+    static inline constexpr vector3 operator "" _3d_xyz(unsigned long long val)
     {
       return vector3(conversion::from(val), conversion::from(val), conversion::from(val));
     }
 
     // 4D vector
-    static constexpr vector4 operator "" _4d_x(long double val)
+    static inline constexpr vector4 operator "" _4d_x(long double val)
     {
       return vector4(conversion::from(val), conversion::from(0), conversion::from(0));
     }
-    static constexpr vector4 operator "" _4d_x(unsigned long long val)
+    static inline constexpr vector4 operator "" _4d_x(unsigned long long val)
     {
       return vector4(conversion::from(val), conversion::from(0), conversion::from(0));
     }
 
-    static constexpr vector4 operator "" _4d_y(long double val)
+    static inline constexpr vector4 operator "" _4d_y(long double val)
     {
       return vector4(conversion::from(0), conversion::from(val), conversion::from(0));
     }
-    static constexpr vector4 operator "" _4d_y(unsigned long long val)
+    static inline constexpr vector4 operator "" _4d_y(unsigned long long val)
     {
       return vector4(conversion::from(0), conversion::from(val), conversion::from(0));
     }
 
-    static constexpr vector4 operator "" _4d_z(long double val)
+    static inline constexpr vector4 operator "" _4d_z(long double val)
     {
       return vector4(conversion::from(0), conversion::from(0), conversion::from(val));
     }
-    static constexpr vector4 operator "" _4d_z(unsigned long long val)
+    static inline constexpr vector4 operator "" _4d_z(unsigned long long val)
     {
       return vector4(conversion::from(0), conversion::from(0), conversion::from(val));
     }
 
-    static constexpr vector4 operator "" _4d_w(long double val)
+    static inline constexpr vector4 operator "" _4d_w(long double val)
     {
       return vector4(conversion::from(0), conversion::from(0), conversion::from(0), conversion::from(val));
     }
-    static constexpr vector4 operator "" _4d_w(unsigned long long val)
+    static inline constexpr vector4 operator "" _4d_w(unsigned long long val)
     {
       return vector4(conversion::from(0), conversion::from(0), conversion::from(0), conversion::from(val));
     }
 
     ///
 
-    static constexpr vector4 operator "" _4d_xy(long double val)
+    static inline constexpr vector4 operator "" _4d_xy(long double val)
     {
       return vector4(conversion::from(val), conversion::from(val), conversion::from(0));
     }
-    static constexpr vector4 operator "" _4d_xy(unsigned long long val)
+    static inline constexpr vector4 operator "" _4d_xy(unsigned long long val)
     {
       return vector4(conversion::from(val), conversion::from(val), conversion::from(0));
     }
 
-    static constexpr vector4 operator "" _4d_xz(long double val)
+    static inline constexpr vector4 operator "" _4d_xz(long double val)
     {
       return vector4(conversion::from(val), conversion::from(0), conversion::from(val));
     }
-    static constexpr vector4 operator "" _4d_xz(unsigned long long val)
+    static inline constexpr vector4 operator "" _4d_xz(unsigned long long val)
     {
       return vector4(conversion::from(val), conversion::from(0), conversion::from(val));
     }
 
-    static constexpr vector4 operator "" _4d_yz(long double val)
+    static inline constexpr vector4 operator "" _4d_yz(long double val)
     {
       return vector4(conversion::from(0), conversion::from(val), conversion::from(val));
     }
-    static constexpr vector4 operator "" _4d_yz(unsigned long long val)
+    static inline constexpr vector4 operator "" _4d_yz(unsigned long long val)
     {
       return vector4(conversion::from(0), conversion::from(val), conversion::from(val));
     }
 
-    static constexpr vector4 operator "" _4d_xw(long double val)
+    static inline constexpr vector4 operator "" _4d_xw(long double val)
     {
       return vector4(conversion::from(val), conversion::from(0), conversion::from(0), conversion::from(val));
     }
-    static constexpr vector4 operator "" _4d_xw(unsigned long long val)
+    static inline constexpr vector4 operator "" _4d_xw(unsigned long long val)
     {
       return vector4(conversion::from(val), conversion::from(0), conversion::from(0), conversion::from(val));
     }
 
-    static constexpr vector4 operator "" _4d_yw(long double val)
+    static inline constexpr vector4 operator "" _4d_yw(long double val)
     {
       return vector4(conversion::from(0), conversion::from(val), conversion::from(0), conversion::from(val));
     }
-    static constexpr vector4 operator "" _4d_yw(unsigned long long val)
+    static inline constexpr vector4 operator "" _4d_yw(unsigned long long val)
     {
       return vector4(conversion::from(0), conversion::from(val), conversion::from(0), conversion::from(val));
     }
 
-    static constexpr vector4 operator "" _4d_zw(long double val)
+    static inline constexpr vector4 operator "" _4d_zw(long double val)
     {
       return vector4(conversion::from(0), conversion::from(0), conversion::from(val), conversion::from(val));
     }
-    static constexpr vector4 operator "" _4d_zw(unsigned long long val)
+    static inline constexpr vector4 operator "" _4d_zw(unsigned long long val)
     {
       return vector4(conversion::from(0), conversion::from(0), conversion::from(val), conversion::from(val));
     }
 
     ///
-    static constexpr vector4 operator "" _4d_xyz(long double val)
+    static inline constexpr vector4 operator "" _4d_xyz(long double val)
     {
       return vector4(conversion::from(val), conversion::from(val), conversion::from(val));
     }
-    static constexpr vector4 operator "" _4d_xyz(unsigned long long val)
+    static inline constexpr vector4 operator "" _4d_xyz(unsigned long long val)
     {
       return vector4(conversion::from(val), conversion::from(val), conversion::from(val));
     }
 
-    static constexpr vector4 operator "" _4d_yzw(long double val)
+    static inline constexpr vector4 operator "" _4d_yzw(long double val)
     {
       return vector4(conversion::from(0), conversion::from(val), conversion::from(val), conversion::from(val));
     }
-    static constexpr vector4 operator "" _4d_yzw(unsigned long long val)
+    static inline constexpr vector4 operator "" _4d_yzw(unsigned long long val)
     {
       return vector4(conversion::from(0), conversion::from(val), conversion::from(val), conversion::from(val));
     }
 
-    static constexpr vector4 operator "" _4d_xzw(long double val)
+    static inline constexpr vector4 operator "" _4d_xzw(long double val)
     {
       return vector4(conversion::from(val), conversion::from(0), conversion::from(val), conversion::from(val));
     }
-    static constexpr vector4 operator "" _4d_xzw(unsigned long long val)
+    static inline constexpr vector4 operator "" _4d_xzw(unsigned long long val)
     {
       return vector4(conversion::from(val), conversion::from(0), conversion::from(val), conversion::from(val));
     }
 
-    static constexpr vector4 operator "" _4d_xyw(long double val)
+    static inline constexpr vector4 operator "" _4d_xyw(long double val)
     {
       return vector4(conversion::from(val), conversion::from(val), conversion::from(0), conversion::from(val));
     }
-    static constexpr vector4 operator "" _4d_xyw(unsigned long long val)
+    static inline constexpr vector4 operator "" _4d_xyw(unsigned long long val)
     {
       return vector4(conversion::from(val), conversion::from(val), conversion::from(0), conversion::from(val));
     }
 
     ///
 
-    static constexpr vector4 operator "" _4d_xyzw(long double val)
+    static inline constexpr vector4 operator "" _4d_xyzw(long double val)
     {
       return vector4(conversion::from(val), conversion::from(val), conversion::from(val), conversion::from(val));
     }
-    static constexpr vector4 operator "" _4d_xyzw(unsigned long long val)
+    static inline constexpr vector4 operator "" _4d_xyzw(unsigned long long val)
     {
       return vector4(conversion::from(val), conversion::from(val), conversion::from(val), conversion::from(val));
     }
