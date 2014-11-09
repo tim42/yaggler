@@ -80,34 +80,34 @@ namespace neam
         public:
           // constructors
           buffer()
-          : id(0), link(false)
+          : id(0), ownership(true)
           {
             glGenBuffers(1, &id);
             __tpl_init();
           }
 
           explicit buffer(GLuint _id)
-            : id(_id), link(true)
+            : id(_id), ownership(false)
           {
             __tpl_init();
           }
 
           buffer(GLuint _id, assume_ownership_t)
-            : id(_id), link(false)
+            : id(_id), ownership(true)
           {
             __tpl_init();
           }
 
           template<typename... BArgs>
           buffer(const buffer<type::opengl, GeomType, BArgs...> &b)
-          : id(b.get_id()), link(true), binding_index(b.get_binding_point())
+          : id(b.get_id()), ownership(false), binding_index(b.get_binding_point())
           {
             __tpl_init();
           }
 
           template<typename... BArgs>
           buffer(buffer<type::opengl, GeomType, BArgs...> &&b)
-          : id(b.get_id()), link(false), binding_index(b.get_binding_point())
+          : id(b.get_id()), ownership(true), binding_index(b.get_binding_point())
           {
             b.give_up_ownership();
             __tpl_init();
@@ -115,7 +115,7 @@ namespace neam
 
           template<typename... BArgs>
           buffer(buffer<type::opengl, GeomType, BArgs...> &b, stole_ownership_t)
-          : id(b.get_id()), link(false), binding_index(b.get_binding_point())
+          : id(b.get_id()), ownership(true), binding_index(b.get_binding_point())
           {
             b.give_up_ownership();
             __tpl_init();
@@ -124,7 +124,7 @@ namespace neam
           // destructor
           ~buffer()
           {
-            if (!link)
+            if (ownership)
             {
               glDeleteBuffers(1, &id);
             }
@@ -134,13 +134,13 @@ namespace neam
           // (simply become a link)
           buffer &give_up_ownership()
           {
-            link = true;
+            ownership = false;
             return *this;
           }
 
           buffer &assume_ownership()
           {
-            link = false;
+            ownership = true;
             return *this;
           }
 
@@ -150,10 +150,10 @@ namespace neam
           {
             if (&b != this)
             {
-              if (!link)
+              if (ownership)
                 glDeleteBuffers(1, &id);
 
-              link = b.is_link();
+              ownership = b.has_ownership();
               id = b.get_id();
               binding_index = b.get_binding_point();
               b.give_up_ownership();
@@ -167,10 +167,10 @@ namespace neam
           {
             if (&b != this)
             {
-              if (!link)
+              if (ownership)
                 glDeleteBuffers(1, &id);
 
-              link = true;
+              ownership = false;
               id = b.get_id();
               binding_index = b.get_binding_point();
             }
@@ -186,9 +186,9 @@ namespace neam
             return id;
           }
 
-          bool is_link() const
+          bool has_ownership() const
           {
-            return link;
+            return ownership;
           }
 
           // bind the buffer
@@ -419,7 +419,7 @@ namespace neam
 
         private:
           GLuint id;
-          bool link;
+          bool ownership;
           GLuint binding_index = 0;
       };
     } // namespace geometry

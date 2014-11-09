@@ -63,7 +63,7 @@ namespace neam
         public:
           // constructors
           vao()
-          : id(0), link(false)
+          : id(0), ownership(true)
           {
             glGenVertexArrays(1, &id);
             bind();
@@ -71,14 +71,14 @@ namespace neam
           }
 
           explicit vao(GLuint _id)
-            : id(_id), link(true)
+            : id(_id), ownership(false)
           {
             bind();
             __int_from_ct(cr::gen_seq<sizeof...(Init)>());
           }
 
           vao(GLuint _id, assume_ownership_t)
-            : id(_id), link(false)
+            : id(_id), ownership(true)
           {
             bind();
             __int_from_ct(cr::gen_seq<sizeof...(Init)>());
@@ -86,7 +86,7 @@ namespace neam
 
           template<typename... OInit>
           vao(vao<type::opengl, OInit...> &o, stole_ownership_t)
-            : id(o.get_id()), link(o.is_link())
+            : id(o.get_id()), ownership(o.has_ownership())
           {
             o.give_up_ownership();
             bind();
@@ -94,7 +94,7 @@ namespace neam
           }
           template<typename... OInit>
           vao(vao<type::opengl, OInit...> && o)
-            : id(o.get_id()), link(o.is_link())
+            : id(o.get_id()), ownership(o.has_ownership())
           {
             o.give_up_ownership();
             bind();
@@ -103,7 +103,7 @@ namespace neam
 
           template<typename... OInit>
           vao(const vao<type::opengl, OInit...> &o)
-          : id(o.get_id()), link(true)
+          : id(o.get_id()), ownership(false)
           {
             bind();
             __int_from_ct(cr::gen_seq<sizeof...(Init)>());
@@ -112,7 +112,7 @@ namespace neam
           // destructor
           ~vao()
           {
-            if (!link)
+            if (ownership)
               glDeleteVertexArrays(1, &id);
           }
 
@@ -120,13 +120,13 @@ namespace neam
           // (simply become a link)
           vao &give_up_ownership()
           {
-            link = true;
+            ownership = false;
             return *this;
           }
 
           vao &assume_ownership()
           {
-            link = false;
+            ownership = true;
             return *this;
           }
 
@@ -136,10 +136,10 @@ namespace neam
           {
             if (&t != this)
             {
-              if (!link)
+              if (ownership)
                 glDeleteVertexArrays(1, &id);
 
-              link = t.is_link();
+              ownership = t.has_ownership();
               id = t.get_id();
               t.give_up_ownership();
             }
@@ -152,10 +152,10 @@ namespace neam
           {
             if (&t != this)
             {
-              if (!link)
+              if (ownership)
                 glDeleteVertexArrays(1, &id);
 
-              link = true;
+              ownership = false;
               id = t.get_id();
             }
             return *this;
@@ -167,9 +167,9 @@ namespace neam
             return id;
           }
 
-          bool is_link() const
+          bool has_ownership() const
           {
-            return link;
+            return ownership;
           }
 
           // bind the vao
@@ -234,7 +234,7 @@ namespace neam
 
         private:
           GLuint id;
-          bool link;
+          bool ownership;
 
           // buffers/views couples
           cr::tuple<Init...> ct_buffers_views;
