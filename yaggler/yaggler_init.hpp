@@ -60,7 +60,10 @@ namespace neam
           // init callbacks on error/warning
           glfwSetErrorCallback([](int code, const char *message)
           {
-            std::cout << "GLFW error [" << code << "]: '" << message << "'" << std::endl;
+#ifndef YAGGLER_NO_MESSAGES
+            if (::opengl_version::debug)
+              std::cout << "GLFW error [" << code << "]: '" << message << "'" << std::endl;
+#endif
             throw glfw_exception(message, false);
           });
 
