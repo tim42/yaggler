@@ -122,7 +122,8 @@ namespace neam
           }
 
         public:
-          texture(size_t _spl_idx = 0) : link(false), id(0), spl_idx(_spl_idx)
+          texture(size_t _spl_idx = 0)
+            : ownership(true), id(0), spl_idx(_spl_idx)
           {
             glGenTextures(1, &id);
             bind();
@@ -137,38 +138,42 @@ namespace neam
             __tpl_init();
           }
 
-          texture(GLuint _id, size_t _spl_idx) : link(true), id(_id), spl_idx(_spl_idx)
+          texture(GLuint _id, size_t _spl_idx)
+            : ownership(false), id(_id), spl_idx(_spl_idx)
           {
             __tpl_init();
           }
 
-          texture(GLuint _id, size_t _spl_idx, assume_ownership_t) : link(false), id(_id), spl_idx(_spl_idx)
+          texture(GLuint _id, size_t _spl_idx, assume_ownership_t)
+            : ownership(true), id(_id), spl_idx(_spl_idx)
           {
             __tpl_init();
           }
 
           texture(const texture &o)
-          : link(true), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.image_texture), image_format(o.image_format), image_access_mode(o.image_access_mode), handle(o.handle)
+            : ownership(false), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.image_texture),
+              image_format(o.image_format), image_access_mode(o.image_access_mode), handle(o.handle)
           {
             __tpl_init();
           }
           template<typename... TArgs>
           texture(const texture< type::opengl, TextureType, TArgs... > &o)
-            : link(true), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.is_image_texture()),
+            : ownership(false), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.is_image_texture()),
               image_format(o.get_image_format()), image_access_mode(o.get_image_access_mode()), handle(o.get_image_handle())
           {
             __tpl_init();
           }
 
           texture(texture &o, stole_ownership_t)
-            : link(o.is_link()), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.image_texture), image_format(o.image_format), image_access_mode(o.image_access_mode), handle(o.handle)
+            : ownership(o.has_ownership()), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.image_texture),
+              image_format(o.image_format), image_access_mode(o.image_access_mode), handle(o.handle)
           {
             o.give_up_ownership();
             __tpl_init();
           }
           template<typename... TArgs>
           texture(texture< type::opengl, TextureType, TArgs... > &o, stole_ownership_t)
-            : link(o.is_link()), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.is_image_texture()),
+            : ownership(o.has_ownership()), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.is_image_texture()),
               image_format(o.get_image_format()), image_access_mode(o.get_image_access_mode()), handle(o.get_image_handle())
           {
             o.give_up_ownership();
@@ -176,14 +181,15 @@ namespace neam
           }
 
           texture(texture &&o)
-            : link(o.is_link()), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.image_texture), image_format(o.image_format), image_access_mode(o.image_access_mode), handle(o.handle)
+            : ownership(o.has_ownership()), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.image_texture),
+              image_format(o.image_format), image_access_mode(o.image_access_mode), handle(o.handle)
           {
             o.give_up_ownership();
             __tpl_init();
           }
           template<typename... TArgs>
           texture(texture< type::opengl, TextureType, TArgs... > &&o)
-            : link(o.is_link()), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.is_image_texture()),
+            : ownership(o.has_ownership()), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.is_image_texture()),
               image_format(o.get_image_format()), image_access_mode(o.get_image_access_mode()), handle(o.get_image_handle())
           {
             o.give_up_ownership();
@@ -192,7 +198,7 @@ namespace neam
 
           ~texture()
           {
-            if (!link)
+            if (ownership)
               glDeleteTextures(1, &id);
           }
 
@@ -200,13 +206,13 @@ namespace neam
           // (simply become a link)
           texture &give_up_ownership()
           {
-            link = true;
+            ownership = false;
             return *this;
           }
 
           texture &assume_ownership()
           {
-            link = false;
+            ownership = true;
             return *this;
           }
 
@@ -216,10 +222,10 @@ namespace neam
           {
             if (&o != this)
             {
-              if (!link)
+              if (ownership)
                 glDeleteTextures(1, &id);
 
-              link = o.is_link();
+              ownership = o.has_ownership();
               id = o.get_id();
               spl_idx = o.get_texture_sampler();
               image_texture = o.image_texture;
@@ -237,10 +243,10 @@ namespace neam
           {
             if (&o != this)
             {
-              if (!link)
+              if (ownership)
                 glDeleteTextures(1, &id);
 
-              link = true;
+              ownership = false;
               id = o.get_id();
               spl_idx = o.get_texture_sampler();
               image_texture = o.image_texture;
@@ -259,9 +265,9 @@ namespace neam
             return id;
           }
 
-          bool is_link() const
+          bool has_ownership() const
           {
-            return link;
+            return ownership;
           }
 
           // the active texture
@@ -573,7 +579,7 @@ namespace neam
           }
 
         private:
-          bool link;
+          bool ownership;
           GLuint id;
           size_t spl_idx;
           bool image_texture = false;

@@ -41,59 +41,87 @@ namespace neam
       {
         public:
           renderbuffer()
-            : id(0), link(false)
+            : id(0), ownership(true)
           {
             glGenRenderbuffers(1, &id);
           }
 
           renderbuffer(GLuint _id)
-            : id(_id), link(true)
+            : id(_id), ownership(false)
           {
           }
 
           renderbuffer(GLuint _id, assume_ownership_t)
-            : id(_id), link(false)
+            : id(_id), ownership(true)
           {
           }
 
           renderbuffer(const renderbuffer &rb)
-            : id(rb.get_id()), link(true)
+            : id(rb.get_id()), ownership(false)
           {
           }
 
           renderbuffer(renderbuffer &&rb)
-            : id(rb.get_id()), link(rb.is_link())
+            : id(rb.get_id()), ownership(rb.has_ownership())
           {
             rb.give_up_ownership();
           }
 
           renderbuffer(renderbuffer &rb, stole_ownership_t)
-            : id(rb.get_id()), link(rb.is_link())
+            : id(rb.get_id()), ownership(rb.has_ownership())
           {
             rb.give_up_ownership();
           }
 
           ~renderbuffer()
           {
-            if (!link)
+            if (ownership)
               glDeleteRenderbuffers(1, &id);
           }
 
           renderbuffer &give_up_ownership()
           {
-            link = true;
+            ownership = false;
             return *this;
           }
 
           renderbuffer &assume_ownership()
           {
-            link = false;
+            ownership = true;
             return *this;
           }
 
-          bool is_link() const
+          bool has_ownership() const
           {
-            return link;
+            return ownership;
+          }
+
+          renderbuffer &stole(renderbuffer &t)
+          {
+            if (&t != this)
+            {
+              if (ownership)
+                glDeleteRenderbuffers(1, &id);
+
+              ownership = t.has_ownership();
+              id = t.get_id();
+              t.give_up_ownership();
+            }
+            return *this;
+          }
+
+          // create a simple link
+          renderbuffer &link_to(const renderbuffer &t)
+          {
+            if (&t != this)
+            {
+              if (ownership)
+                glDeleteRenderbuffers(1, &id);
+
+              ownership = false;
+              id = t.get_id();
+            }
+            return *this;
           }
 
           GLuint get_id() const
@@ -130,7 +158,7 @@ namespace neam
 
         private:
           GLuint id;
-          bool link;
+          bool ownership;
       };
     } // namespace texture
   } // namespace yaggler

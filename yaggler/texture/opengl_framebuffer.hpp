@@ -41,64 +41,92 @@ namespace neam
     namespace texture
     {
       // a basic framebuffer
-      template<typename... Args>
-      class framebuffer<type::opengl, Args...>
+      template<>
+      class framebuffer<type::opengl>
       {
         public:
           framebuffer()
-            : id(0), link(false)
+            : id(0), ownership(true)
           {
             glGenFramebuffers(1, &id);
           }
 
           framebuffer(GLuint _id)
-            : id(_id), link(true)
+            : id(_id), ownership(false)
           {
           }
 
           framebuffer(GLuint _id, assume_ownership_t)
-            : id(_id), link(false)
+            : id(_id), ownership(true)
           {
           }
 
           framebuffer(const framebuffer &fb)
-            : id(fb.id), link(true)
+            : id(fb.id), ownership(false)
           {
           }
 
           framebuffer(framebuffer &&fb)
-            : id(fb.id), link(fb.link)
+            : id(fb.id), ownership(fb.ownership)
           {
-            fb.link = true;
+            fb.ownership = false;
           }
 
           framebuffer(framebuffer &fb, stole_ownership_t)
-            : id(fb.id), link(fb.link)
+            : id(fb.id), ownership(fb.ownership)
           {
-            fb.link = true;
+            fb.ownership = false;
           }
 
           ~framebuffer()
           {
-            if (!link)
+            if (ownership)
               glDeleteFramebuffers(1, &id);
           }
 
           framebuffer &give_up_ownership()
           {
-            link = true;
+            ownership = false;
             return *this;
           }
 
           framebuffer &assume_ownership()
           {
-            link = false;
+            ownership = true;
             return *this;
           }
 
-          bool is_link() const
+          bool has_ownership() const
           {
-            return link;
+            return ownership;
+          }
+
+          framebuffer &stole(framebuffer &t)
+          {
+            if (&t != this)
+            {
+              if (ownership)
+                glDeleteFramebuffers(1, &id);
+
+              ownership = t.has_ownership();
+              id = t.get_id();
+              t.give_up_ownership();
+            }
+            return *this;
+          }
+
+          // create a simple link
+          framebuffer &link_to(const framebuffer &t)
+          {
+            if (&t != this)
+            {
+              if (ownership)
+                glDeleteFramebuffers(1, &id);
+
+              ownership = false;
+              id = t.get_id();
+            }
+            return *this;
           }
 
           GLuint get_id() const
@@ -236,7 +264,7 @@ namespace neam
 
         private:
           GLuint id;
-          bool link;
+          bool ownership;
       };
     } // namespace texture
   } // namespace yaggler
