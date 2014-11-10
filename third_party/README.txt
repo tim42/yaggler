@@ -1,6 +1,6 @@
 
 YägGLer ship some libraries, that, in some parts, are modified to fulfill some
-purposes (or to simply work).
+purposes (described below).
 
 Modified libs are:
   - GLFW: The only modification at this date (23/01/2014) is: modification of
@@ -13,7 +13,7 @@ Modified libs are:
 
   - GLM: removed unused directories/CMakeFiles.
 
-  - lodePNG: created a simple CMakeLists.txt the create a static library.
+  - lodePNG: created a simple CMakeLists.txt to create a static library.
     Added a LICENSE file.
 
 I do not own those libs, see the copying/license file in their folders.

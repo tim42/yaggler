@@ -1,39 +1,46 @@
 ![YägGLer logo](data/yaggler-small.png)
-=======
+#  YägGLer
+
 
 **YägGLer** is a kind of 3D renderer, mainly focused on being non user-friendly.
 
 _(although some side effects make him a fast and lightweight renderer)_
 
--------------
+This project is an **experiement** about making an really fast renderer which
+resulting assembly code would be as simple as possible.
+This project is unfinished yet, and is not meant for everyday use.
 
-_(should build on g++ 4.8+ and clang 3.2/3.3)_
+There isn't yet a documentation of the project but here are some points of
+interest:
+* the `samples` folder
+* on a technical point, `yaggler/klmb` (materials and compositors) are
+  interesting
 
--------------
+## how to build
 
-NOTE
-----
-
-Please note that this project is an experiement about making an really fast
-renderer which resulting assembly code would be as simple as possible.
-This project is unfinished yet, un-commented yet, and is not meant for
-everyday use. 
-
-For an example, you should look at the sample and the material code (in yaggler/klmb/material).
-
-I have some code yet un-commited, and plans for the future ( *including*
-some doxygen comments ;) )
-
-
--------------
-
-Credits:
--  code: **neam :)** (aka. _tim42_, aka. Timothée Feuillet)
--  GLFW, GLEW, lodePNG, that are located in the 'third_party' folder, belongs to their respective authors.
+```sh
+$ git submodule init
+$ git submodule update
+$ mkdir build && cd build && cmake ..
+$ make
+```
 
 -------------
 
-*Except for the contents of the 'third_party' folder, that are licensed by their respective owners in their respective licenses:*
+**NOTE:** _(should build on g++ 4.8+ and clang 3.2/3.3)_
+
+
+## credits
+* YägGLer: Timothée Feuillet ( *neam :)* or tim42 )
+* **[GLFW](http://www.glfw.org/)**, **[GLEW](http://glew.sourceforge.net/)**,
+   **[lodePNG](http://lodev.org/lodepng/)**, that are located in the
+   `third_party` folder, belongs to their respective authors.
+
+-------------
+
+*Except for the contents of the `third_party` folder, that are licensed by their
+respective owners in their respective licenses:*
+
 Copyright (C) 2013-2014  Timothée Feuillet
 
     This program is free software; you can redistribute it and/or modify
