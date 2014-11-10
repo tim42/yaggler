@@ -40,7 +40,10 @@ namespace neam
   {
     namespace yaggler
     {
-      // a shader list
+      /// \brief a shader list. Sort shader by their types, and craft a shader program type
+      /// the subclass \class program_auto_merger give the complete (and usable) program type
+      /// from the \p Shaders template parameter and a 'main' shader list that'll be added if
+      /// there is shaders of the same type in \p Shaders.
       template<typename... Shaders>
       struct shader_list : public ct::type_list<Shaders...>
       {
@@ -61,12 +64,12 @@ namespace neam
           };
 
         public:
-          shader_list() {}
-          shader_list(const shader_list &o) : ct::type_list_member_instance<Shaders...>(o) {}
-          shader_list(const cr::tuple<Shaders...> &o) : ct::type_list_member_instance<Shaders...>(o) {}
+          constexpr shader_list() {}
+          constexpr shader_list(const shader_list &o) : ct::type_list_member_instance<Shaders...>(o) {}
+          constexpr shader_list(const cr::tuple<Shaders...> &o) : ct::type_list_member_instance<Shaders...>(o) {}
 
           template<typename... Vals>
-          shader_list(Vals... vals) : ct::type_list_member_instance<Shaders...>(std::move(vals)...) {}
+          constexpr shader_list(Vals... vals) : ct::type_list_member_instance<Shaders...>(std::move(vals)...) {}
 
 
           // shaders by types
@@ -81,10 +84,11 @@ namespace neam
           using all_shaders_t = cr::tuple<Shaders...>;
 
           // the shader program
-          template<typename... AdditionalShader>
-          using program_t = neam::yaggler::shader::program<neam::yaggler::type::opengl, Shaders..., AdditionalShader...>;
+          template<typename... AdditionalShaders>
+          using program_t = neam::yaggler::shader::program<neam::yaggler::type::opengl, Shaders..., AdditionalShaders...>;
 
-          // a serie of ct::pair<X, Y> [with X the shader type (embed) and Y the shader::shader<opengl> to append]
+          /// \brief merge each shaders of \p Values only if \p Shaders contain a shader of the same type.
+          /// \param Values a serie of \code ct::pair<X, Y> \endcode [with X the shader type (embed) and Y the \code shader::shader<opengl> \endcode to append]
           template<typename... Values>
           struct program_auto_merger
           {
@@ -106,13 +110,6 @@ namespace neam
             public:
               using type = typename ct::extract_types<program_t, typename am_filter<Values...>::type>::type;
           };
-          // shaders tuples by type
-//           compute_shaders_t compute_shaders = compute_shaders_t();
-//           vertex_shaders_t vertex_shaders = vertex_shaders_t();
-//           tess_control_shaders_t tess_control_shaders = tess_control_shaders_t();
-//           tess_evaluation_shaders_t tess_evaluation_shaders = tess_evaluation_shaders_t();
-//           geometry_shaders_t geometry_shaders = geometry_shaders_t();
-//           fragment_shaders_t fragment_shaders = fragment_shaders_t();
       };
 
     } // namespace yaggler

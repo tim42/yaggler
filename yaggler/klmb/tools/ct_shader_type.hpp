@@ -50,57 +50,68 @@ namespace neam
     {
       namespace internal
       {
+        constexpr size_t _ct_str_get_dot_index(const char *str, size_t rmg)
+        {
+          return str[rmg] == '.' ? rmg : (rmg ? _ct_str_get_dot_index(str, rmg - 1) : 0);
+        }
+
+        /// \brief return the index of the last dot of a filename
         constexpr size_t ct_str_get_dot_index(const char *str)
         {
-          return str[0] == '.' ? 0 : (str[0] ? ct_str_get_dot_index(str + 1) + 1 : 0);
+          return _ct_str_get_dot_index(str, ct::strlen(str));
         }
 
         template<char... Letters>
-        struct shader_type_by_ext {};
+        struct shader_type_by_ext
+        {
+          private:
+            // this isn't a valid extension !!!
+            static constexpr GLenum shader_type = 0;
+        };
 
-        // fragment shader
+        /// \brief fragment shader
         template<>
         struct shader_type_by_ext<'.', 'f', 'r', 'a', 'g'>
         {
           static constexpr GLenum shader_type = GL_FRAGMENT_SHADER;
         };
 
-        // geometry shader
+        /// \brief geometry shader
         template<>
         struct shader_type_by_ext<'.', 'g', 'e', 'o', 'm'>
         {
           static constexpr GLenum shader_type = GL_GEOMETRY_SHADER;
         };
 
-        // tess evaluation shader
+        /// \brief tess evaluation shader
         template<>
         struct shader_type_by_ext<'.', 't', 'e', 's', 's', '-', 'e', 'v', 'a', 'l'>
         {
           static constexpr GLenum shader_type = GL_TESS_EVALUATION_SHADER;
         };
 
-        // tess control shader
+        /// \brief tess control shader
         template<>
         struct shader_type_by_ext<'.', 't', 'e', 's', 's', '-', 'c', 't', 'r', 'l'>
         {
           static constexpr GLenum shader_type = GL_TESS_CONTROL_SHADER;
         };
 
-        // vertex shader
+        /// \brief vertex shader
         template<>
         struct shader_type_by_ext<'.', 'v', 'e', 'r', 't'>
         {
           static constexpr GLenum shader_type = GL_VERTEX_SHADER;
         };
 
-        // vertex shader
+        /// \brief compute shader
         template<>
         struct shader_type_by_ext<'.', 'c', 'o', 'm', 'p', 'u', 't', 'e'>
         {
           static constexpr GLenum shader_type = GL_COMPUTE_SHADER;
         };
 
-        // entry point
+        /// \brief deduce the shader type from its filename
         template<const char *Str>
         struct shader_type_from_filename
         {

@@ -33,6 +33,10 @@
 #include <shader/context.hpp>
 #include <klmb/material/klmb_context_helper.hpp>
 
+/// \file make_material_tuple.hpp
+/// \brief work with variable reference of the form variable<1> in the variable list
+///
+
 namespace neam
 {
   namespace klmb

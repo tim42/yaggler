@@ -56,14 +56,23 @@ namespace neam
         constexpr neam::string_t main_geom = "data/klmb-framework/main.geom";
       } // namespace framework
 
-      // this is the very basic K:LMB/YägGLer base_material.
-      //
-      // Shaders is a list of shaders files (types),
-      // VarCtx is the type of the variable_context
-      // Textures is a list of textures types
-      // Variables is a tuple of variable types
-      //
-      // As most of the K:LMB framework, this is mostly shader oriented.
+      /// \brief this is the very basic K:LMB/YägGLer base_material.
+      /// you should take a look at the files material_usings.hpp and klmb_context_helper.hpp
+      ///
+      /// \p Shaders is a list of shaders files (types),
+      /// \p VarCtx is the type of the variable_context
+      /// \p Textures is a list of textures types
+      /// \p Variables is a tuple of variable types (see \file klmb_context_helper.hpp)
+      ///    It consist of a tuple of \c material_ctx_pair (\see make_ctx_pair).
+      ///    You can reference textures from the texture list by using a \c reference_to_texture as value.
+      ///    You can also create 'indexed' variables that could be changed latter via get_variable()
+      ///    (a good example is create_material that add two indexed variable that binds
+      ///    to "vp_matrix" and "object_matrix" uniforms and are glm::mat4 pointers)
+      ///
+      /// \see create_base_material
+      /// \see create_material
+      ///
+      /// As most of the K:LMB framework, this is mostly shader oriented.
       template<typename Shaders, typename Textures, typename VarCtx, typename Variables>
       class base_material
       {
