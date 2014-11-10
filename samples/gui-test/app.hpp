@@ -40,7 +40,7 @@
 #define CRAP__VAR_TO_STRING(var)              static_cast<std::ostringstream&>(std::ostringstream() << var).str()
 
 
-constexpr neam::string_t test_frag = "data/shaders/test/fract.frag";
+constexpr neam::string_t test_frag = "data/shaders/test/edge.frag";
 constexpr neam::string_t yaggler_logo = "data/yaggler.png";
 
 namespace neam
@@ -60,7 +60,7 @@ namespace neam
 
           main_application()
 //             : base_application(neam::yaggler::glfw_window(neam::yaggler::window_mode::fullscreen)),
-            : base_application(neam::yaggler::glfw_window(neam::yaggler::window_mode::windowed, {8192, 8192})),
+            : base_application(neam::yaggler::glfw_window(neam::yaggler::window_mode::windowed, {980, 980})),
               gmgr(framebuffer_resolution, emgr)
           {
             init();
@@ -89,14 +89,13 @@ namespace neam
 
             while (!window.should_close() && !do_quit)
             {
-
               glViewport(0, 0, framebuffer_resolution.x, framebuffer_resolution.y);
 
               main_smgr.render();
 
               simple_compositor.render();
 
-//               text_local_node->rotation = glm::rotate<float>(text_local_node->rotation, M_PI / 10.f * chrono.delta(), glm::vec3(0, 0, 1));
+//               text_local_node->rotation = glm::rotate<float>(text_local_node->rotation, M_PI / 10.f * chrono.delta(), glm::vec3(0, 1, 1));
 //               text_local_node->dirty = true;
 
               // disable depth test for THIS 3D text rendering. (only in this case: we render over a fullscreen quad in Z = 0)
@@ -131,7 +130,7 @@ namespace neam
 
             auto &text_node = gmgr.transformation_tree.root.create_child();
             text_local_node = text_node.local;
-            text_node.local->position = 0._vec3_xyz;
+            text_node.local->position = 0.05_vec3_y;
             text_node.local->scale = 0.05_vec3_xyz;
             text_node.local->dirty = true;
 

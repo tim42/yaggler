@@ -279,10 +279,10 @@ namespace neam
               >
               (
                 // CONTEXT
-                neam::klmb::yaggler::make_ctx_pair("global_time", &neam::cr::chrono::now_relative),
+//                 neam::klmb::yaggler::make_ctx_pair("global_time", &neam::cr::chrono::now_relative),
                 neam::klmb::yaggler::make_ctx_pair("font_texture", cr::make_const_ref(font_texture)),
                 neam::klmb::yaggler::make_ctx_pair("font_color", cr::make_const_ref(color)),
-                neam::klmb::yaggler::make_ctx_pair("char_count", cr::make_const_ref(char_count)),
+//                 neam::klmb::yaggler::make_ctx_pair("char_count", cr::make_const_ref(char_count)),
                 neam::klmb::yaggler::make_ctx_buffer_pair("displacement_block", cr::make_const_ref(x_pos))
               );
               material = real_material;

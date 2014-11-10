@@ -38,7 +38,7 @@ namespace neam
   {
     namespace sample
     {
-      // load a model from ply file
+      // load a model from a ply file (must be a single ply file, in text format, not binary)
       // (fuckingly simple/hideous loader)
       neam::klmb::yaggler::object<GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER> load_model(const std::string &filename)
       {

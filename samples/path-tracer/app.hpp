@@ -26,13 +26,11 @@
 #ifndef __N_1657502776544798074_976431267__APP_HPP__
 # define __N_1657502776544798074_976431267__APP_HPP__
 
-#include "io.hpp"
 #include <bleunw/application.hpp>
 
 #include <bleunw/gui.hpp>
 
 #include <klmb/klmb.hpp>
-#include "loader.hpp"
 
 
 constexpr neam::string_t pt_vert = "data/shaders/path-tracer/path-tracer.vert";
@@ -68,9 +66,9 @@ namespace neam
             neam::yaggler::texture::texture<neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_3D>> light_texture;
             light_texture.set_image_texture(true, GL_RGBA32F, GL_READ_WRITE);
 
-            int *img_data = new int[512*512*512*4];
-            memset(img_data, 0, 4 * 512*512*512);
-            light_texture.set_texture_data(GL_RGBA32F, ct::vector3(512, 512, 512), GL_RGBA, GL_BYTE, img_data);
+            int *img_data = new int[202*202*202*4];
+            memset(img_data, 0, 4 * 202*202*202);
+            light_texture.set_texture_data(GL_RGBA32F, ct::vector3(202, 202, 202), GL_RGBA, GL_BYTE, img_data);
 
             // the rendered
             auto path_tracer_compositor = neam::klmb::yaggler::make_compositor(neam::klmb::yaggler::make_framebuffer_pack
@@ -88,16 +86,11 @@ namespace neam
 
             end_render_loop();
 
-//             int id = 0;
             while (!window.should_close() && !do_quit)
             {
               glViewport(0, 0, framebuffer_resolution.x, framebuffer_resolution.y);
 
-//               light_texture[!id].set_texture_data(GL_RGBA32F, ct::vector3(256, 256, 256), GL_RED, GL_BYTE, img_data);
-//               path_tracer_compositor.pack.textures.get<0>().texture.link_to(light_texture[id]);
-//               id = !id;
               path_tracer_compositor.render();
-//               main_smgr.render();
 
               end_render_loop();
             }
@@ -106,28 +99,6 @@ namespace neam
         private:
           void init()
           {
-            main_smgr.camera_list.push_back(&camera);
-
-            // single camera, two scenes.
-            main_smgr.camera_holder.use_camera(camera);
-
-            // camera stuff.
-            auto &parent_camera_node = main_smgr.transformation_tree.root.create_child();
-            parent_camera_local_node = parent_camera_node.local;
-            auto &camera_node = parent_camera_node.create_child();
-            camera_local_node = camera_node.local;
-
-            camera_node.local->position = glm::vec3(0., 7., -20.);
-
-            parent_camera_node.local->dirty = true;
-            camera_node.local->dirty = true;
-
-            // make the link.
-            camera.world_matrix = &camera_node.world->matrix;
-
-            // yay: gl calls :D
-            glEnable(GL_DEPTH_TEST);
-            glDepthFunc(GL_LESS);
           }
 
           virtual void button_pressed(const bleunw::yaggler::events::mouse_status &ms, bleunw::yaggler::events::mouse_buttons::mouse_buttons mb);
@@ -138,10 +109,6 @@ namespace neam
           virtual void key_released(const bleunw::yaggler::events::keyboard_status &ks, bleunw::yaggler::events::key_code::key_code kc);
 
         private:
-          neam::klmb::yaggler::camera camera;
-
-          neam::klmb::yaggler::transformation_node::default_node *parent_camera_local_node;
-          neam::klmb::yaggler::transformation_node::default_node *camera_local_node;
 
           // app control
           bool do_quit = false;

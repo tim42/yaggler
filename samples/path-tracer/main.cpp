@@ -19,7 +19,7 @@
 
 #include <setup.hpp>
 
-using opengl_version = neam::yaggler::setup::opengl<4, 3, neam::yaggler::setup::opengl_profile::core/*, neam::yaggler::setup::opengl_context_flag::debug*/>;
+using opengl_version = neam::yaggler::setup::opengl<4, 3, neam::yaggler::setup::opengl_profile::core, neam::yaggler::setup::opengl_context_flag::debug>;
 
 // disable messages
 // #define YAGGLER_NO_MESSAGES
@@ -32,10 +32,6 @@ using opengl_version = neam::yaggler::setup::opengl<4, 3, neam::yaggler::setup::
 // lets include some bleunw files
 #include <bleunw/events.hpp>
 
-#include <iostream>
-#include <iomanip>
-
-#include "loader.hpp"
 #include "app.hpp"
 
 
