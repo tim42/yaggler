@@ -19,7 +19,7 @@
 #define RM_MAX_STEPS                    100.
 #define INTO_STEP_DST                   .0035
 
-#define FRACT_DEPTH                     8
+#define FRACT_DEPTH                     3
 /*#define FRACT_DEPTH                     sin(global_time) * 4 + 3*/
 
 // prog defines
