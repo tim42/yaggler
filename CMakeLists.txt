@@ -54,6 +54,7 @@ set(YAGGLER_SRCS "")
 add_subdirectory("./third_party/glew")
 add_subdirectory("./third_party/glfw")
 add_subdirectory("./third_party/lodePNG")
+add_subdirectory(yaggler/tools)
 
 set(YAGGLER_INCLUDE_DIRS "")
 set(YAGGLER_DEPS_LIBS "")
@@ -93,6 +94,7 @@ endif()
 if (${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
   add_subdirectory(samples/path-tracer/)
   add_subdirectory(samples/gui-test/)
+  add_subdirectory(samples/editor/)
 endif()
 
 # build the samples
@@ -101,7 +103,6 @@ endif()
 # add_subdirectory(samples/dev-klmb)
 
 #add_subdirectory(samples/test-klmb)
-#add_subdirectory(samples/editor/)
 
 
 

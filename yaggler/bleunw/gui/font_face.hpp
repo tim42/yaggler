@@ -86,7 +86,7 @@ namespace neam
               table[i].upper_pos = glm::vec2(i % 16 + 1, i / 16 + 1) / 16.f;
               table[i].dt = glm::vec2(0, 0);
               table[i].left_top = glm::vec2(0, 0);
-              table[i].x_inc = 0;
+              table[i].x_inc = 1.f;
             }
           }
 
@@ -99,7 +99,7 @@ namespace neam
               table[i].upper_pos = glm::vec2(i % 16 + 1, i / 16 + 1) / 16.f;
               table[i].dt = glm::vec2(0, 0);
               table[i].left_top = glm::vec2(0, 0);
-              table[i].x_inc = 1.f / 16.f;
+              table[i].x_inc = 1.f;
             }
 
             // use the png loader (to load something grey. Distance field.)
@@ -186,7 +186,7 @@ namespace neam
             vbo.set_data(table);
 
 #ifndef YAGGLER_NO_MESSAGES
-              std::cout << "YAGGLER: loaded font face '" << init_file << "' in " << timer.delta() << " seconds" << std::endl;
+              neam::cr::out.debug() << LOGGER_INFO << "YAGGLER: loaded font face '" << init_file << "' in " << timer.delta() << " seconds" << std::endl;
 #endif
 
           }

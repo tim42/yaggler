@@ -106,7 +106,7 @@ namespace neam
                 throw runtime_error<png_texture_writer>(lodepng_error_text(ret));
 
 #ifndef YAGGLER_NO_MESSAGES
-              std::cout << "YAGGLER: saved png image  '" << file << "' in " << timer.delta() << " seconds" << std::endl;
+              neam::cr::out.debug() << LOGGER_INFO << "YAGGLER: saved png image  '" << file << "' in " << timer.delta() << " seconds" << std::endl;
 #endif
 
               return true;

@@ -89,7 +89,7 @@ namespace neam
               memcpy(data, image.data(), size.x * size.y * 8);
 
 #ifndef YAGGLER_NO_MESSAGES
-              std::cout << "YAGGLER: loaded png image '" << File::value << "' in " << timer.delta() << " seconds" << std::endl;
+              neam::cr::out.debug() << LOGGER_INFO << "YAGGLER: loaded png image '" << File::value << "' in " << timer.delta() << " seconds" << std::endl;
 #endif
               return data;
             }
@@ -177,7 +177,7 @@ namespace neam
               memcpy(data, image.data(), image.size());
 
 #ifndef YAGGLER_NO_MESSAGES
-              std::cout << "YAGGLER: loaded png image '" << file << "' in " << timer.delta() << " seconds" << std::endl;
+              neam::cr::out.debug() << LOGGER_INFO << "YAGGLER: loaded png image '" << file << "' in " << timer.delta() << " seconds" << std::endl;
 #endif
               return data;
             }

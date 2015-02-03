@@ -143,7 +143,7 @@ namespace neam
                 break;
 #ifndef YAGGLER_NO_MESSAGES
               default:
-                std::cerr << "YAGGLER: ERROR: unknow draw method" << std::endl;
+                neam::cr::out.error() << LOGGER_INFO << "unknow draw method" << std::endl;
 #endif
             }
           }

@@ -229,7 +229,7 @@ namespace neam
               prog_counter += internal::setup_shader_framework<std::remove_reference<decltype(shader)>::type::shader_type>::setup(shader, prog_counter, framework_data);
 #ifndef YAGGLER_NO_MESSAGES
             else if (shader.shader_type == GL_FRAGMENT_SHADER || shader.shader_type == GL_VERTEX_SHADER)
-              std::cerr << "K:LMB/YAGGLER: WARNING: material: shader framework: shader '" << shader.get_source_name() << "' is not using K:LMB framework." << std::endl;
+              neam::cr::out.warning() << LOGGER_INFO << "K:LMB/YAGGLER: material: shader framework: shader '" << shader.get_source_name() << "' is not using K:LMB framework." << std::endl;
 #endif
 
             return 0;

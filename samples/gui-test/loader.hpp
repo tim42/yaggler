@@ -115,7 +115,7 @@ namespace neam
                        (0, 3, GL_FLOAT, 0, 0));
         object.vao.add_buffer(object.ct_buffers.get<1>());
 
-        std::cout << "YAGGLER: loaded model file  '" << filename << "'" << " with " << tri_count << " triangles and " << vert_count << " vertices" << std::endl;
+        neam::cr::out.debug() << LOGGER_INFO << "YAGGLER: loaded model file  '" << filename << "'" << " with " << tri_count << " triangles and " << vert_count << " vertices" << std::endl;
 
         return std::move(object);
       }

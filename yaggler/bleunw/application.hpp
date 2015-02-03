@@ -81,7 +81,7 @@ namespace neam
                 chrono.reset();
 
 // #ifndef YAGGLER_NO_MESSAGES
-                std::cout << "f/s: "       << std::setw(9) << std::left <<  1000.0 / mps_1s
+                neam::cr::out.debug() << LOGGER_INFO << "f/s: "       << std::setw(9) << std::left <<  1000.0 / mps_1s
                           << "  |  ms/f: " << std::setw(9) << std::left << mps_1s
                           << std::endl;
 // #endif

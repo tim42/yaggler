@@ -33,6 +33,7 @@
 #include <cstdlib>
 
 #include <klmb/tools/tools.hpp>
+#include <tools/logger/logger.hpp>
 
 // lovely defines for GLSL * shaders
 #define KLMB_YAGGLER_GLOBAL_DEFS                "./data/klmb-framework/defs.glsl"
@@ -103,7 +104,7 @@ namespace neam
             bool is_framework_main = tools::is_true(shader.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
 
             if (is_framework_main && fdata.vertex__framework_registered)
-              std::cerr << "K:LMB/YAGGLER : ERROR : material: vertex shader framework: framework has already been registered." << std::endl;
+              neam::cr::out.error() << LOGGER_INFO << "K:LMB/YAGGLER : material: vertex shader framework: framework has already been registered." << std::endl;
 
             fdata.vertex__framework_registered |= is_framework_main;
 
@@ -163,7 +164,7 @@ namespace neam
             bool is_framework_main = tools::is_true(shader.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
 
             if (is_framework_main && fdata.geometry__framework_registered)
-              std::cerr << "K:LMB/YAGGLER : ERROR : material: geometry shader framework: framework has already been registered." << std::endl;
+              neam::cr::out.error() << LOGGER_INFO << "K:LMB/YAGGLER : material: geometry shader framework: framework has already been registered." << std::endl;
 
             fdata.geometry__framework_registered |= is_framework_main;
 
@@ -223,7 +224,7 @@ namespace neam
             bool is_framework_main = tools::is_true(shader.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
 
             if (is_framework_main && fdata.fragment__framework_registered)
-              std::cerr << "K:LMB/YAGGLER : ERROR : material: fragment shader framework: framework has already been registered." << std::endl;
+              neam::cr::out.error() << LOGGER_INFO << "K:LMB/YAGGLER : material: fragment shader framework: framework has already been registered." << std::endl;
 
             fdata.fragment__framework_registered |= is_framework_main;
 

@@ -51,8 +51,8 @@ namespace neam
 #  define CHECK_ID            if (static_cast<GLint>(id) == -1){return *this;}
 #  define CHECK_PGID          if (static_cast<GLint>(pgid) == -1){return *this;}
 # else
-#  define CHECK_ID            if (static_cast<GLint>(id) == -1){if (::opengl_version::debug){std::cerr << __FILE__ << ": " << __LINE__ << ": setting a value with a invalid uniform variable ID..." << std::endl;}return *this;}
-#  define CHECK_PGID          if (static_cast<GLint>(pgid) == -1){if (::opengl_version::debug){std::cerr << __FILE__ << ": " << __LINE__ << ": setting an uniform block with a invalid shader program ID..." << std::endl;}return *this;}
+#  define CHECK_ID            if (static_cast<GLint>(id) == -1){if (::opengl_version::debug){neam::cr::out.debug() << LOGGER_INFO << ": setting a value with a invalid uniform variable ID..." << std::endl;}return *this;}
+#  define CHECK_PGID          if (static_cast<GLint>(pgid) == -1){if (::opengl_version::debug){neam::cr::out.debug() << LOGGER_INFO << ": setting an uniform block with a invalid shader program ID..." << std::endl;}return *this;}
 # endif
 #else
 # define CHECK_ID

@@ -33,6 +33,7 @@
 #include <glm/gtx/transform.hpp>
 
 #include <tools/memory_pool.hpp>
+#include <tools/logger/logger.hpp>
 
 #include <klmb/object/aabb.hpp>
 #include <klmb/object/obb.hpp>
@@ -86,7 +87,7 @@ namespace neam
                   // here the node is deleted.
                 }
                 else
-                  std::cout << "[Y]: trying to remove root" << std::endl;
+                  neam::cr::out.warning() << LOGGER_INFO << "trying to remove the root" << std::endl;
               }
 
               // compute and propagate matrices transformations to every childs

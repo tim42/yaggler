@@ -20,7 +20,7 @@ endif(OPENGL_FOUND)
 
 
 # yaggler deps libs (for exec)
-set(YAGGLER_DEPS_LIBS ${OPENGL_gl_LIBRARY} glfw glew ${GLFW_STATIC_LIBRARIES} ${GLFW_LIBRARIES} lodePNG)
+set(YAGGLER_DEPS_LIBS ${OPENGL_gl_LIBRARY} glfw glew ${GLFW_STATIC_LIBRARIES} ${GLFW_LIBRARIES} lodePNG ${libntools})
 
 # yaggler include dirs
 set(YAGGLER_INCLUDE_DIRS ${PNG_INCLUDE_DIR})

@@ -409,7 +409,9 @@ namespace neam
             }
 #ifndef YAGGLER_NO_MESSAGES
             if (::opengl_version::debug)
-              std::cout << "YAGGLER: compiled shader  '" << get_source_name() << "'" << std::endl;
+            {
+              neam::cr::out.debug() << LOGGER_INFO << "compiled shader  '" << get_source_name() << "'" << std::endl;
+            }
 #endif
             failed = false;
           }

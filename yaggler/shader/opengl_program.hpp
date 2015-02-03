@@ -217,7 +217,7 @@ namespace neam
             }
             catch(const shader_exception &e)
             {
-              std::cerr << "program<type::opengl>::recompile_cts_shader_if_changed: shader_exception: " << e.what() << std::endl;
+              neam::cr::out.error() << LOGGER_INFO << "program<type::opengl>::recompile_cts_shader_if_changed: shader_exception: " << e.what() << std::endl;
               return;
             }
             link();
@@ -232,7 +232,7 @@ namespace neam
             }
             catch(const shader_exception &e)
             {
-              std::cerr << "program<type::opengl>::link: shader_exception: " << e.what() << std::endl;
+              neam::cr::out.error() << LOGGER_INFO << "program<type::opengl>::link: shader_exception: " << e.what() << std::endl;
               return;
             }
 
@@ -288,7 +288,7 @@ namespace neam
             }
             catch(const shader_exception &e)
             {
-              std::cerr << "program<type::opengl>::use: shader_exception: " << e.what() << std::endl;
+              neam::cr::out.error() << LOGGER_INFO << "program<type::opengl>::use: shader_exception: " << e.what() << std::endl;
               return;
             }
             link();

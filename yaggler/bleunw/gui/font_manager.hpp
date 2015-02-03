@@ -72,7 +72,7 @@ namespace neam
               }
               catch (neam::base_runtime_error &e)
               {
-                std::cerr << "YAGGLER: FONT_MANAGER ERROR: " << e.what() << std::endl;
+                neam::cr::out.error() << LOGGER_INFO << ": FONT_MANAGER ERROR: " << e.what() << std::endl;
                 return false;
               }
               return true;

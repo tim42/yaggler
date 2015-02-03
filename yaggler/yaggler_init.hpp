@@ -33,6 +33,7 @@
 #include <GLFW/glfw3.h>
 
 // #include <GL/gl.h>
+#include <tools/logger/logger.hpp>
 
 #include "yaggler_except.hpp"
 #include "ct_point.hpp"
@@ -54,7 +55,7 @@ namespace neam
         yaggler_init()
         {
 #ifndef YAGGLER_NO_MESSAGES
-          std::cout << "yaggler version " << version::string << std::endl;
+          neam::cr::out.info() << LOGGER_INFO << "yaggler version " << version::string << std::endl;
 #endif
 
           // init callbacks on error/warning
@@ -63,7 +64,7 @@ namespace neam
             (void)code;
 #ifndef YAGGLER_NO_MESSAGES
             if (::opengl_version::debug)
-              std::cout << "GLFW error [" << code << "]: '" << message << "'" << std::endl;
+              neam::cr::out.warning() << LOGGER_INFO << "GLFW error [" << code << "]: '" << message << "'" << std::endl;
 #endif
             throw glfw_exception(message, false);
           });

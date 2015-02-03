@@ -51,17 +51,7 @@ void KLMB_MAIN_FUNCTION()
   vec4 sum = texture(scene, uv) * denom;
   vec4 geom_sum = geom * denom;
 
-  /*float center = 9.;*//*texture(geometry, vec2(0.5, 0.5)).w
-                + texture(geometry, vec2(0.5 + 0.02, 0.5 + 0.00)).w
-                + texture(geometry, vec2(0.5 - 0.02, 0.5 + 0.00)).w
-                + texture(geometry, vec2(0.5 + 0.00, 0.5 + 0.02)).w
-                + texture(geometry, vec2(0.5 + 0.00, 0.5 - 0.02)).w
 
-                + texture(geometry, vec2(0.5 + 0.02, 0.5 + 0.02)).w
-                + texture(geometry, vec2(0.5 - 0.02, 0.5 + 0.02)).w
-                + texture(geometry, vec2(0.5 + 0.02, 0.5 - 0.02)).w
-                + texture(geometry, vec2(0.5 - 0.02, 0.5 - 0.02)).w;
-  center /= 9.;*/
 
   float alpha = geom.w ;
   alpha = (clamp(abs(center - alpha), min_distance, max_distance) - min_distance) / (max_distance - min_distance);
@@ -72,7 +62,7 @@ void KLMB_MAIN_FUNCTION()
   for (float i = 0.; i < NUM_BLUR_SAMPLES * alpha; ++i)
   {
     float idx = i - (NUM_BLUR_SAMPLES * alpha / 2.0);
-    vec2 nuv = uv + o * (idx * 2.2);
+    vec2 nuv = uv + o * (idx * 1.0);
 
     float coef = GAUSS(idx);
     vec4 color = texture(scene, nuv);

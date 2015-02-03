@@ -34,6 +34,7 @@
 #include <GLEW/glew.h>
 
 #include <tools/demangle.hpp>
+#include <tools/logger/logger.hpp>
 
 // base exceptions for yaggler
 
@@ -47,7 +48,7 @@ namespace neam
       {
 #ifndef YAGGLER_NO_MESSAGES
         if (::opengl_version::debug)
-          std::cerr << "\n[EXCEPTION]: " << s << std::endl << std::endl;
+          neam::cr::out.error() << LOGGER_INFO << "\n[EXCEPTION]: " << s << std::endl << std::endl;
 #endif
       }
       base_runtime_error(std::string &&s) noexcept
@@ -55,7 +56,7 @@ namespace neam
       {
 #ifndef YAGGLER_NO_MESSAGES
         if (::opengl_version::debug)
-          std::cerr << "\n[EXCEPTION]: " << s << std::endl << std::endl;
+          neam::cr::out.error() << LOGGER_INFO << "\n[EXCEPTION]: " << s << std::endl << std::endl;
 #endif
       }
 

@@ -44,6 +44,8 @@ int main(int argc, char **argv)
   (void)argc;
   (void)argv;
 
+  neam::cr::out.log_level = neam::cr::stream_logger::verbosity_level::debug;
+
   // init yaggler (+glfw)
   neam::yaggler::yaggler_init yi;
 

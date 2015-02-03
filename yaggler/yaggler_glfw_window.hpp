@@ -52,6 +52,8 @@ namespace neam
       private:
         void init_glfw_hints()
         {
+          ::opengl_version::_log();
+
           glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, ::opengl_version::gl_major);
           glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, ::opengl_version::gl_minor);
 
@@ -85,61 +87,62 @@ namespace neam
             {
               glDebugMessageCallbackARB([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei, const char * message, void *) -> void
               {
-                std::cerr << "OPENGL DEBUG OUTPUT: [";
+                auto &stream = neam::cr::out.debug() << LOGGER_INFO;
+                stream << "OPENGL DEBUG OUTPUT: [";
                 switch (type)
                 {
                   case GL_DEBUG_TYPE_ERROR_ARB:
-                    std::cerr << "ERROR";
+                    stream << "ERROR";
                     break;
                   case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB:
-                    std::cerr << "DEPRECATED BEHAVIOUR";
+                    stream << "DEPRECATED BEHAVIOUR";
                     break;
                   case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB:
-                    std::cerr << "UNDEFINED BEHAVIOUR";
+                    stream << "UNDEFINED BEHAVIOUR";
                     break;
                   case GL_DEBUG_TYPE_PORTABILITY_ARB:
-                    std::cerr << "PORTABILITY ISSUE";
+                    stream << "PORTABILITY ISSUE";
                     break;
                   case GL_DEBUG_TYPE_PERFORMANCE_ARB:
-                    std::cerr << "PERFORMANCE ISSUE";
+                    stream << "PERFORMANCE ISSUE";
                     break;
                   case GL_DEBUG_TYPE_OTHER_ARB:
-                    std::cerr << "OTHER";
+                    stream << "OTHER";
                 }
-                std::cerr << "/";
+                stream << "/";
                 switch (severity)
                 {
                   case GL_DEBUG_SEVERITY_HIGH_ARB:
-                    std::cerr << "HIGH";
+                    stream << "HIGH";
                     break;
                   case GL_DEBUG_SEVERITY_MEDIUM_ARB:
-                    std::cerr << "MEDIUM";
+                    stream << "MEDIUM";
                     break;
                   case GL_DEBUG_SEVERITY_LOW_ARB:
-                    std::cerr << "LOW";
+                    stream << "LOW";
                 }
-                std::cerr << "] from [";
+                stream << "] from [";
                 switch (source)
                 {
                   case GL_DEBUG_SOURCE_API_ARB:
-                    std::cerr << "API";
+                    stream << "API";
                     break;
                   case GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB:
-                    std::cerr << "WINDOW SYSTEM";
+                    stream << "WINDOW SYSTEM";
                     break;
                   case GL_DEBUG_SOURCE_SHADER_COMPILER_ARB:
-                    std::cerr << "SHADER COMPILER";
+                    stream << "SHADER COMPILER";
                     break;
                   case GL_DEBUG_SOURCE_THIRD_PARTY_ARB:
-                    std::cerr << "THIRD PARTY";
+                    stream << "THIRD PARTY";
                     break;
                   case GL_DEBUG_SOURCE_APPLICATION_ARB:
-                    std::cerr << "APPLICATION";
+                    stream << "APPLICATION";
                     break;
                   case GL_DEBUG_SOURCE_OTHER_ARB:
-                    std::cerr << "OTHER";
+                    stream << "OTHER";
                 }
-                std::cerr << "] (ID: " << id << "): '" << message << "'" << std::endl;
+                stream << "] (ID: " << id << "): '" << message << "'" << std::endl;
               }, nullptr);
 
               glEnable(GL_DEBUG_OUTPUT);

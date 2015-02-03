@@ -22,7 +22,7 @@
 using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::opengl_profile::core>;
 
 // disable messages
-#define YAGGLER_NO_MESSAGES
+// #define YAGGLER_NO_MESSAGES
 
 #include <yaggler.hpp>
 
@@ -43,7 +43,7 @@ using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::
 // the blur shader
 #include "blur.hpp"
 
-// 32 | 28 is a also good one, but makes more time.
+// 32 | 28 is a also good one.
 #define FONT_GLYPH_SIZE         64
 #define FONT_SIZE               60
 
@@ -125,6 +125,11 @@ void bruteforce_sdf(uint8_t *glyph, const glm::vec2 &dt,  uint8_t *output)
         max_dst = dst[PXL_MAP(x, y)];
     }
   }
+
+  // hardcoded value. looks good :p
+  if (max_dst > 325)
+    max_dst = 325;
+
   max_dst = sqrtf(max_dst) / 2.f;
 
   // and the output pass:
@@ -150,12 +155,15 @@ int main(int argc, char **argv)
   // //
   // // get the parameters
   // //
+
   if (argc != 3 && argc != 4)
   {
-    std::cout << "\nusage: " << argv[0] << " path/to/font/file.ttf font-name [output-folder]" << std::endl
-              << "  font-name: must not be a path. the font generator will output two files: font-name.png and font-name.bfont" << std::endl
-              << "  output-folder: optional. The path to the output folder. Default is './'\n" << std::endl
-              << "NOTE: as the font-generator is using freetype, the font-generator supports more than only ttf fonts.\n" << std::endl;
+    neam::cr::out.info() << LOGGER_INFO << "usage: " << argv[0] << " path/to/font/file.ttf font-name [output-folder]" << neam::cr::newline
+              << "  font-name: must not be a path. the font generator will output two files: font-name.png and font-name.bfont" << neam::cr::newline
+              << "  output-folder: optional. The path to the output folder. Default is './'" << neam::cr::newline << neam::cr::newline
+              << "NOTE: as the font-generator is using freetype, the font-generator supports more than only ttf fonts." << std::endl;
+    neam::cr::out.info() << LOGGER_INFO << "usage: " << argv[0] << " fixed font-name [output-folder]" << neam::cr::newline
+              << "  output a fixed bfont. It only generate the .bfont file" << std::endl;
     return 1;
   }
 
@@ -180,6 +188,14 @@ int main(int argc, char **argv)
   neam::yaggler::glfw_window win(neam::yaggler::window_mode::windowed, {FONT_TEXTURE_SIZE, FONT_TEXTURE_SIZE}, "[bfont generator]", {{GLFW_VISIBLE, false}});
   win.hide();
 
+  // catch now the case where the font is fixed
+  if (ttf_file == "fixed")
+  {
+    neam::bleunw::yaggler::gui::font_face font;
+    font.write_out_font_face(output_folder + "/" + font_name + ".bfont", output_folder + "/" + font_name + ".png");
+    return 0;
+  }
+
   // un-initialised font-face
   neam::bleunw::yaggler::gui::font_face font;
   {
@@ -192,7 +208,7 @@ int main(int argc, char **argv)
 
   if (FT_Init_FreeType(&ft_lib))
   {
-    std::cerr << "FONT-GENERATOR: ERROR: Could not init freetype library" << std::endl;
+    neam::cr::out.error() << LOGGER_INFO << "FONT-GENERATOR: ERROR: Could not init freetype library" << std::endl;
     return 1;
   }
 
@@ -201,7 +217,7 @@ int main(int argc, char **argv)
 
   if (FT_New_Face(ft_lib, ttf_file.data(), 0, &face))
   {
-    std::cerr << "FONT-GENERATOR: ERROR: Could not open the font" << std::endl;
+    neam::cr::out.error() << LOGGER_INFO << "FONT-GENERATOR: Could not open the font" << std::endl;
     return 1;
   }
 
@@ -212,7 +228,7 @@ int main(int argc, char **argv)
   // //
 
   // for each chars in [0-255] brute-force the signed distance field
-  std::cout << "FONT-GENERATOR: Computing the signed distance field..." << std::endl;
+  neam::cr::out.info() << LOGGER_INFO <<  "FONT-GENERATOR: Computing the signed distance field..." << std::endl;
 
   uint8_t *output = new uint8_t[FONT_GLYPH_SIZE * FONT_GLYPH_SIZE];
 
@@ -223,15 +239,15 @@ int main(int argc, char **argv)
     {
       // some errors (do not exit on those errors)
       if (FT_Load_Char(face, i, FT_LOAD_RENDER | FT_LOAD_LINEAR_DESIGN))
-        std::cerr << "\nFONT-GENERATOR: ERROR: Could not load the character " << i << " ('" << static_cast<char>(i < 32 ? ' ' : i) << ")" << std::endl;
+        neam::cr::out.error() << LOGGER_INFO << "FONT-GENERATOR: Could not load the character " << i << " ('" << static_cast<char>(i < 32 ? ' ' : i) << ")" << std::endl;
 
       // some warnings...
       if (glyph->advance.y != 0)
-        std::cerr << "\nFONT-GENERATOR: WARNING: the character " << i << " ('" << static_cast<char>(i < 32 ? ' ' : i) << ") will not be displayed correctly (advance.y is not 0)" << std::endl;
+        neam::cr::out.warning() << LOGGER_INFO << "FONT-GENERATOR: the character " << i << " ('" << static_cast<char>(i < 32 ? ' ' : i) << ") will not be displayed correctly (advance.y is not 0)" << std::endl;
       if (glyph->bitmap.width >= FONT_GLYPH_SIZE)
-        std::cerr << "\nFONT-GENERATOR: WARNING: the character " << i << " ('" << static_cast<char>(i < 32 ? ' ' : i) << ") will not be displayed correctly (width too big)" << std::endl;
+        neam::cr::out.warning() << LOGGER_INFO << "FONT-GENERATOR: the character " << i << " ('" << static_cast<char>(i < 32 ? ' ' : i) << ") will not be displayed correctly (width too big)" << std::endl;
       if (glyph->bitmap.rows >= FONT_GLYPH_SIZE)
-        std::cerr << "\nFONT-GENERATOR: WARNING: the character " << i << " ('" << static_cast<char>(i < 32 ? ' ' : i) << ") will not be displayed correctly (height too big)" << std::endl;
+        neam::cr::out.warning() << LOGGER_INFO << "FONT-GENERATOR: the character " << i << " ('" << static_cast<char>(i < 32 ? ' ' : i) << ") will not be displayed correctly (height too big)" << std::endl;
 
       // compute the SDF
       glm::vec2 dt = glm::vec2(FONT_GLYPH_SIZE - glyph->bitmap.width, FONT_GLYPH_SIZE - glyph->bitmap.rows);
@@ -249,14 +265,14 @@ int main(int argc, char **argv)
                                      GL_RED, GL_UNSIGNED_BYTE, output, 0);
 
       // a nice text to show progression
-      std::cout << "                done: " << (i * 100 / 256) << "% ('" << static_cast<char>(isprint(i) ? i : '-') << "')\r";
-      std::cout.flush();
+      if (i % 10 == 0)
+        neam::cr::out.info() << LOGGER_INFO << "done: " << (i * 100 / 256) << "% ('" << static_cast<char>(isprint(i) ? i : '-') << "')" << std::endl;
     }
   }
 
   delete [] output;
 
-  std::cout << "\nFONT-GENERATOR: blurring..." << std::endl;
+  neam::cr::out.info() << LOGGER_INFO << "FONT-GENERATOR: blurring..." << std::endl;
 
   neam::yaggler::texture::texture<neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>, neam::yaggler::texture::options::empty_texture_init<GL_RGBA8, neam::ct::vector<FONT_TEXTURE_SIZE, FONT_TEXTURE_SIZE>> > tmp_texture;
   auto blur_compositor = neam::klmb::yaggler::make_compositor
@@ -285,9 +301,9 @@ int main(int argc, char **argv)
   // render
   blur_compositor.render();
 
-  std::cout << "FONT-GENERATOR: Writing to file..." << std::endl;
+  neam::cr::out.info() << LOGGER_INFO << "FONT-GENERATOR: Writing to file..." << std::endl;
   font.write_out_font_face(output_folder + "/" + font_name + ".bfont", output_folder + "/" + font_name + ".png");
 
-  std::cout << "FONT-GENERATOR: DONE !" << std::endl;
+  neam::cr::out.info() << LOGGER_INFO << "FONT-GENERATOR: DONE !" << std::endl;
   return 0;
 }

@@ -27,6 +27,7 @@
 #ifndef __N__SETUP_HPP__
 # define __N__SETUP_HPP__
 
+#include <tools/logger/logger.hpp>
 #include <cstddef>
 
 namespace neam
@@ -56,6 +57,11 @@ namespace neam
         static constexpr opengl_profile profile = Profile;
         static constexpr bool forward_compat = (int)CtxFlags & (int)opengl_context_flag::forward_compat;
         static constexpr bool debug = (int)CtxFlags & (int)opengl_context_flag::debug;
+
+        static inline void _log()
+        {
+          neam::cr::out.info() << LOGGER_INFO << "using OPENGL " << gl_major << "." << gl_minor << std::endl;
+        }
       };
     } // namespace setup
   } // namespace yaggler
