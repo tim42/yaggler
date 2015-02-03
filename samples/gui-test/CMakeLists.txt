@@ -18,4 +18,5 @@ set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${YAGGLER_FLAGS}")
 add_executable(${SAMPLE_NAME} ${srcs} ${YAGGLER_SRCS})
 
 target_link_libraries(${SAMPLE_NAME} ${YAGGLER_DEPS_LIBS})
+target_link_libraries(${SAMPLE_NAME} ${PROJ_APP})
 

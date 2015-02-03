@@ -47,16 +47,14 @@ namespace neam
         : str(s)
       {
 #ifndef YAGGLER_NO_MESSAGES
-        if (::opengl_version::debug)
-          neam::cr::out.error() << LOGGER_INFO << "\n[EXCEPTION]: " << s << std::endl << std::endl;
+        neam::cr::out.error() << LOGGER_INFO << "\n[EXCEPTION]: " << s << std::endl << std::endl;
 #endif
       }
       base_runtime_error(std::string &&s) noexcept
         : str(s)
       {
 #ifndef YAGGLER_NO_MESSAGES
-        if (::opengl_version::debug)
-          neam::cr::out.error() << LOGGER_INFO << "\n[EXCEPTION]: " << s << std::endl << std::endl;
+        neam::cr::out.error() << LOGGER_INFO << "\n[EXCEPTION]: " << s << std::endl << std::endl;
 #endif
       }
 

@@ -36,14 +36,14 @@ namespace neam
     namespace version
     {
       // version idx
-      constexpr size_t major = _PROJ_VERSION_MAJOR;
-      constexpr size_t minor = _PROJ_VERSION_MINOR;
-      constexpr size_t superminor = _PROJ_VERSION_SUPERMINOR;
+      extern constexpr size_t major = _PROJ_VERSION_MAJOR;
+      extern constexpr size_t minor = _PROJ_VERSION_MINOR;
+      extern constexpr size_t superminor = _PROJ_VERSION_SUPERMINOR;
 
-      constexpr string_t short_string = STRINGIZE(_PROJ_VERSION_MAJOR) "." STRINGIZE(_PROJ_VERSION_MINOR) "." STRINGIZE(_PROJ_VERSION_SUPERMINOR);
+      extern constexpr string_t short_string = STRINGIZE(_PROJ_VERSION_MAJOR) "." STRINGIZE(_PROJ_VERSION_MINOR) "." STRINGIZE(_PROJ_VERSION_SUPERMINOR);
 
-      #define YAGGLER_BUILD_TIMESTAMP __TIMESTAMP__
-      constexpr string_t string = STRINGIZE(_PROJ_VERSION_MAJOR) "." STRINGIZE(_PROJ_VERSION_MINOR) "." STRINGIZE(_PROJ_VERSION_SUPERMINOR) " (" YAGGLER_BUILD_TIMESTAMP ")";
+#define YAGGLER_BUILD_TIMESTAMP __TIMESTAMP__
+      extern constexpr string_t string = STRINGIZE(_PROJ_VERSION_MAJOR) "." STRINGIZE(_PROJ_VERSION_MINOR) "." STRINGIZE(_PROJ_VERSION_SUPERMINOR) " (" YAGGLER_BUILD_TIMESTAMP ")";
     } // namespace version
   } // namespace yaggler
 } // namespace neam

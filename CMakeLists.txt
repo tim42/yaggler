@@ -83,7 +83,7 @@ include_directories("./")
 add_subdirectory(tools/font-generator/)
 
 # build a static lib (if needed)
-#add_subdirectory(${PROJ_NAME})
+add_subdirectory(${PROJ_NAME})
 
 # export project name to parent project
 if (NOT ${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})

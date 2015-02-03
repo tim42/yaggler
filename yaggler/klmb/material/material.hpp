@@ -51,9 +51,9 @@ namespace neam
     {
       namespace framework_files
       {
-        constexpr neam::string_t main_frag = "data/klmb-framework/main.frag";
-        constexpr neam::string_t main_vert = "data/klmb-framework/main.vert";
-        constexpr neam::string_t main_geom = "data/klmb-framework/main.geom";
+        extern constexpr neam::string_t main_frag = "data/klmb-framework/main.frag";
+        extern constexpr neam::string_t main_vert = "data/klmb-framework/main.vert";
+        extern constexpr neam::string_t main_geom = "data/klmb-framework/main.geom";
       } // namespace framework
 
       /// \brief this is the very basic K:LMB/YägGLer base_material.

@@ -115,6 +115,7 @@ namespace neam
           {
             glDisableVertexAttribArray(Init::attribute_index);
           }
+          int _i;
       };
 
       // this class doesn't represent an opengl object/concept, but something

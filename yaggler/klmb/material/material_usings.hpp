@@ -147,8 +147,8 @@ namespace neam
       using auto_shared_file_shader = shared_file_shader<internal::shader_type_from_filename<Filename>::shader_type, Filename>;
 
       // some default shaders
-      constexpr neam::string_t klmb_default_vert_file = "data/klmb-framework/defaults/default.vert";
-      constexpr neam::string_t klmb_default_frag_file = "data/klmb-framework/defaults/default.frag";
+      extern constexpr neam::string_t klmb_default_vert_file = "data/klmb-framework/defaults/default.vert";
+      extern constexpr neam::string_t klmb_default_frag_file = "data/klmb-framework/defaults/default.frag";
 
       using klmb_default_vert = auto_shared_file_shader<klmb_default_vert_file>;
       using klmb_default_frag = auto_shared_file_shader<klmb_default_frag_file>;
@@ -161,7 +161,7 @@ namespace neam
 
       namespace special_shaders
       {
-        constexpr neam::string_t klmb_fsquad_vert_files = "data/shaders/fsquad/fsquad.vert";
+        extern constexpr neam::string_t klmb_fsquad_vert_files = "data/shaders/fsquad/fsquad.vert";
 
         using klmb_fsquad_vert = auto_shared_file_shader<klmb_fsquad_vert_files>;
       } // namespace special_shaders

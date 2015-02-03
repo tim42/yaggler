@@ -43,8 +43,8 @@ namespace neam
       {
         namespace defaults
         {
-          constexpr neam::string_t image_fragment_shader_file = "data/shaders/bleunw/image/image.frag";
-          constexpr neam::string_t image_9slices_fragment_shader_file = "data/shaders/bleunw/image/9slices.frag";
+          extern constexpr neam::string_t image_fragment_shader_file = "data/shaders/bleunw/image/image.frag";
+          extern constexpr neam::string_t image_9slices_fragment_shader_file = "data/shaders/bleunw/image/9slices.frag";
 
           using image_fragment_shader = klmb::yaggler::auto_file_shader<image_fragment_shader_file>;
           using image_9slices_fragment_shader = klmb::yaggler::auto_file_shader<image_9slices_fragment_shader_file>;

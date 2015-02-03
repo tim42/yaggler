@@ -415,7 +415,7 @@ namespace neam
           }
 
         public:
-          static constexpr GLenum geom_type = GeomType::value;
+          static constexpr GLenum geom_type = GeomType::get();
 
         private:
           GLuint id;

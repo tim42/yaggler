@@ -190,7 +190,7 @@ namespace neam
         static constexpr size_t dimensionality = sizeof...(Vals);
 
         // implicit conversion
-        constexpr operator vec_type()
+        constexpr operator vec_type() const
         {
           return value;
         }

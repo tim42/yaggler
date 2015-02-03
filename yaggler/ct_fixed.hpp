@@ -144,7 +144,7 @@ namespace neam
         return ct::conversion::to<double>(FP);
       }
 
-      constexpr operator double()
+      constexpr operator double() const
       {
         return get_val();
       }
@@ -169,7 +169,7 @@ namespace neam
         return ct::conversion::to<float>(FP);
       }
 
-      constexpr operator float()
+      constexpr operator float() const
       {
         return get_val();
       }

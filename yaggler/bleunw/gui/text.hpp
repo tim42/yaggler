@@ -26,6 +26,8 @@
 #ifndef __N_5056306421379269814_1366371712__TEXT_HPP__
 # define __N_5056306421379269814_1366371712__TEXT_HPP__
 
+#include <tools/ct_string.hpp>
+
 #include <bleunw/gui/font_face.hpp>
 #include <bleunw/gui/renderable.hpp>
 
@@ -48,14 +50,14 @@ namespace neam
         // a text, rendered with a geometry shader.
         namespace defaults
         {
-          constexpr neam::string_t text_fragment_shader_file = "data/shaders/bleunw/text/text.frag";
+          extern constexpr neam::string_t text_fragment_shader_file = "data/shaders/bleunw/text/text.frag";
           using text_fragment_shader = klmb::yaggler::auto_file_shader<text_fragment_shader_file>;
         } // namespace default
 
         namespace internal
         {
-          constexpr neam::string_t text_vertex_file = "data/shaders/bleunw/text/text.vert";
-          constexpr neam::string_t text_geom_file = "data/shaders/bleunw/text/text.geom";
+          extern constexpr neam::string_t text_vertex_file = "data/shaders/bleunw/text/text.vert";
+          extern constexpr neam::string_t text_geom_file = "data/shaders/bleunw/text/text.geom";
 
           using text_vertex_shader = klmb::yaggler::auto_shared_file_shader<text_vertex_file>;
           using text_geom_shader = klmb::yaggler::auto_shared_file_shader<text_geom_file>;

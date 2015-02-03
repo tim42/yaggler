@@ -41,8 +41,8 @@ namespace neam
       namespace gbuffer
       {
         // shader stuff, to be included in every material.
-        constexpr neam::string_t gbuffer_geom_file = "data/shaders/gbuffer/gbuffer.geom";
-        constexpr neam::string_t gbuffer_frag_file = "data/shaders/gbuffer/gbuffer.frag";
+        extern constexpr neam::string_t gbuffer_geom_file = "data/shaders/gbuffer/gbuffer.geom";
+        extern constexpr neam::string_t gbuffer_frag_file = "data/shaders/gbuffer/gbuffer.frag";
 
         using gbuffer_geom_shader = auto_file_shader<gbuffer_geom_file>;
         using gbuffer_frag_shader = auto_file_shader<gbuffer_frag_file>;

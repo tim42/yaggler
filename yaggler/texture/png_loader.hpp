@@ -110,8 +110,8 @@ namespace neam
             static constexpr size_t level = Level;
 
             // automatically generated from the InternalFormat field and the "best" value for it in png++.
-            static constexpr GLenum format = gl_input_color_type[_get_index() / 2];
-            static constexpr GLenum type = gl_depth[_get_index() % 2];
+            static constexpr GLenum format = gl_input_color_type[_get_index(0) / 2];
+            static constexpr GLenum type = gl_depth[_get_index(0) % 2];
 
             GLvoid *data;
 
@@ -198,8 +198,8 @@ namespace neam
             static constexpr size_t level = Level;
 
             // automatically generated from the InternalFormat field and the "best" value for it in png++.
-            static constexpr GLenum format = gl_input_color_type[_get_index() / 2];
-            static constexpr GLenum type = gl_depth[_get_index() % 2];
+            static constexpr GLenum format = gl_input_color_type[_get_index(0) / 2];
+            static constexpr GLenum type = gl_depth[_get_index(0) % 2];
 
             GLvoid *data;
 
