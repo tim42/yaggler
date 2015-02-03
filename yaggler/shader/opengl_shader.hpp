@@ -28,16 +28,8 @@
 # define __N_707724487786268404_1508345494__PIXEL_SHADER_HPP__
 
 #include <string>
-#include <fstream>
-#include <sstream>
 #include <type_traits>
 #include <mutex>
-
-#ifndef _WIN32 // WARNING: untested yet :)
-# include <sys/types.h>
-# include <sys/stat.h>
-# include <unistd.h>
-#endif
 
 #include <GLEW/glew.h>
 
@@ -47,6 +39,7 @@
 
 #include "shader/shader_base.hpp"
 #include "shader/shader_options.hpp"
+#include "shader/common_shader_loader.hpp"
 #include "shader/except.hpp"
 
 // #include "threads/spinlock.hpp"
@@ -59,11 +52,10 @@ namespace neam
     {
       // template types:
       //        shadertype:             neam::embed::GLenum
-      //        ShaderSourceType:       [...] (see yaggler_type.hpp)
-      //        ShaderSource:           neam::embed::string or neam::yaggler::embed::shader::function_ptr_* (see yaggler_type.hpp)
+      //        ShaderSource:           neam::yaggler::shader::shader_loader<...> (see common_shader_loader.hpp)
       //        ShaderOption:           neam::embed::shader::option (see shader/shader_options.hpp)
-      template<typename ShaderType, typename ShaderSourceType, typename ShaderSource, typename ShaderOption>
-      class shader<type::opengl, ShaderType, ShaderSourceType, ShaderSource, ShaderOption>
+      template<typename ShaderType, typename ShaderSource, typename ShaderOption>
+      class shader<type::opengl, ShaderType, ShaderSource, ShaderOption>
       {
         public:
           shader()
@@ -99,21 +91,21 @@ namespace neam
               failed = false;
             }
 
-            has_source_changed(0);      // init this func;
+            ShaderSource::has_source_changed();      // init this func;
             changed = true;
           }
 
           shader(GLuint _id)
             : shader_id(_id), source(), ownership(false)
           {
-            has_source_changed(0);      // init this func;
+            ShaderSource::has_source_changed();      // init this func;
             changed = true;
           }
 
           shader(GLuint _id, assume_ownership_t)
             : shader_id(_id), source(), ownership(true)
           {
-            has_source_changed(0);      // init this func;
+            ShaderSource::has_source_changed();      // init this func;
             changed = true;
           }
 
@@ -121,14 +113,14 @@ namespace neam
           shader(const shader &o)
           : shader_id(o.get_id()), source(o.source), additional_str(o.get_additional_strings()), ownership(false)
           {
-            has_source_changed(0);      // init this func;
+            ShaderSource::has_source_changed();      // init this func;
             changed = false;
           }
           template<typename OShaderSourceType, typename OShaderSource, typename OShaderOption>
           shader(const shader<ShaderType, OShaderSourceType, OShaderSource, OShaderOption> &o)
             : shader_id(o.get_id()), source(), additional_str(o.get_additional_strings()), ownership(true)
           {
-            has_source_changed(0);      // init this func;
+            ShaderSource::has_source_changed();      // init this func;
             changed = true;
           }
 
@@ -136,7 +128,7 @@ namespace neam
           : shader_id(o.get_id()), source(o.source), additional_str(o.get_additional_strings()), ownership(o.has_ownership())
           {
             o.give_up_ownership();
-            has_source_changed(0);      // init this func;
+            ShaderSource::has_source_changed();      // init this func;
             changed = false;
           }
           template<typename OShaderSourceType, typename OShaderSource, typename OShaderOption>
@@ -144,7 +136,7 @@ namespace neam
             : shader_id(o.get_id()), source(), additional_str(o.get_additional_strings()), ownership(o.has_ownership())
           {
             o.give_up_ownership();
-            has_source_changed(0);      // init this func;
+            ShaderSource::has_source_changed();      // init this func;
             changed = true;
           }
 
@@ -152,7 +144,7 @@ namespace neam
           : shader_id(o.shader_id), source(std::move(o.source)), additional_str(std::move(o.additional_str)), ownership(o.ownership)
           {
             o.give_up_ownership();
-            has_source_changed(0);      // init this func;
+            ShaderSource::has_source_changed();      // init this func;
             changed = false;
           }
           template<typename OShaderSourceType, typename OShaderSource, typename OShaderOption>
@@ -160,7 +152,7 @@ namespace neam
             : shader_id(o.get_id()), source(), additional_str(o.get_additional_strings()), ownership(o.has_ownership())
           {
             o.give_up_ownership();
-            has_source_changed(0);      // init this func;
+            ShaderSource::has_source_changed();      // init this func;
             changed = true;
           }
 
@@ -211,7 +203,7 @@ namespace neam
           // possibly faster than a direct call to 'recompile()'
           void recompile_if_changed()
           {
-            if (changed || has_source_changed(0))
+            if (changed || ShaderSource::has_source_changed())
               unlocked_recompile();
           }
 
@@ -219,22 +211,6 @@ namespace neam
           bool has_failed() const
           {
             return failed;
-          }
-
-          // set/change the internal source string
-          // only existing for ShaderSourceType === opengl::dyn_string
-          // an empty string will reset the source to its default (ct) value
-          // you may need to call recompile() (and link() in the program) after...
-          void set_source(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::dyn_string>::value), const std::string &) _source = "")
-          {
-            source = _source;
-            changed = true;
-          }
-
-          constexpr int set_source(NCR_ENABLE_IF((!std::is_same<ShaderSourceType, opengl::dyn_string>::value), const std::string &) = "") const
-          {
-            static_assert(!(sizeof(ShaderSourceType) + 1), "shader<type::opengl>::set_source is only possible with ShaderSourceType set to opengl::dyn_string");
-            return 0;
           }
 
           // return the shader id
@@ -330,23 +306,23 @@ namespace neam
             return additional_str;
           }
 
-          void _preload()
-          {
-            if (!std::is_same<ShaderSourceType, opengl::function>::value)
-              source = get_source_string(0);
-          }
-
           // return the source name (filename) or type (ex.: "<dynamic string>")
           static constexpr inline const char *get_source_name()
           {
-            return _get_source_name(0);
+            return ShaderSource::get_source_name();
           }
+
+          void _preload()
+          {
+            source = ShaderSource::get_source_string();
+          }
+
+          using shader_source = ShaderSource;
 
         private:
           inline void unlocked_recompile()
           {
-            if (!std::is_same<ShaderSourceType, opengl::function>::value)
-              source = get_source_string(0);
+            source = ShaderSource::get_source_string();
 
             // get the version string
             for (size_t i = 0; source.size() > 9 && i < source.size() - 9; ++i)
@@ -397,7 +373,7 @@ namespace neam
               strcpy(message, header);
 
               strcat(message, " '");
-              strcat(message, get_source_name());
+              strcat(message, ShaderSource::get_source_name());
               strcat(message, "'");
 
               if (::opengl_version::debug)
@@ -410,114 +386,10 @@ namespace neam
 #ifndef YAGGLER_NO_MESSAGES
             if (::opengl_version::debug)
             {
-              neam::cr::out.debug() << LOGGER_INFO << "compiled shader  '" << get_source_name() << "'" << std::endl;
+              neam::cr::out.debug() << LOGGER_INFO << "compiled shader  '" << ShaderSource::get_source_name() << "'" << std::endl;
             }
 #endif
             failed = false;
-          }
-
-          // return the name (filename/typename)
-          static constexpr inline const char *_get_source_name(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::constexpr_string>::value), int) = 0)
-          {
-            return "<constexpr  string>";
-          }
-
-          static constexpr inline const char *_get_source_name(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::file>::value), int) = 0)
-          {
-            return ShaderSource::value;
-          }
-
-          static constexpr inline const char *_get_source_name(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::dyn_string>::value), int) = 0)
-          {
-            return "<dynamic string>";
-          }
-
-          static constexpr inline const char *_get_source_name(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::function>::value), int) = 0)
-          {
-            return "<function return>";
-          }
-
-        private: // source helpers
-
-          // this one return directly a const char * to avoid the creation of a temporary std::string (and also because it's possible :D )
-          constexpr inline const char *get_source_string(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::constexpr_string>::value), int)) const
-          {
-            return ShaderSource::value;
-          }
-
-          inline std::string get_source_string(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::file>::value), int) = 0) const
-          {
-            // if anybody says there's a shorter way to load a file into a string in C++, perhaps he is lying ;)
-            return static_cast<std::ostringstream&>(std::ostringstream() << (std::ifstream(ShaderSource::value).rdbuf())).str();
-          }
-
-          inline std::string get_source_string(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::dyn_string>::value), int) = 0)
-          {
-            if (source.empty())
-              source = ShaderSource::value;
-            return source;
-          }
-
-          inline std::string get_source_string(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::function>::value), int) = 0) const
-          {
-            return ShaderSource::value();
-          }
-
-        private: // watcher helpers
-          inline bool has_source_changed(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::file>::value && ShaderOption::value == shader_option::reload_on_change), int) = 0)
-          {
-            // only on linux: ( :D )
-            //
-            // http://stackoverflow.com/q/9376975
-            float old_old_time = old_time;
-            struct stat file_stat;
-
-            int err = stat(ShaderSource::value, &file_stat);
-            if (err != 0)
-              return true;
-
-            // ~0.76 day, it may be enought ^^ (another big point is that if the filesystem support it, the < 1s time is also used)
-            old_time = static_cast<float>(file_stat.st_mtim.tv_sec & 0xFFFF) + (static_cast<float>(file_stat.st_mtim.tv_nsec) * 1e-9f);
-
-            if (!old_old_time)
-              return false;
-
-            return old_old_time != old_time;
-          }
-
-          inline bool has_source_changed(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::dyn_string>::value && ShaderOption::value == shader_option::reload_on_change), int) = 0)
-          {
-            // check the string:
-            bool old_changed = changed;
-            changed = false;
-            return old_changed;
-          }
-
-          // recheck the source generated by the function.
-          // NOTE: could be slow !!!
-          inline bool has_source_changed(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::function>::value && ShaderOption::value == shader_option::reload_on_change), int) = 0) const
-          {
-            // check the string:
-            std::string tstr = get_source_string(0);
-            if (!(tstr == source))
-            {
-              source = tstr;
-              return true;
-            }
-            return false;
-          }
-
-          // can't change (constexpr string)
-          // this is a bit stupid to user opengl::constexpr_string and shader_option::reload_on_change
-          constexpr inline bool has_source_changed(NCR_ENABLE_IF((std::is_same<ShaderSourceType, opengl::constexpr_string>::value && ShaderOption::value == shader_option::reload_on_change), int) = 0) const
-          {
-            return false;
-          }
-
-          // always return false
-          constexpr inline bool has_source_changed(NCR_ENABLE_IF((ShaderOption::value != shader_option::reload_on_change), int) = 0) const
-          {
-            return false;
           }
 
         private:
@@ -530,7 +402,6 @@ namespace neam
 
           bool failed = false;
           bool changed = false;
-          float old_time = 0.0f;
       };
     } // namespace shader
   } // namespace yaggler
