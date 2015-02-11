@@ -48,7 +48,7 @@ namespace neam
         {
           public:
             base_application(neam::yaggler::glfw_window &&_window)
-              : window(std::move(_window)), emgr(window), framebuffer_resolution(_framebuffer_resolution), mps_1s(0), frame_counter(0)
+              : window(std::move(_window)), emgr(window), framebuffer_resolution(_framebuffer_resolution), mps_1s(0), mps_immediate(0), frame_counter(0)
             {
               _framebuffer_resolution.x = window.get_framebuffer_size().x;
               _framebuffer_resolution.y = window.get_framebuffer_size().y;
