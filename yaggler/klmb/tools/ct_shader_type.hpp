@@ -35,8 +35,8 @@
 //
 // .frag        --> fragment shader
 // .geom        --> geometry shader
-// .tess-eval   --> tesselation evaluation shader
-// .tess-ctrl   --> tesselation control shader
+// .tes         --> tesselation evaluation shader
+// .tcs         --> tesselation control shader
 // .vert        --> vertex shader
 //
 // .compute     --> compute shader
@@ -85,14 +85,14 @@ namespace neam
 
         /// \brief tess evaluation shader
         template<>
-        struct shader_type_by_ext<'.', 't', 'e', 's', 's', '-', 'e', 'v', 'a', 'l'>
+        struct shader_type_by_ext<'.', 't', 'e', 's'>
         {
           static constexpr GLenum shader_type = GL_TESS_EVALUATION_SHADER;
         };
 
         /// \brief tess control shader
         template<>
-        struct shader_type_by_ext<'.', 't', 'e', 's', 's', '-', 'c', 't', 'r', 'l'>
+        struct shader_type_by_ext<'.', 't', 'c', 's'>
         {
           static constexpr GLenum shader_type = GL_TESS_CONTROL_SHADER;
         };
