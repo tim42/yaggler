@@ -35,8 +35,9 @@ namespace neam
   {
     namespace shader
     {
-      enum class shader_option
+      enum shader_option
       {
+        none,
         reload_on_change,       // ask to watch the shader file and recompile it when the source changes
         one_shot_compilation,   // never recompile the shader (except when it's manualy asked)
         shared_instance,        // every declaration of this class will share the same Id. The shader won't be destructed.

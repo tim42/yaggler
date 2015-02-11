@@ -76,21 +76,16 @@ namespace neam
       //        every other instances of the class will share the modifs.
 
       // shader from a file
-      template<GLenum ShaderType, const char *Filename>
+      template<GLenum ShaderType, const char *Filename, neam::yaggler::shader::shader_option Flags = neam::yaggler::shader::shader_option::one_shot_compilation>
       using file_shader = neam::yaggler::shader::shader
       <
         neam::yaggler::type::opengl, neam::embed::GLenum<ShaderType>,
         neam::yaggler::shader::shader_loader<neam::yaggler::shader::file, neam::embed::string<Filename>>,
-        neam::embed::shader::option<neam::yaggler::shader::shader_option::one_shot_compilation>
+        neam::embed::shader::option<Flags>
       >;
 
-      template<GLenum ShaderType, const char *Filename>
-      using shared_file_shader = neam::yaggler::shader::shader
-      <
-        neam::yaggler::type::opengl, neam::embed::GLenum<ShaderType>,
-        neam::yaggler::shader::shader_loader<neam::yaggler::shader::file, neam::embed::string<Filename>>,
-        neam::embed::shader::option<neam::yaggler::shader::shader_option::shared_instance>
-      >;
+      template<GLenum ShaderType, const char *Filename, neam::yaggler::shader::shader_option Flags = neam::yaggler::shader::shader_option::none>
+      using shared_file_shader = file_shader<ShaderType, Filename, static_cast<neam::yaggler::shader::shader_option>(neam::yaggler::shader::shader_option::shared_instance | Flags)>;
 
       // shader from a constexpr string
       template<GLenum ShaderType, const char *CTString>
@@ -140,8 +135,8 @@ namespace neam
       //
       // .compute     --> compute shader
       //
-      template<const char *Filename>
-      using auto_file_shader = file_shader<internal::shader_type_from_filename<Filename>::shader_type, Filename>;
+      template<const char *Filename, neam::yaggler::shader::shader_option Flags = neam::yaggler::shader::shader_option::none>
+      using auto_file_shader = file_shader<internal::shader_type_from_filename<Filename>::shader_type, Filename, Flags>;
 
       template<const char *Filename>
       using auto_shared_file_shader = shared_file_shader<internal::shader_type_from_filename<Filename>::shader_type, Filename>;
