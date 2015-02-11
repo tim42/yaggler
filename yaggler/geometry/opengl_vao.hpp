@@ -195,6 +195,10 @@ namespace neam
             use();
             b.use();
             NEAM_EXECUTE_PACK((vs.use()));
+            unuse();
+
+            b.unuse();
+            NEAM_EXECUTE_PACK((vs.unuse()));
           }
 
           // create a link to a more generic texture.

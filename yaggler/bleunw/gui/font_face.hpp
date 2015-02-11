@@ -86,8 +86,10 @@ namespace neam
               table[i].upper_pos = glm::vec2(i % 16 + 1, i / 16 + 1) / 16.f;
               table[i].dt = glm::vec2(0, 0);
               table[i].left_top = glm::vec2(0, 0);
-              table[i].x_inc = 1.f;
+              table[i].x_inc = 1.f / 16.f;
             }
+
+            vbo.set_data(table);
           }
 
           // init the font for a fixed size font
@@ -99,8 +101,10 @@ namespace neam
               table[i].upper_pos = glm::vec2(i % 16 + 1, i / 16 + 1) / 16.f;
               table[i].dt = glm::vec2(0, 0);
               table[i].left_top = glm::vec2(0, 0);
-              table[i].x_inc = 1.f;
+              table[i].x_inc = 1.f / 16.f;
             }
+
+            vbo.set_data(table);
 
             // use the png loader (to load something grey. Distance field.)
             neam::yaggler::texture::options::png_texture_loader<GL_RGBA8> loader(font_texture);
@@ -235,7 +239,7 @@ namespace neam
           template<typename VaoType>
           void init_vao(VaoType &vt) const
           {
-            vt.add_buffer(vbo, lower_pos_view, upper_pos_view, dt_view, left_top_view, x_inc_view);
+            vt.add_buffer(vbo, lower_pos_view, upper_pos_view, dt_view, left_top_view/*, x_inc_view*/);
           }
 
           // members
@@ -284,7 +288,7 @@ namespace neam
                   2,                                    // size
                   GL_FLOAT,                             // type
                   sizeof(character_nfo),                // stride
-                  offsetof(character_nfo, left_top)           // offset
+                  offsetof(character_nfo, left_top)     // offset
                 >
                > left_top_view;
 

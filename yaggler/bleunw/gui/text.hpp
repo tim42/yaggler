@@ -80,7 +80,7 @@ namespace neam
               if (_font)
                 set_font(_font);
 
-              x_pos.set_binding_point(1);
+              x_pos.set_binding_point(vao.get_id());
               vao.add_buffer(indices);
             }
 
@@ -225,7 +225,21 @@ namespace neam
               {
                 ar_xypos[i * 2 + 0] = acc;
                 ar_xypos[i * 2 + 1] = yacc;
-                if (value[i] == '\n')
+
+                // word aware split
+                bool space_is_return = false;
+                if (max_width > 0 && std::isspace(value[i]) && value[i] != '\v' && value[i] != '\n')
+                {
+                  float tacc = acc + font->table[static_cast<unsigned int>(value[i])].x_inc;
+                  if (value[i] == '\t')
+                    tacc = 4 - (idx % 4) + round(acc);
+                  for (size_t j = 1; !std::isspace(value[i + j]) && i + j < value.size(); ++j)
+                    tacc += font->table[static_cast<unsigned int>(value[i + j])].x_inc;
+                  if (tacc > max_width && tacc - acc <= max_width)
+                    space_is_return = true;
+                }
+
+                if (value[i] == '\n' || space_is_return)
                 {
                   acc = 0;
                   idx = 0;
@@ -242,6 +256,7 @@ namespace neam
                 {
                   acc = 0;
                   ++yacc;
+                  idx = 0;
                 }
               }
 

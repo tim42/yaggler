@@ -15,7 +15,7 @@ layout(location = 1) in vec2 i_lower_pos;
 layout(location = 2) in vec2 i_upper_pos;
 layout(location = 3) in vec2 i_dt;
 layout(location = 4) in vec2 i_left_top;
-layout(location = 5) in float i_x_inc;
+// layout(location = 5) in float i_x_inc;
 
 uniform mat4 vp_matrix;
 uniform mat4 object_matrix;
@@ -52,6 +52,6 @@ void KLMB_MAIN_FUNCTION(void)
   upper_pos = i_upper_pos;
   dt = i_dt;
   left_top = i_left_top;
-  x_inc = i_x_inc;
+//   x_inc = i_x_inc;
 }
 
