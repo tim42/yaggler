@@ -107,7 +107,7 @@ namespace neam
                     stream << "PERFORMANCE ISSUE";
                     break;
                   case GL_DEBUG_TYPE_OTHER_ARB:
-                    stream << "OTHER";
+                    stream << "OTHER(" << type << ")";
                 }
                 stream << "/";
                 switch (severity)
@@ -120,6 +120,8 @@ namespace neam
                     break;
                   case GL_DEBUG_SEVERITY_LOW_ARB:
                     stream << "LOW";
+                  default:
+                    stream << "[" << severity << "]";
                 }
                 stream << "] from [";
                 switch (source)
@@ -140,7 +142,7 @@ namespace neam
                     stream << "APPLICATION";
                     break;
                   case GL_DEBUG_SOURCE_OTHER_ARB:
-                    stream << "OTHER";
+                    stream << "OTHER (" << source << ")";
                 }
                 stream << "] (ID: " << id << "): '" << message << "'" << std::endl;
               }, nullptr);
