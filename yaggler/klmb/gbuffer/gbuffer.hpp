@@ -101,12 +101,12 @@ namespace neam
               color_1.set_texture_data(GL_RGBA32F, screen_size, GL_RED, GL_BYTE, nullptr, 0);
               color_2.set_texture_data(GL_RGBA32F, screen_size, GL_RED, GL_BYTE, nullptr, 0);
 
-              depthbuffer.set_storage(screen_size, GL_DEPTH_COMPONENT24);
+              depthbuffer.set_storage(screen_size, GL_DEPTH_COMPONENT24, 0);
 
-              fbo.bind_renderbuffer(depthbuffer, GL_DEPTH_ATTACHMENT);
               fbo.bind_texture_color(color_0, 0);
               fbo.bind_texture_color(color_1, 1);
               fbo.bind_texture_color(color_2, 2);
+              fbo.bind_renderbuffer(depthbuffer, GL_DEPTH_ATTACHMENT);
 
               GLenum bufs[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
               glDrawBuffers(3, bufs);
