@@ -32,6 +32,7 @@ namespace neam
 {
   namespace yaggler
   {
+    /// \brief scope ->use() ->unuse() helper class
     template<typename Class>
     class scoped_use
     {
@@ -53,6 +54,7 @@ namespace neam
         const Class &cl;
     };
 
+    /// \brief scope ->bind() ->unbind() helper class
     template<typename Class>
     class scoped_bind
     {
@@ -77,7 +79,12 @@ namespace neam
 #define _YAGG_SCOPED_USE(x, c)          __YAGG_SCOPED_UB(x, use, c)
 #define _YAGG_SCOPED_BIND(x, c)         __YAGG_SCOPED_UB(x, bind, c)
 
+/// \brief a shortcut for a \code scoped_use<decltype(x)> (x) \endcode instance
+/// \param x the object to operate on
 #define YAGG_SCOPED_USE(x)              _YAGG_SCOPED_USE(x, __COUNTER__)
+
+/// \brief a shortcut for a \code scoped_bind<decltype(x)> (x) \endcode instance
+/// \param x the object to operate on
 #define YAGG_SCOPED_BIND(x)             _YAGG_SCOPED_BIND(x, __COUNTER__)
 
 

@@ -34,14 +34,31 @@ namespace neam
 {
   namespace yaggler
   {
+    /// \namespace setup
+    /// \brief contains everything needed to setup the opengl version used by yaggler
+    /// \example
+    ///   \code
+    ///     // using opengl 3.3 in core profile with the debug flag activated
+    ///     using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::opengl_profile::core, neam::yaggler::setup::opengl_context_flag::debug>;
+    ///   \endcode
+    /// \example
+    ///   \code
+    ///     // using opengl 4.5
+    ///     using opengl_version = neam::yaggler::setup::opengl<4, 5>;
+    ///   \endcode
     namespace setup
     {
+      /// \brief what kind of opengl profile to use
+      /// \e core profile is the default
       enum class opengl_profile
       {
         any = 0,
         core = 1 << 1,
         compat = 1 << 2,
       };
+
+      /// \brief some flags for the creation of the opengl context
+      /// \note the \e debug flag create a debug profile and will also register a default logging function
       enum class opengl_context_flag
       {
         none = 0,
@@ -49,6 +66,7 @@ namespace neam
         debug = 1 << 2,
       };
 
+      /// \brief the opengl object, describing what kind of gl context will be created by yaggler
       template<size_t GlMajor, size_t GlMinor, opengl_profile Profile = opengl_profile::core, opengl_context_flag CtxFlags = opengl_context_flag::none>
       struct opengl
       {
@@ -58,9 +76,17 @@ namespace neam
         static constexpr bool forward_compat = (int)CtxFlags & (int)opengl_context_flag::forward_compat;
         static constexpr bool debug = (int)CtxFlags & (int)opengl_context_flag::debug;
 
+        /// \brief log the context information in the neam::cr::out stream
         static inline void _log()
         {
-          neam::cr::out.info() << LOGGER_INFO << "using OPENGL " << gl_major << "." << gl_minor << std::endl;
+          neam::cr::out.info() << LOGGER_INFO << "using OPENGL " << gl_major << "." << gl_minor
+                               << (profile == opengl_profile::core ? " core profile" : (profile == opengl_profile::compat ? " compatibility profile" : ""))
+                               << (debug || forward_compat ? " flags: [" : "" )
+                               << (debug ? "debug" : "" )
+                               << (debug && forward_compat ? ", " : "" )
+                               << (forward_compat ? "forward compatible" : "" )
+                               << (debug || forward_compat ? "]" : "" )
+                               << std::endl;
         }
       };
     } // namespace setup

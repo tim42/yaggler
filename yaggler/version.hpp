@@ -33,16 +33,25 @@ namespace neam
 {
   namespace yaggler
   {
+    /// \namespace version
+    /// \brief contains everything relative to the current version of yaggler used
     namespace version
     {
-      // version idx
+      /// \brief the major version of yaggler
       extern constexpr size_t major = _PROJ_VERSION_MAJOR;
+
+      /// \brief the minor version of yaggler
       extern constexpr size_t minor = _PROJ_VERSION_MINOR;
+
+      /// \brief the "superminor" (fix number) version of yaggler
       extern constexpr size_t superminor = _PROJ_VERSION_SUPERMINOR;
 
+      /// \brief string representing the yaggler version in the form \e major.minor.superminor
       extern constexpr string_t short_string = STRINGIZE(_PROJ_VERSION_MAJOR) "." STRINGIZE(_PROJ_VERSION_MINOR) "." STRINGIZE(_PROJ_VERSION_SUPERMINOR);
 
 #define YAGGLER_BUILD_TIMESTAMP __TIMESTAMP__
+      /// \brief a more exhaustive string adding the build timestamp of yaggler
+      /// \see short_string
       extern constexpr string_t string = STRINGIZE(_PROJ_VERSION_MAJOR) "." STRINGIZE(_PROJ_VERSION_MINOR) "." STRINGIZE(_PROJ_VERSION_SUPERMINOR) " (" YAGGLER_BUILD_TIMESTAMP ")";
     } // namespace version
   } // namespace yaggler

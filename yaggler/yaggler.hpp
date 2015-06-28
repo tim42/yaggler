@@ -97,6 +97,8 @@
 
 namespace neam
 {
+  /// \namespace yaggler
+  /// \brief the root namespace for the yaggler project
   namespace yaggler
   {
   } // namespace yaggler

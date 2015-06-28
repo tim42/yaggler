@@ -36,11 +36,13 @@
 #include <tools/demangle.hpp>
 #include <tools/logger/logger.hpp>
 
-// base exceptions for yaggler
+/// \file yaggler_except.hpp
+/// \brief base exceptions for yaggler
 
 namespace neam
 {
-  class base_runtime_error
+  /// \brief An exception class that log exception on throw
+  class base_runtime_error : public std::exception
   {
     public:
       base_runtime_error(const std::string &s) noexcept
@@ -62,7 +64,7 @@ namespace neam
       {
       }
 
-      const char *what() const
+      virtual const char *what() const noexcept
       {
         return str.data();
       }
@@ -71,6 +73,7 @@ namespace neam
       std::string str;
   };
 
+  /// \brief a generic runtime error that appends the ExceptionType type name to the string
   template<typename ExceptionType>
   class runtime_error : public base_runtime_error
   {
@@ -89,8 +92,8 @@ namespace neam
 
   namespace yaggler
   {
-    // throw an ExceptionClass in case of an OpenGL error
-    // ExceptionClass may be an exception defined here.
+    /// \brief throw an ExceptionClass in case of an OpenGL error
+    /// ExceptionClass may be an exception defined below.
     template<typename ExceptionClass>
     static inline void throw_on_glerror(const char *header)
     {
@@ -99,7 +102,7 @@ namespace neam
         throw ExceptionClass(header, false);
     }
 
-    // exception related with GLFW
+    /// \brief an exception related with GLFW
     class glfw_exception : public neam::runtime_error<glfw_exception>
     {
       public:
@@ -117,7 +120,7 @@ namespace neam
       private:
     };
 
-    // exception related with GLEW
+    /// \brief an exception related with GLEW
     class glew_exception : public neam::runtime_error<glew_exception>
     {
       public:
@@ -136,7 +139,7 @@ namespace neam
       private:
     };
 
-    // exception related with GLUT
+    /// \brief an exception related with openGL
     class opengl_exception : public neam::runtime_error<opengl_exception>
     {
       public:
@@ -155,7 +158,7 @@ namespace neam
       private:
     };
 
-    // exception related with yaggler
+    /// \brief an exception related with yaggler
     class yaggler_exception : public neam::runtime_error<yaggler_exception>
     {
       public:

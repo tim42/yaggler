@@ -46,9 +46,9 @@ namespace neam
 {
   namespace yaggler
   {
-    // this class perform the basic glfw init (it do not create the window)
-    // it is possible to do calls to glfw function outside this class.
-    // this is just an helper ;)
+    /// \brief this class perform the basic glfw init (however it does not create a window)
+    /// it is possible to do calls to glfw function outside this class as it is just an helper
+    /// \see glfw_window
     class yaggler_init
     {
       public:

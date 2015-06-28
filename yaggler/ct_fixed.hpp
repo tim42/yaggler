@@ -22,7 +22,13 @@
 
 #include <stdint.h>
 
-// CT fixed point math for neam/yaggler
+/// \file ct_fixed.hpp
+/// \brief CT fixed point math for neam/yaggler
+/// \note This file hasn't been tested yet and almost certainly contains a lot of errors !
+///       (particularly on the sin() and cos() functions).
+///
+/// \todo test sin and cos implementations
+
 namespace neam
 {
   namespace ct
@@ -45,10 +51,15 @@ namespace neam
 
     // inline/constexpr operations
     // http://en.wikipedia.org/wiki/Q_%28number_format%29
+
+    /// \brief multiply two fixed point integers
+    /// \note It's not an operator because the fixed_t type is itself a plain ol' integer type.
     constexpr static inline fixed_t mul(fixed_t a, fixed_t b)
     {
       return (static_cast<__upper_t>(a) * static_cast<__upper_t>(b) >> (fixed_fractionnal_bits + 1));
     }
+
+    /// \brief divide (\p a / \p b) two fixed point integers
     constexpr static inline fixed_t div(fixed_t a, fixed_t b)
     {
       return (static_cast<__upper_t>(a << (fixed_fractionnal_bits + 1))) / b;
@@ -84,29 +95,42 @@ namespace neam
       }
     } // namespace __internal
 
+    /// \brief compute the sine of a given fixed point integer
+    /// \note It's neither in rads nor in degrees, but instead 180 degrees is \e 2
+    ///       So, to convert degrees to this numerical system, simply do something like that:
+    ///       \code x * 2 / 180 \endcode and from radians: \code x * 2 / PI \endcode
     constexpr static inline fixed_t sin(fixed_t x)
     {
       return __internal::_sine_boot(x);
     }
+
+    /// \brief compute the cosine of a given fixed point integer
+    /// \note It's neither in rads nor in degrees, but instead 180 degrees is \e 2
+    ///       So, to convert degrees to this numerical system, simply do something like that:
+    ///       \code x / 180 \endcode and from radians: \code x / PI \endcode
     constexpr static inline fixed_t cos(fixed_t x)
     {
       return __internal::_sine_boot(x + (2 << fixed_fractionnal_bits));
     }
 
-    // square with a loss of precision (and long conversion)
+    /// \brief square a single integer with a loss of precision (and long conversion)
     constexpr static inline fixed_t sqwl(__upper_t x)
     {
       return ((x >> (fixed_fractionnal_bits / 2)) * (x >> (fixed_fractionnal_bits / 2)));
     }
 
-    // some conversion functions
+    /// \namespace conversion
+    /// \brief some conversion functions
     namespace conversion
     {
+      /// \brief convert a fixed point number to another integer / floating point type
       template<typename Conv>
       constexpr static inline Conv to(fixed_t x)
       {
         return static_cast<Conv>(x) / static_cast<Conv>(2ul << fixed_fractionnal_bits);
       }
+
+      /// \brief convert a floating point type / integer to a fixed point number
       template<typename Conv>
       constexpr static inline fixed_t from(Conv x)
       {
@@ -116,7 +140,7 @@ namespace neam
 
     namespace constant // mathematical constants
     {
-      constexpr fixed_t pi = conversion::from<int>(2); // FIXME: is that true ?
+      constexpr fixed_t pi = conversion::from<int>(2);
       constexpr fixed_t e = conversion::from<float>(2.71828183);
     } // namespace constant
   } // namespace ct
@@ -130,10 +154,11 @@ namespace neam
     // embed a fixed_t
     N_EMBED_USING(fixed_t, ct::fixed_t);
 
-    // convert a fixed_t to a floating point
+    /// \brief convert a fixed_t to a floating point
     template<typename Type, ct::fixed_t FP>
     struct _fixed_to_floating_point {};
 
+    /// \brief convert a fixed_t to a floating point (here: double precision)
     template<ct::fixed_t FP>
     struct _fixed_to_floating_point<double, FP>
     {
@@ -149,7 +174,8 @@ namespace neam
         return get_val();
       }
 
-      // the preferred way to use this class :)
+      // the preferred way to use this class
+      /// \brief returns the floating point value
       constexpr static double get()
       {
         return get_val();
@@ -159,6 +185,8 @@ namespace neam
       static constexpr double value __attribute__((deprecated)) = get_val();
       static constexpr ct::fixed_t fixed_value = FP;
     };
+
+    /// \brief convert a fixed_t to a floating point (here: single precision)
     template<ct::fixed_t FP>
     struct _fixed_to_floating_point<float, FP>
     {
@@ -174,7 +202,8 @@ namespace neam
         return get_val();
       }
 
-      // the preferred way to use this class :)
+      // the preferred way to use this class
+      /// \brief returns the floating point value
       constexpr static float get()
       {
         return get_val();

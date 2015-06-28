@@ -29,7 +29,9 @@
 #include <tools/embed.hpp>
 #include <tools/ownership.hpp>
 
-// not enought namespaces ??? :D
+/// \file yaggler_type.hpp
+/// \brief declare some globaly used types
+
 #define NYST_CLASS(n)   class n{n() = delete; ~n() = delete;}
 namespace neam
 {
