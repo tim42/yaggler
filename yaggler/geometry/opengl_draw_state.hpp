@@ -49,7 +49,7 @@ namespace neam
       {
         public:
           draw_state(draw_method _method = draw_method::normal)
-            : method(_method), mode(0), count(0), type(GL_UNSIGNED_INT), start_index(0), prim_count(1)
+            : method(_method), mode(0), patch_size(0), count(0), type(GL_UNSIGNED_INT), start_index(0), prim_count(1)
           {
           }
 
@@ -57,6 +57,27 @@ namespace neam
           {
             mode = GL_TRIANGLES;
             count = triangle_count * 3;
+          }
+
+          /// \brief use -1 to keep default (from last draw mode)
+          void make_use_patches(int _patch_size = -1)
+          {
+            if (_patch_size < 0)
+            {
+              if (mode == GL_TRIANGLES || mode == 0)
+                patch_size = 3;
+              else if (mode == GL_LINE)
+                patch_size = 2;
+            }
+            else
+              patch_size = _patch_size;
+
+#ifndef YAGGLER_NO_FUCKING_TESTS
+            if (count % patch_size != 0)
+              neam::cr::out.debug() << LOGGER_INFO << "make use patch: patch size (" << patch_size << ") is not a multiple of the number of vertices (" << count << ")" << std::endl;
+#endif
+
+            mode = GL_PATCHES;
           }
           void set_draw_lines(size_t line_count)
           {
@@ -127,6 +148,9 @@ namespace neam
 
           void draw() const
           {
+            if (mode == GL_PATCHES)
+              glPatchParameteri(GL_PATCH_VERTICES, patch_size);
+
             switch (method)
             {
               case draw_method::normal:
@@ -151,6 +175,7 @@ namespace neam
         public:
           draw_method method;
           GLenum mode;
+          size_t patch_size;
           size_t count;
           GLenum type;
           size_t start_index;
