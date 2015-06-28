@@ -57,8 +57,8 @@ namespace neam
           // global stuff
           uint8_t       fragment_shader_number = 0;
           uint8_t       geometry_shader_number = 0;
-          uint8_t       tess_evaluation_shader_number = 0;
-          uint8_t       tess_control_shader_number = 0;
+          uint8_t       tes_shader_number = 0;
+          uint8_t       tcs_shader_number = 0;
           uint8_t       vertex_shader_number = 0;
           uint8_t       compute_shader_number = 0;
 
@@ -77,6 +77,16 @@ namespace neam
           uint8_t       geometry__shader_number = 0;
           bool          geometry__framework_registered = false;
           bool          geometry__main_registered = false;
+
+          // TES stuff
+          uint8_t       tes__shader_number = 0;
+          bool          tes__framework_registered = false;
+          bool          tes__main_registered = false;
+
+          // TCS stuff
+          uint8_t       tcs__shader_number = 0;
+          bool          tcs__framework_registered = false;
+          bool          tcs__main_registered = false;
         };
 
         // the basical one
@@ -207,6 +217,126 @@ namespace neam
             if (is_entry_point)
             {
               ++fdata.geometry__shader_number;
+              return 1;
+            }
+            return 0;
+          }
+        };
+
+        // tessellation shader stuff
+        template<>
+        struct setup_shader_framework<GL_TESS_CONTROL_SHADER>
+        {
+          template<typename Shader>
+          static uint8_t setup(Shader &shader, uint8_t, _shader_framework_data &fdata)
+          {
+            bool is_entry_point = tools::is_true(shader.get_preprocessor_value("KLMB_IS_ENTRY_POINT"));
+            bool is_framework_main = tools::is_true(shader.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
+
+            if (is_framework_main && fdata.geometry__framework_registered)
+              neam::cr::out.error() << LOGGER_INFO << "K:LMB/YAGGLER : material: TEC shader framework: framework has already been registered." << std::endl;
+
+            fdata.geometry__framework_registered |= is_framework_main;
+
+            // setup / load defs
+            std::string base_framework_defs = "#define KLMB_PROG_ID " + std::string(__KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.tcs__shader_number))) + '\n';
+            base_framework_defs += "#define KLMB_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.tcs_shader_number)) + '\n';
+
+            // a simple opti for progs with only one shader for this stage
+            if ((is_framework_main || fdata.tcs_shader_number == 1) && !fdata.tcs__main_registered)
+            {
+              base_framework_defs += "#define KLMB_IS_MAIN\n";
+              fdata.tcs__main_registered = true;
+            }
+
+            // only for the framework main
+            if (is_framework_main)
+            {
+              base_framework_defs += "#define KLMB_TOTAL_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.tcs_shader_number)) + '\n';
+            }
+            base_framework_defs += __KLMB__FILE_TO_STRING(KLMB_YAGGLER_GLOBAL_DEFS) + "\n";
+
+            // framework main specifics
+            if (is_framework_main)
+            {
+              // for-each shaders
+              std::ostringstream fe_shad;
+              fe_shad << "#define KLMB_FOR_EACH_SHADER(x) ";
+              for (size_t i = 0; i < fdata.tcs__shader_number; ++i)
+                fe_shad << "x(" << i << ") ";
+              fe_shad << "\n";
+
+              base_framework_defs += fe_shad.str();
+            }
+
+            // cleanup 'additional strings'
+            shader.clear_additional_strings();
+            shader.append_to_additional_strings(base_framework_defs);
+
+            // increment the prog counter.
+            if (is_entry_point)
+            {
+              ++fdata.tcs__shader_number;
+              return 1;
+            }
+            return 0;
+          }
+        };
+
+        // tessellation shader stuff
+        template<>
+        struct setup_shader_framework<GL_TESS_EVALUATION_SHADER>
+        {
+          template<typename Shader>
+          static uint8_t setup(Shader &shader, uint8_t, _shader_framework_data &fdata)
+          {
+            bool is_entry_point = tools::is_true(shader.get_preprocessor_value("KLMB_IS_ENTRY_POINT"));
+            bool is_framework_main = tools::is_true(shader.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
+
+            if (is_framework_main && fdata.tes__framework_registered)
+              neam::cr::out.error() << LOGGER_INFO << "K:LMB/YAGGLER : material: TES shader framework: framework has already been registered." << std::endl;
+
+            fdata.tes__framework_registered |= is_framework_main;
+
+            // setup / load defs
+            std::string base_framework_defs = "#define KLMB_PROG_ID " + std::string(__KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.tes__shader_number))) + '\n';
+            base_framework_defs += "#define KLMB_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.tes_shader_number)) + '\n';
+
+            // a simple opti for progs with only one shader for this stage
+            if ((is_framework_main || fdata.tes_shader_number == 1) && !fdata.tes__main_registered)
+            {
+              base_framework_defs += "#define KLMB_IS_MAIN\n";
+              fdata.tes__main_registered = true;
+            }
+
+            // only for the framework main
+            if (is_framework_main)
+            {
+              base_framework_defs += "#define KLMB_TOTAL_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.tes_shader_number)) + '\n';
+            }
+            base_framework_defs += __KLMB__FILE_TO_STRING(KLMB_YAGGLER_GLOBAL_DEFS) + "\n";
+
+            // framework main specifics
+            if (is_framework_main)
+            {
+              // for-each shaders
+              std::ostringstream fe_shad;
+              fe_shad << "#define KLMB_FOR_EACH_SHADER(x) ";
+              for (size_t i = 0; i < fdata.tes__shader_number; ++i)
+                fe_shad << "x(" << i << ") ";
+              fe_shad << "\n";
+
+              base_framework_defs += fe_shad.str();
+            }
+
+            // cleanup 'additional strings'
+            shader.clear_additional_strings();
+            shader.append_to_additional_strings(base_framework_defs);
+
+            // increment the prog counter.
+            if (is_entry_point)
+            {
+              ++fdata.tes__shader_number;
               return 1;
             }
             return 0;

@@ -244,8 +244,8 @@ namespace neam
             // setup number of shaders
             framework_data.fragment_shader_number = Shaders::fragment_shaders_t::size();
             framework_data.geometry_shader_number = Shaders::geometry_shaders_t::size();
-            framework_data.tess_evaluation_shader_number = Shaders::tess_evaluation_shaders_t::size();
-            framework_data.tess_control_shader_number = Shaders::tess_control_shaders_t::size();
+            framework_data.tes_shader_number = Shaders::tess_evaluation_shaders_t::size();
+            framework_data.tcs_shader_number = Shaders::tess_control_shaders_t::size();
             framework_data.vertex_shader_number = Shaders::vertex_shaders_t::size();
             framework_data.compute_shader_number = Shaders::compute_shaders_t::size();
 
