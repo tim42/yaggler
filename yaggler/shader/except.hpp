@@ -35,7 +35,7 @@ namespace neam
   {
     namespace shader
     {
-      // exception related with shader
+      /// \brief a class of exception related with shaders
       class shader_exception : public opengl_exception
       {
         public:

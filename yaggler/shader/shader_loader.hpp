@@ -34,6 +34,9 @@ namespace neam
   {
     namespace shader
     {
+      /// \brief Represent a shader loader interface
+      /// It's the interface to be implemented by subsequent classes
+      /// there's no need to be constexpr, only static.
       template<typename ShaderLoaderType, typename... Args>
       struct shader_loader
       {
@@ -47,19 +50,21 @@ namespace neam
         // the interface to be implemented by subsequent classes
         // there's no need to be constexpr, only static.
 
-        // return true if we need to recompile the shader
+        /// \brief return true if we need to recompile the shader
         static constexpr bool has_source_changed()
         {
           return false;
         }
 
-        // const char *, char *, std::string, ... be open :)
+        /// \brief return the source code of the shader
+        /// \note the return type could be a const char *, char *, std::string, ..
         static constexpr const char *get_source_string()
         {
           return nullptr;
         }
 
-        // return the source name (again, be open :) )
+        /// \brief return the source name
+        /// \note the return type could be a const char *, char *, std::string, ..
         static constexpr const char *get_source_name()
         {
           return nullptr;

@@ -48,19 +48,19 @@ namespace neam
       template<typename CTString>
       struct shader_loader<constexpr_string, CTString>
       {
-        // return true if we need to recompile the shader
+        /// \brief return true if we need to recompile the shader
         static constexpr bool has_source_changed()
         {
           return false;
         }
 
-        // const char *, char *, std::string, ... be open :)
+        /// \brief return the source code of the shader
         static constexpr const char *get_source_string()
         {
           return CTString::get();
         }
 
-        // return the source name (again, be open :) )
+        /// \brief return the source name
         static constexpr const char *get_source_name()
         {
           return "<constexpr_string source>";
@@ -69,24 +69,24 @@ namespace neam
 
       /// \brief "load" from a string that can change with the time
       /// \note DString could be anything (std::string, const char *, and everything that compare with a std::string)
-      /// \note we recommend putting here a reference ;)
+      /// \note we recommend putting here a reference
       template<typename DString>
       struct shader_loader<dyn_string, DString>
       {
-        // return true if we need to recompile the shader
+        /// \brief return true if we need to recompile the shader
         static inline bool has_source_changed()
         {
           return old != DString::get();
         }
 
-        // const char *, char *, std::string, ... be open :)
+        /// \brief return the source code of the shader
         static inline std::string get_source_string()
         {
           old = DString::get();
           return old;
         }
 
-        // return the source name (again, be open :) )
+        /// \brief return the source name
         static inline const char *get_source_name()
         {
           return "<string source>";
@@ -99,7 +99,7 @@ namespace neam
       template<typename FileName>
       struct shader_loader<file, FileName>
       {
-        // return true if we need to recompile the shader
+        /// \brief return true if we need to recompile the shader
         static inline bool has_source_changed()
         {
 #ifdef _WIN32
@@ -125,14 +125,14 @@ namespace neam
 #endif
         }
 
-        // const char *, char *, std::string, ... be open :)
+        /// \brief return the source code of the shader
         static inline std::string get_source_string()
         {
-          // if anybody says there's a shorter way to load a file into a string in C++, perhaps he is lying ;)
+          // load the content of a file into a std::sring
           return static_cast<std::ostringstream &>(std::ostringstream() << (std::ifstream(FileName::get()).rdbuf())).str();
         }
 
-        // return the source name (again, be open :) )
+        /// \brief return the source name
         static inline const char *get_source_name()
         {
           return FileName::get();

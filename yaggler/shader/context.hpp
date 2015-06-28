@@ -53,7 +53,10 @@ namespace neam
         class dynamic {};
       } // namespace contexts
 
-      // aim to create a context for vars (and avoid to set them again and again)
+      /// \brief Aim to create a context for vars (and avoid to bind them again and again)
+      /// A variable context is a variable binding context used to automatically bind variables and functions to uniforms
+      ///
+      /// This class could be seen as a shortcut.
       template<typename Type, typename... Args> class variable_context
       {
           variable_context() = delete;
@@ -71,13 +74,12 @@ namespace neam
 
       // context impl
 
-      // this context could not be changed.
-      // Args... are 'embeds' (see neam::embed::embed) or functions pointers
-      // (embeded functions will be called to get the result, each time 'use()' is called)
-      //
-      // This class could be seen as a shortcut.
-      // The assembly code of this class will be almost the same as the one generated if you
-      // do the binding 'by hands'
+      /// \brief A static context implementation. Variable bindings are defined at build time
+      /// \param Args Embeds (\see neam::embed::embed) or functions pointers
+      /// (embeded functions will be called to get the result, each time 'use()' is called)
+      ///
+      /// The assembly code of this class will be almost the same as the one generated if you
+      /// do the binding by hands, calling openGL uniform bindings directly.
       template<typename... Args>
       class variable_context<contexts::fixed, Args...>
       {
@@ -91,39 +93,47 @@ namespace neam
           constexpr variable_context(variable_context &&o) : vars(std::move(o.vars)), values(std::move(o.values)) {}
           constexpr variable_context(const variable_context &o) : vars(o.vars), values(o.values) {}
 
-          // do the binding
+          /// \brief do the binding
           void use()
           {
             binder(cr::gen_seq<sizeof...(Args)>());
           }
 
+          /// \brief return the number of variables that are bound by this context
           static constexpr size_t get_number_of_variables()
           {
             return sizeof...(Args);
           }
 
+          /// \brief return the value for a given index
           template<size_t Index>
           typename ct::type_at_index<Index, Args...>::type & get_value_at_index()
           {
             return values.template get<Index>();
           }
 
+          /// \brief return the value for a given index
           template<size_t Index>
           const typename ct::type_at_index<Index, Args...>::type & get_value_at_index() const
           {
             return values.template get<Index>();
           }
 
+          /// \brief return the uniform valriable for a given index
           uniform_variable &get_uniform_variable_at_index(size_t index)
           {
             return vars[index];
           }
+
+          /// \brief return the uniform valriable for a given index
           const uniform_variable &get_uniform_variable_at_index(size_t index) const
           {
             return vars[index];
           }
 
-          // after a link.
+          /// \brief (Re) Set uniform variables IDs
+          /// \note you should call this after a link.
+          /// \param _vars could either be integers (openGL ids) or instances of uniform_variable
           template<typename... Vars>
           void set_variables(const Vars &... _vars)
           {
@@ -165,7 +175,7 @@ namespace neam
 
 
       // this context is dynamic and thus could be modified at runtime.
-      // TODO: a proper implementation of this class :)
+      // TODO: a proper implementation of this class !
       // NOTE: it'll generate more code than the fixed one, but it's a more flexible way to use contexts
       // NOTE: materials use fixed contexts
      /* template<>

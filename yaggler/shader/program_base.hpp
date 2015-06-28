@@ -33,6 +33,8 @@ namespace neam
   {
     namespace shader
     {
+      /// \brief this class is the default shader program class.
+      /// It will trigger a compilation failure indicating a problem with the program
       template<typename ShaderType, typename... Args>
       class program
       {

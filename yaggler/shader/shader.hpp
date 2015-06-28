@@ -38,6 +38,7 @@ namespace neam
 {
   namespace yaggler
   {
+    /// \brief namespace where everything shader-related is located
     namespace shader
     {
       

@@ -59,10 +59,20 @@ namespace neam
 # define CHECK_PGID
 #endif
 
-      // this class could be used to set both uniform variables and uniform blocks
+      /// \brief a shader uniform variable
+      /// his class mostly aim to reduce code overhead in affecting new value to a given uniform
+      /// by providing overloaded affectation operators
+      /// \note it could be used to set both uniform variables and uniform blocks
+      /// \note you probably want to use a context instead of affecting each frame a list of uniform variable directly
       class uniform_variable
       {
         public:
+          /// \brief initialize the uniform variable from a uniform variable ID and an optional program ID
+          /// \param _id the openGL uniform ID
+          /// \param _pgid the openGL shader program ID. Could be -1 if it's not an uniform block
+          /// \note please don't call directly (except if you do knwo what you're doing) and use
+          ///       get_uniform_variable(), get_uniform_block() or get_uniform() in the opengl shader program class !
+          /// \attention when relinking a program uniform ids will probably change and thus already created uniforms will be invalid !
           uniform_variable(GLuint _id = -1, GLuint _pgid = -1) : id(_id), pgid(_pgid) {}
           ~uniform_variable() {}
 
@@ -74,28 +84,34 @@ namespace neam
           // this probably wont do what you want...
           uniform_variable &operator = (const uniform_variable &o) = delete;
 
-          // return the id of the var
+          /// \brief return the openGL id of the var
           GLuint get_id() const
           {
             return id;
           }
 
+          /// \brief return the openGL shader program ID (if any) or -1 if there's no such id
           GLuint get_program_id() const
           {
             return pgid;
           }
 
-          // could be dangerous.
+          /// \brief change the uniform opengl ID
+          /// \note marked as advanced
           void _set_id(GLuint _id)
           {
             id = _id;
           }
+
+          /// \brief change the uniform/shader program opengl IDs
+          /// \note marked as advanced
           void _set_id(const uniform_variable &o)
           {
             id = o.id;
             pgid = o.pgid;
           }
 
+          /// \brief check if the uniform id is different of -1
           bool is_valid() const
           {
             return static_cast<GLint>(id) != -1;
@@ -108,6 +124,7 @@ namespace neam
             *this = t.value;
             return *this;
           }
+
           template<typename Etype>
           inline uniform_variable &operator = (Etype *t)
           {
@@ -1041,8 +1058,8 @@ namespace neam
             return *this;
           }
 
-          /// FLOAT 3V /// // (yes, I'll do this fucking copy-pasting for EVERY
-          ///          /// //  FUCKING TYPES THAT OPENGL HAS. FUCK.)
+          /// FLOAT 3V ///
+          ///          ///
 
           // set the value
           inline uniform_variable &operator = (const ct::vector3 &value)
@@ -1841,8 +1858,8 @@ namespace neam
             return *this;
           }
 
-          /// FLOAT 4V /// // (yes, I'll do this fucking copy-pasting for EVERY
-          ///          /// //  FUCKING TYPES THAT OPENGL HAS. FUCK.)
+          /// FLOAT 4V ///
+          ///          ///
 
           // set the value
           inline uniform_variable &operator = (const ct::vector4 &value)
@@ -2680,8 +2697,8 @@ namespace neam
             return *this;
           }
 
-          /// MAT   2  /// // (yes, I'll do this fucking copy-pasting for EVERY
-          ///          /// //  FUCKING TYPES THAT OPENGL HAS. FUCK.)
+          /// MAT   2  ///
+          ///          ///
 
           inline uniform_variable &operator = (const glm::mat2 &mat)
           {
@@ -2690,8 +2707,8 @@ namespace neam
             return *this;
           }
 
-          /// MAT   3  /// // (yes, I'll do this fucking copy-pasting for EVERY
-          ///          /// //  FUCKING TYPES THAT OPENGL HAS. FUCK.)
+          /// MAT   3  ///
+          ///          ///
 
           inline uniform_variable &operator = (const glm::mat3 &mat)
           {
@@ -2700,8 +2717,8 @@ namespace neam
             return *this;
           }
 
-          /// MAT   4  /// // (yes, I'll do this fucking copy-pasting for EVERY
-          ///          /// //  FUCKING TYPES THAT OPENGL HAS. FUCK.)
+          /// MAT   4  ///
+          ///          ///
 
           inline uniform_variable &operator = (const glm::mat4 &mat)
           {

@@ -50,14 +50,18 @@ namespace neam
   {
     namespace shader
     {
-      // template types:
-      //        shadertype:             neam::embed::GLenum
-      //        ShaderSource:           neam::yaggler::shader::shader_loader<...> (see common_shader_loader.hpp)
-      //        ShaderOption:           neam::embed::shader::option (see shader/shader_options.hpp)
+      /// \brief represent a single shader unit
+      /// \param shadertype {type: neam::embed::GLenum} The shader type (vertex shader, fragment shader, ...). This is directly an openGL value
+      /// \param ShaderSource {type: neam::yaggler::shader::shader_loader<...>} the loader for this shader \see common_shader_loader.hpp
+      /// \param ShaderOption {type: neam::embed::shader::option} \see shader/shader_options.hpp
+      ///                     Some shader options (like one shot compilation, shared shader instance, reloaded on change shader)
+      /// \note for an "easy" shader creation, you should take a look at klmb/material_usings.hpp
       template<typename ShaderType, typename ShaderSource, typename ShaderOption>
       class shader<type::opengl, ShaderType, ShaderSource, ShaderOption>
       {
         public:
+          /// \brief create and initialize a new shader
+          /// \exception shader_exception if openGL refuse to create a new shader
           shader()
             : shader_id(0), source()
           {
@@ -95,6 +99,9 @@ namespace neam
             changed = true;
           }
 
+          /// \brief initialize using an existing openGL shader id
+          /// \note the newly created shader won't have the ownership of the underlying openGL shader:
+          ///       destructing it won't destroy the openGL shader
           shader(GLuint _id)
             : shader_id(_id), source(), ownership(false)
           {
@@ -102,6 +109,9 @@ namespace neam
             changed = true;
           }
 
+          /// \brief initialize using an existing openGL shader id
+          /// \note the newly created shader will have the ownership of the underlying openGL shader:
+          ///       destructing it will destroy the openGL shader
           shader(GLuint _id, assume_ownership_t)
             : shader_id(_id), source(), ownership(true)
           {
@@ -109,13 +119,19 @@ namespace neam
             changed = true;
           }
 
-          // we keep the same ShaderType
+          /// \brief initialize using an existing shader
+          /// \note the newly created shader won't have the ownership of the underlying openGL shader:
+          ///       destructing it won't destroy the openGL shader
           shader(const shader &o)
-          : shader_id(o.get_id()), source(o.source), additional_str(o.get_additional_strings()), ownership(false)
+           : shader_id(o.get_id()), source(o.source), additional_str(o.get_additional_strings()), ownership(false)
           {
             ShaderSource::has_source_changed();      // init this func;
             changed = false;
           }
+
+          /// \brief initialize using an existing shader of a different type / with a different set of option / loader / ...
+          /// \note the newly created shader won't have the ownership of the underlying openGL shader:
+          ///       destructing it won't destroy the openGL shader
           template<typename OShaderSourceType, typename OShaderSource, typename OShaderOption>
           shader(const shader<ShaderType, OShaderSourceType, OShaderSource, OShaderOption> &o)
             : shader_id(o.get_id()), source(), additional_str(o.get_additional_strings()), ownership(true)
@@ -124,6 +140,9 @@ namespace neam
             changed = true;
           }
 
+          /// \brief initialize using an existing shader
+          /// \note the newly created shader will acquire the ownership of the underlying openGL shader only if the original shader has the ownership
+          ///       if the shader acquire the ownership, destructing it will destroy the openGL shader
           shader(shader &o, stole_ownership_t)
           : shader_id(o.get_id()), source(o.source), additional_str(o.get_additional_strings()), ownership(o.has_ownership())
           {
@@ -131,6 +150,10 @@ namespace neam
             ShaderSource::has_source_changed();      // init this func;
             changed = false;
           }
+
+          /// \brief initialize using an existing shader of a different type / with a different set of option / loader / ...
+          /// \note the newly created shader will acquire the ownership of the underlying openGL shader only if the original shader has the ownership
+          ///       if the shader acquire the ownership, destructing it will destroy the openGL shader
           template<typename OShaderSourceType, typename OShaderSource, typename OShaderOption>
           shader(shader<ShaderType, OShaderSourceType, OShaderSource, OShaderOption> &o, stole_ownership_t)
             : shader_id(o.get_id()), source(), additional_str(o.get_additional_strings()), ownership(o.has_ownership())
@@ -140,6 +163,9 @@ namespace neam
             changed = true;
           }
 
+          /// \brief initialize using an existing shader
+          /// \note the newly created shader will acquire the ownership of the underlying openGL shader only if the original shader has the ownership
+          ///       if the shader acquire the ownership, destructing it will destroy the openGL shader
           shader(shader &&o)
           : shader_id(o.shader_id), source(std::move(o.source)), additional_str(std::move(o.additional_str)), ownership(o.ownership)
           {
@@ -147,6 +173,10 @@ namespace neam
             ShaderSource::has_source_changed();      // init this func;
             changed = false;
           }
+
+          /// \brief initialize using an existing shader of a different type / with a different set of option / loader / ...
+          /// \note the newly created shader will acquire the ownership of the underlying openGL shader only if the original shader has the ownership
+          ///       if the shader acquire the ownership, destructing it will destroy the openGL shader
           template<typename OShaderSourceType, typename OShaderSource, typename OShaderOption>
           shader(shader<ShaderType, OShaderSourceType, OShaderSource, OShaderOption> &&o)
             : shader_id(o.get_id()), source(), additional_str(o.get_additional_strings()), ownership(o.has_ownership())
@@ -164,27 +194,33 @@ namespace neam
             }
           }
 
+          /// \brief abandon the overniship of a openGL shader
+          /// This mostly mean that destructing the instance won't destruct the shader
           shader &give_up_ownership()
           {
             ownership = false;
             return *this;
           }
 
+          /// \brief forcibly acquire the overniship of a openGL shader
+          /// This mostly mean that destructing the instance will destruct the shader
           shader &assume_ownership()
           {
-            // no ownership on shareds. (there is a workaround this limitation,
-            // but this mean that you explicitly ask YägGler to break this
-            // (by assigning a 'shared' shader to a 'non-shared' one).
+            // no ownership on shareds. (there is a workaround for this limitation,
+            // but this mean that you explicitly ask YägGler to break this rule:
+            //  assigning a 'shared' shader to a 'non-shared' one
             if (ShaderOption::value != shader_option::shared_instance)
               ownership = true;
             return *this;
           }
 
+          /// \brief return true if the instance ohas the ownership of the underlying openGL shader
           bool has_ownership() const
           {
             return ownership;
           }
 
+          /// \brief return the current, cached, source string of the shader
           const std::string &get_source() const
           {
             return source;
@@ -192,8 +228,8 @@ namespace neam
 
           constexpr static GLenum shader_type = ShaderType::value;
 
-          // rebuild the shader. re-get the sources, ...
-          // NOTE: this could be slow.
+          /// \brief rebuild the shader, re-get the sources, ...
+          /// \note this could be slow.
           void recompile()
           {
             unlocked_recompile();
@@ -207,39 +243,41 @@ namespace neam
               unlocked_recompile();
           }
 
-          // return true if the shader has failed to build
+          /// \brief return true if the shader has failed to build
           bool has_failed() const
           {
             return failed;
           }
 
-          // return the shader id
+          /// \brief return the shader openGL id
           GLuint get_id() const
           {
             return shader_id;
           }
 
-          // return the full #version line
-          // (you could not use get_preprocessor_value("", "version") for this value as the line is 'removed')
+          /// \brief return the full #version line
+          /// \note you could not use get_preprocessor_value("", "version") for this value as the line is removed
           const std::string &get_version_string() const
           {
             return version_str;
           }
 
-          // 'parse' (what a big word here...) the source to get a preprocessor token and its value.
-          // return an empty string if nothing was found, the 'value' of the first occurence if anything was found
-          // (if there isn't values, it simply return "\n")
-          //
-          // to get something like
-          // #define TOTO       42
-          // 'simply' do:
-          // my_shader.get_preprocessor_value("TODO");
-          // or
-          // my_shader.get_preprocessor_value("TODO", "define");
-          // and the function will return std::string("42")
-          //
-          // to get the first #ifdef, you could do:
-          // my_shader.get_preprocessor_value("", "ifdef")
+          /// \brief 'parse' (what a big word here...) the source to get a preprocessor token and its value.
+          /// return an empty string if nothing was found, the 'value' of the first occurrence if anything was found
+          /// (if there isn't values, it simply return \code "\n" \endcode)
+          ///
+          /// to get something like
+          /// \code #define TOTO       42 \endcode
+          /// do:
+          /// \code my_shader.get_preprocessor_value("TODO"); \endcode
+          /// or
+          /// \code my_shader.get_preprocessor_value("TODO", "define"); \endcode
+          /// and the function will return \code std::string("42") \endcode
+          ///
+          /// to get the very first \code #ifdef \endcode, one could do:
+          /// \code my_shader.get_preprocessor_value("", "ifdef") \endcode
+          /// \note it will not expand values
+          /// \note it will not cache results (so this could be slow !)
           std::string get_preprocessor_value(const std::string &name, const std::string &preprocessor_token = "define") const
           {
             std::string token = '#' + preprocessor_token;
@@ -285,15 +323,8 @@ namespace neam
             return std::string("");
           }
 
-          shader &clear_additional_strings()
-          {
-            additional_str.clear();
-            return *this;
-          }
-
-          // add some strings to the code of the shader
-          // (right after the #version token)
-          // you may want to recompile and link the program after this...
+          /// \brief add some strings to the code of the shader right after the #version token
+          /// you may want to recompile and link the program after this.
           shader &append_to_additional_strings(const std::string &to_add)
           {
             additional_str = (additional_str + to_add) + std::string("\n");
@@ -301,17 +332,27 @@ namespace neam
             return *this;
           }
 
+          /// \brief return the string that will be added on the top of the shader file
           const std::string &get_additional_strings() const
           {
             return additional_str;
           }
 
-          // return the source name (filename) or type (ex.: "<dynamic string>")
+          /// \brief clear the set of strings that will be added on the top of the shader file
+          shader &clear_additional_strings()
+          {
+            additional_str.clear();
+            return *this;
+          }
+
+          /// \brief return the source name (ex. the filename) or type (ex. \code "<dynamic string>" \endcode)
           static constexpr inline const char *get_source_name()
           {
             return ShaderSource::get_source_name();
           }
 
+          /// \brief preload the source code of the shader
+          /// \note marked as advanced
           void _preload()
           {
             source = ShaderSource::get_source_string();
