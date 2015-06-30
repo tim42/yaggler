@@ -37,7 +37,7 @@
 #include "loader.hpp"
 
 
-#define CRAP__VAR_TO_STRING(var)              static_cast<std::ostringstream&>(std::ostringstream() << var).str()
+#define CRAP__VAR_TO_STRING(var)              static_cast<const std::ostringstream&>(std::ostringstream() << var).str()
 
 
 constexpr neam::string_t test_frag = "data/shaders/test/edge.frag";

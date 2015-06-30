@@ -29,7 +29,7 @@
 #include <fstream>
 #include <sstream>
 
-#ifndef _WIN32 // WARNING: untested yet !
+#ifdef __linux // WARNING: untested yet !
 # include <sys/types.h>
 # include <sys/stat.h>
 # include <unistd.h>
@@ -102,10 +102,10 @@ namespace neam
         /// \brief return true if we need to recompile the shader
         static inline bool has_source_changed()
         {
-#ifdef _WIN32
+#ifndef __linux
           return false;
 #else
-          // only on unix:
+          // only on linux:
           //
           // http://stackoverflow.com/q/9376975
           static double old_time = 0.f;
@@ -129,7 +129,7 @@ namespace neam
         static inline std::string get_source_string()
         {
           // load the content of a file into a std::sring
-          return static_cast<std::ostringstream &>(std::ostringstream() << (std::ifstream(FileName::get()).rdbuf())).str();
+          return static_cast<const std::ostringstream &>(std::ostringstream() << (std::ifstream(FileName::get()).rdbuf())).str();
         }
 
         /// \brief return the source name

@@ -60,7 +60,7 @@ namespace neam
       class program<type::opengl, CTShaders...>
       {
         private: // iterate over ct shaders. [helper]
-          template<uint64_t... Idx>
+          template<size_t... Idx>
           inline void it_over_cts_attach(cr::seq<Idx...>)
           {
             NEAM_EXECUTE_PACK((glAttachShader(pg_id, shaders.template get<Idx>().get_id())));
@@ -73,7 +73,7 @@ namespace neam
             failed |= shader.has_failed();
           }
 
-          template<uint64_t... Idx>
+          template<size_t... Idx>
           inline void it_over_cts_recompile(cr::seq<Idx...>)
           {
             failed = false;

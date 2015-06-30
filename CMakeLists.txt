@@ -94,7 +94,7 @@ endif()
 if (${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
   add_subdirectory(samples/path-tracer/)
   add_subdirectory(samples/gui-test/)
-  add_subdirectory(samples/editor/)
+#  add_subdirectory(samples/editor/)
 endif()
 
 # build the samples
