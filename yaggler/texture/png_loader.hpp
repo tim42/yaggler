@@ -52,7 +52,10 @@ namespace neam
         // tell the texture to init, and how to init. (could be placed multiple times to init each levels and/or cubemap faces)
         // see texture<opengl>::set_texture_data for explanation of the tpl params
 
-        // init from a png file source
+        /// \brief Load a PNG file. Aimed to be used to CT-init a texture
+        /// \param InternalFormat The internal format of the openGL texture
+        /// \param File A neam::ct::embed of a string holding the filename of the texture to load
+        /// \param Level The mipmap level holding in the png file
         template<GLenum InternalFormat, typename File, size_t Level = 0>
         class png_texture_init
         {
@@ -105,17 +108,17 @@ namespace neam
               delete [] reinterpret_cast<uint8_t *>(data);
             }
 
-            neam::ct::vector2 size;
-            static constexpr GLint internal_format = InternalFormat;
-            static constexpr size_t level = Level;
+            neam::ct::vector2 size; ///< \brief The texture size
+            static constexpr GLint internal_format = InternalFormat; ///< \brief The texture internal format (as in the InternalFormat template parameter )
+            static constexpr size_t level = Level; ///< \brief The mipmap level (as in the Level template parameter)
 
             // automatically generated from the InternalFormat field and the "best" value for it in png++.
-            static constexpr GLenum format = gl_input_color_type[_get_index(0) / 2];
-            static constexpr GLenum type = gl_depth[_get_index(0) % 2];
+            static constexpr GLenum format = gl_input_color_type[_get_index(0) / 2]; ///< \brief The format of the texure (R, RG, RGB, RGBA)
+            static constexpr GLenum type = gl_depth[_get_index(0) % 2]; ///< \brief The texture size (unsigned byte or unsigned short)
 
-            GLvoid *data;
+            GLvoid *data; ///< \brief The actual texture data
 
-            static constexpr bool is_init = true;
+            static constexpr bool is_init = true; ///< \brief Always true as instantiating the object IS loading it
         };
         template<GLenum InternalFormat, typename File, size_t Level>
         constexpr GLenum png_texture_init<InternalFormat, File, Level>::gl_color_type[];
@@ -140,7 +143,9 @@ namespace neam
         template<GLenum InternalFormat, typename File, size_t Level>
         constexpr bool png_texture_init<InternalFormat, File, Level>::is_init;
 
-        // load from a png file source
+        /// \brief load from a png file source. Not suitable for CT-Init a texture object.
+        /// \param InternalFormat The internal format of the openGL texture
+        /// \param Level The mipmap level holding in the png file
         template<GLenum InternalFormat, size_t Level = 0>
         class png_texture_loader
         {
@@ -183,6 +188,8 @@ namespace neam
             }
 
           public:
+            /// \brief Construct and load a file.
+            /// \param file The filename of the png image to load.
             png_texture_loader(const std::string &file)
               : size(), data(get_data(size, file))
             {
@@ -193,17 +200,17 @@ namespace neam
               delete [] reinterpret_cast<uint8_t *>(data);
             }
 
-            neam::ct::vector2 size;
-            static constexpr GLint internal_format = InternalFormat;
-            static constexpr size_t level = Level;
+            neam::ct::vector2 size; ///< \brief The texture size
+            static constexpr GLint internal_format = InternalFormat; ///< \brief The texture internal format (as in the InternalFormat template parameter )
+            static constexpr size_t level = Level; ///< \brief The mipmap level (as in the Level template parameter)
 
             // automatically generated from the InternalFormat field and the "best" value for it in png++.
-            static constexpr GLenum format = gl_input_color_type[_get_index(0) / 2];
-            static constexpr GLenum type = gl_depth[_get_index(0) % 2];
+            static constexpr GLenum format = gl_input_color_type[_get_index(0) / 2]; ///< \brief The format of the texure (R, RG, RGB, RGBA)
+            static constexpr GLenum type = gl_depth[_get_index(0) % 2]; ///< \brief The texture size (unsigned byte or unsigned short)
 
-            GLvoid *data;
+            GLvoid *data; ///< \brief The actual texture data
 
-            static constexpr bool is_init = true;
+            static constexpr bool is_init = true; ///< \brief Always true as instantiating the object IS loading it
         };
         template<GLenum InternalFormat, size_t Level>
         constexpr GLenum png_texture_loader<InternalFormat, Level>::gl_color_type[];
@@ -232,13 +239,6 @@ namespace neam
     } // namespace texture
 
   } // namespace yaggler
-  // for embeding cubemap_face in template params (required when ct initialising cubemaps)
-  namespace embed
-  {
-    namespace texture
-    {
-    } // namespace texture
-  } // namespace embed
 } // namespace neam
 
 #endif /*__N_748986457882865260_592567929__PNG_LOADER_HPP__*/

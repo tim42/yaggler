@@ -33,6 +33,7 @@ namespace neam
   {
     namespace texture
     {
+      /// \brief The base texture class.
       template<typename ObjectType, typename... Args>
       class texture
       {

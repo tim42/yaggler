@@ -32,6 +32,7 @@ namespace neam
   {
     namespace texture
     {
+      /// \brief The base renderbuffer class
       template<typename ObjectType, typename... Args>
       class renderbuffer
       {

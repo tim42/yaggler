@@ -33,6 +33,7 @@ namespace neam
   {
     namespace texture
     {
+      /// \brief A framebuffer wrapper
       template<typename ObjectType, typename... Args>
       class framebuffer
       {

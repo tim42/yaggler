@@ -45,6 +45,10 @@ namespace neam
     {
       namespace options
       {
+        /// \brief An utility class to write openGL texture to a PNG encoded file
+        /// \param InternalFormat The format of the file to write
+        ///                       (could be one of GL_R8, GL_R16, GL_RG8, GL_RG16, GL_RGB8, GL_RGB16, GL_RGBA8, GL_RGBA16)
+        /// \param Level The level of detail index to write (0 is the default value and the base image)
         template<GLint InternalFormat, size_t Level = 0>
         class png_texture_writer
         {
@@ -62,6 +66,11 @@ namespace neam
             }
 
           public:
+            /// \brief Write the texture to a file
+            /// \param Texture The texture type (deduced from \p txt)
+            /// \param txt The texture object to write
+            /// \param file The path/filename to output the png image
+            /// \param invert_y A boolean indicating if the Y Axis of the texture is to be inverted
             template<typename Texture>
             static bool write(const Texture &txt, const std::string &file, bool invert_y = false)
             {

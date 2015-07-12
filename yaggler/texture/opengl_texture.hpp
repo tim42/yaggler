@@ -33,6 +33,7 @@
 #include <yaggler_type.hpp>
 
 #include <texture/options.hpp>
+#include <texture/texture_base.hpp>
 
 namespace neam
 {
@@ -40,18 +41,18 @@ namespace neam
   {
     namespace texture
     {
-      // TextureType is the dimensionality (an GLenum embed with those possible values:
-      //    GL_TEXTURE_1D,
-      //    GL_TEXTURE_2D,
-      //    GL_TEXTURE_3D,
-      //    GL_TEXTURE_1D_ARRAY,
-      //    GL_TEXTURE_2D_ARRAY,
-      //    GL_TEXTURE_RECTANGLE,
-      //    GL_TEXTURE_CUBE_MAP,
-      //    GL_TEXTURE_CUBE_MAP_ARRAY,
-      //    GL_TEXTURE_BUFFER,
-      //    GL_TEXTURE_2D_MULTISAMPLE or
-      //    GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
+      /// \brief A wrapper for an openGL Texture object.
+      /// \param TextureType is the dimensionality (an GLenum embed with those possible values:
+      ///    GL_TEXTURE_{1,2,3}D,
+      ///    GL_TEXTURE_{1,2}D_ARRAY,
+      ///    GL_TEXTURE_RECTANGLE,
+      ///    GL_TEXTURE_CUBE_MAP{,_ARRAY},
+      ///    GL_TEXTURE_BUFFER,
+      ///    GL_TEXTURE_2D_MULTISAMPLE{,_ARRAY})
+      /// \param Args None, one or multiple initializers for the texture and its mipmap levels
+      /// \see png_texture_init
+      /// \see empty_texture_init
+      /// \see ct_texture_init
       template<typename TextureType, typename... Args>
       class texture<type::opengl, TextureType, Args...>
       {
@@ -122,6 +123,9 @@ namespace neam
           }
 
         public:
+          /// \brief default constructor for a texture. Create a new openGL Texture object and intialize it
+          /// accordingly to the Args... class template parameter
+          /// \param _spl_idx is the sampler index for the texture (used when binding the texture).
           texture(size_t _spl_idx = 0)
             : ownership(true), id(0), spl_idx(_spl_idx)
           {
@@ -138,24 +142,39 @@ namespace neam
             __tpl_init();
           }
 
+          /// \brief Create a wrapper linked to an openGL texture ID, allowing the GL texture object to be managed for a short time
+          /// by this class. When the created instance has ended its life, the GL object won't be destructed
+          /// \param _id the openGL texture object ID
+          /// \param _spl_idx is the sampler index for the texture (used when binding the texture).
           texture(GLuint _id, size_t _spl_idx)
             : ownership(false), id(_id), spl_idx(_spl_idx)
           {
             __tpl_init();
           }
 
+          /// \brief Create a wrapper of an openGL texture ID, allowing the GL texture object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed
+          /// \param _id the openGL texture object ID
+          /// \param _spl_idx is the sampler index for the texture (used when binding the texture).
           texture(GLuint _id, size_t _spl_idx, assume_ownership_t)
             : ownership(true), id(_id), spl_idx(_spl_idx)
           {
             __tpl_init();
           }
 
+          /// \brief create a wrapper of the same GL texture object that another texture, allowing the GL texture object to be managed for a short time
+          /// by this class. When the created instance has ended its life, the GL object won't be destructed
+          /// \param o the other texture class to copy the information from
           texture(const texture &o)
             : ownership(false), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.image_texture),
               image_format(o.image_format), image_access_mode(o.image_access_mode), handle(o.handle)
           {
             __tpl_init();
           }
+
+          /// \brief create a wrapper of the same GL texture object that another texture, allowing the GL texture object to be managed for a short time
+          /// by this class. When the created instance has ended its life, the GL object won't be destructed
+          /// \param o the other texture class to copy the information from
           template<typename... TArgs>
           texture(const texture< type::opengl, TextureType, TArgs... > &o)
             : ownership(false), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.is_image_texture()),
@@ -164,6 +183,9 @@ namespace neam
             __tpl_init();
           }
 
+          /// \brief create a wrapper of the same GL texture object that another texture, allowing the GL texture object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p o HAS THE OWNERSHIP)
+          /// \param o the other texture class to copy the information from
           texture(texture &o, stole_ownership_t)
             : ownership(o.has_ownership()), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.image_texture),
               image_format(o.image_format), image_access_mode(o.image_access_mode), handle(o.handle)
@@ -171,6 +193,10 @@ namespace neam
             o.give_up_ownership();
             __tpl_init();
           }
+
+          /// \brief create a wrapper of the same GL texture object that another texture, allowing the GL texture object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p o HAS THE OWNERSHIP)
+          /// \param o the other texture class to copy the information from
           template<typename... TArgs>
           texture(texture< type::opengl, TextureType, TArgs... > &o, stole_ownership_t)
             : ownership(o.has_ownership()), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.is_image_texture()),
@@ -180,6 +206,9 @@ namespace neam
             __tpl_init();
           }
 
+          /// \brief create a wrapper of the same GL texture object that another texture, allowing the GL texture object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p o HAS THE OWNERSHIP)
+          /// \param o the other texture class to copy the information from
           texture(texture &&o)
             : ownership(o.has_ownership()), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.image_texture),
               image_format(o.image_format), image_access_mode(o.image_access_mode), handle(o.handle)
@@ -187,6 +216,10 @@ namespace neam
             o.give_up_ownership();
             __tpl_init();
           }
+
+          /// \brief create a wrapper of the same GL texture object that another texture, allowing the GL texture object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p o HAS THE OWNERSHIP)
+          /// \param o the other texture class to copy the information from
           template<typename... TArgs>
           texture(texture< type::opengl, TextureType, TArgs... > &&o)
             : ownership(o.has_ownership()), id(o.get_id()), spl_idx(o.get_texture_sampler()), image_texture(o.is_image_texture()),
@@ -196,27 +229,32 @@ namespace neam
             __tpl_init();
           }
 
+          /// \brief destructor
           ~texture()
           {
             if (ownership)
               glDeleteTextures(1, &id);
           }
 
-          // give up the buffer WITHOUT DELETING IT
-          // (simply become a link)
+          /// \brief give up the texture GL object ownership WITHOUT DELETING IT
+          /// (When the texture<> instance has ended its life, the GL object won't be destructed)
           texture &give_up_ownership()
           {
             ownership = false;
             return *this;
           }
 
+          /// \brief assume the texture GL object ownership
+          /// (When the texture<> instance has ended its life, the GL object WILL be destructed)
           texture &assume_ownership()
           {
             ownership = true;
             return *this;
           }
 
-          // see stole_ownership_t
+          /// \brief create a wrapper of the same GL texture object that another texture, allowing the GL texture object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p o HAS THE OWNERSHIP)
+          /// \param o the other texture class to copy the information from
           template<typename... BArgs>
           texture &stole(texture<type::opengl, TextureType, BArgs...> &o)
           {
@@ -237,7 +275,9 @@ namespace neam
             return *this;
           }
 
-          // create a simple link
+          /// \brief create a wrapper of the same GL texture object that another texture, allowing the GL texture object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p o HAS THE OWNERSHIP)
+          /// \param o the other texture class to copy the information from
           template<typename... BArgs>
           texture &link_to(const texture<type::opengl, TextureType, BArgs...> &o)
           {
@@ -260,36 +300,41 @@ namespace neam
           // this won't do what you want.
           texture &operator = (const texture &) = delete;
 
+          /// \brief return the GL object id for the texture
           GLuint get_id() const
           {
             return id;
           }
 
+          /// \brief return true if the instance has the ownership of the GL object, false otherwise
           bool has_ownership() const
           {
             return ownership;
           }
 
-          // the active texture
+          /// \brief set the texture sampler index
           void set_texture_sampler(size_t _spl_idx)
           {
             spl_idx = _spl_idx;
           }
 
-          // the return value is used to bind samplers in shaders
+          /// \brief the return value is used to bind samplers in shaders
           size_t get_texture_sampler() const
           {
             return spl_idx;
           }
 
-          // FIXME: is that OK (does this mean what it's intended to mean ?)
-          // return the same thing than get_texture_sampler, to be used directly in uniform var affectation
+          /// \brief return the same thing than get_texture_sampler, to be used directly in uniform var affectation
+          /// FIXME is that OK (does this mean what it's intended to mean ?)
+          /// \warning Should not be used. Please instead use get_texture_sampler()
           operator GLint() const
           {
             return spl_idx;
           }
 
-          // HACK # TODO: change this. (and make a ct init for this.)
+          /// \brief make bindless the current GL texture
+          /// \warning HACK # TODO: change this. (and make a ct init for this.)
+          /// \note you should call make_resident() after
           void set_image_texture(bool _image_texture, GLenum format, GLenum access_mode)
           {
             image_texture = _image_texture;
@@ -297,9 +342,8 @@ namespace neam
             image_access_mode = access_mode;
           }
 
-          // NOTE: you must call set_image_texture
-          // NOTE: THIS IS A HACK.
-          // HACK # TODO: change this.
+          /// \brief return the image handle (the bindless texture handle)
+          /// \note you must call set_image_texture() before this one
           uint64_t get_image_handle()
           {
             if (image_texture)
@@ -309,24 +353,38 @@ namespace neam
             }
             return 0;
           }
+
+          /// \brief return the image handle (the bindless texture handle)
+          /// \note you must call set_image_texture() before this one
           uint64_t get_image_handle() const
           {
             if (image_texture)
               return handle;
             return 0;
           }
+
+          /// \brief Check if the current texture is a bindless one
           bool is_image_texture() const
           {
             return image_texture;
           }
+
+          /// \brief Return the image texture format.
+          /// \note Only use this when is_image_texture() is true
+          /// \see get_texture_type()
           GLenum get_image_format() const
           {
             return image_format;
           }
+
+          /// \brief Return the image texture access mode.
+          /// \note Only use this when is_image_texture() is true
           GLenum get_image_access_mode() const
           {
             return image_access_mode;
           }
+
+          /// \brief see glMakeImageHandleResidentARB and glMakeImageHandleNonResidentARB
           void make_resident(bool resident = true)
           {
             if (resident)
@@ -335,7 +393,7 @@ namespace neam
               glMakeImageHandleNonResidentARB(handle);
           }
 
-          // use the texture (bind it to the T.U.)
+          /// \brief use the texture (bind it to the T.U.)
           void use() const
           {
             if (!image_texture)
@@ -347,6 +405,7 @@ namespace neam
               glBindImageTexture(spl_idx, id, 0, GL_TRUE, 0, image_access_mode, image_format);
           }
 
+          /// \brief undo a previous use() operation
           void unuse() const
           {
             if (!image_texture)
@@ -355,41 +414,50 @@ namespace neam
               glBindImageTexture(spl_idx, 0, 0, GL_TRUE, 0, image_access_mode, image_format);
           }
 
-          // same thing than 'use' but do not bind it to a TU
+          /// \brief same thing as use() but do not bind it to a TU
           void bind() const
           {
             glBindTexture(TextureType::value, id);
           }
 
+          /// \brief undo a previous bind() operation
           void unbind() const
           {
             glBindTexture(TextureType::value, 0);
           }
 
-          // return the texture type
+          /// \brief return the texture type
           static constexpr GLenum get_texture_type()
           {
             return TextureType::value;
           }
 
+          /// \brief generate mipmaps for the current texture
+          /// \note after this operation the texture is still bound
           void generate_mipmaps()
           {
             bind();
             glGenerateMipmap(TextureType::value);
           }
 
-//           template<typename InitType>
-//           auto set_texture_data(const InitType &it)
-//           -> NCR_ENABLE_IF(TextureType::value == GL_TEXTURE_RECTANGLE, void)
-//           {
-//             set_texture_data(it.internal_format, it.size, it.format, it.type, it.data);
-//           }
+          /// \brief set the texture data from a initializer source
+          /// \param it the initializer source that will be used to set the texture data
+          /// \see png_texture_init
+          /// \see empty_texture_init
+          /// \see ct_texture_init
           template<typename InitType>
           auto set_texture_data(const InitType &it)
           -> NCR_ENABLE_IF(TextureType::value != GL_TEXTURE_RECTANGLE && TextureType::value != GL_TEXTURE_CUBE_MAP, void)
           {
             set_texture_data(it.internal_format, it.size, it.format, it.type, it.data, it.level);
           }
+
+          /// \brief set the texture data from a initializer source (for cubemaps)
+          /// \param face is the cubemap face to set
+          /// \param it the initializer source that will be used to set the texture data
+          /// \see png_texture_init
+          /// \see empty_texture_init
+          /// \see ct_texture_init
           template<typename InitType>
           auto set_texture_data(cubemap_face face, const InitType &it)
           -> NCR_ENABLE_IF(TextureType::value == GL_TEXTURE_CUBE_MAP, void)
@@ -397,18 +465,26 @@ namespace neam
             set_texture_data(face, it.internal_format, it.size, it.format, it.type, it.data, it.level);
           }
 
-          //           template<typename InitType>
-//           auto set_sub_texture_data(const decltype(InitType::size) &offset, const InitType &it)
-//           -> NCR_ENABLE_IF(TextureType::value == GL_TEXTURE_RECTANGLE, void)
-//           {
-//             set_sub_texture_data(offset, it.size, it.format, it.type, it.data);
-//           }
+          /// \brief set a region of the texture data from a initializer source
+          /// \param offset the offset of the data to set in the texture
+          /// \param it the initializer source that will be used to set the texture data
+          /// \see png_texture_init
+          /// \see empty_texture_init
+          /// \see ct_texture_init
           template<typename InitType>
           auto set_sub_texture_data(const decltype(InitType::size) &offset, const InitType &it)
           -> NCR_ENABLE_IF(TextureType::value != GL_TEXTURE_RECTANGLE && TextureType::value != GL_TEXTURE_CUBE_MAP, void)
           {
             set_sub_texture_data(offset, it.size, it.format, it.type, it.data, it.level);
           }
+
+          /// \brief set a region of the texture data from a initializer source
+          /// \param face is the cubemap face to set
+          /// \param offset the offset of the data to set in the texture
+          /// \param it the initializer source that will be used to set the texture data
+          /// \see png_texture_init
+          /// \see empty_texture_init
+          /// \see ct_texture_init
           template<typename InitType>
           auto set_sub_texture_data(cubemap_face face, const decltype(InitType::size) &offset, const InitType &it)
           -> NCR_ENABLE_IF(TextureType::value == GL_TEXTURE_CUBE_MAP, void)
@@ -417,14 +493,13 @@ namespace neam
           }
 
 
-          // set 1D texture data
-          // I now this is a bit messy, but it's the best I can do at this hour of the night.
-          //
-          // format / type is the couple that define 'data' format and type
-          // internal_format define the way data will be stored by openGL
-          // size is the x size of the image data. (ATTENTION: not in fixed pos, but as integers)
-          //
-          // doc: https://www.opengl.org/sdk/docs/man/xhtml/glTexImage1D.xml
+          /// \brief set 1D texture data
+          ///
+          /// \param format and \param type is the couple that define 'data' format and type
+          /// \param internal_format define the way data will be stored by openGL
+          /// \param size is the x size of the image data. (ATTENTION: not in fixed pos, but as integers)
+          ///
+          /// \link https://www.opengl.org/sdk/docs/man/xhtml/glTexImage1D.xml
           auto set_texture_data(GLint internal_format, ct::fixed_t size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_1D), void)
           {
@@ -432,21 +507,28 @@ namespace neam
             glTexImage1D(TextureType::value, level, internal_format, size, 0, format, type, data);
           }
 
-          // set 2D texture data
-          // I now this is a bit messy, but it's the best I can do at this hour of the night.
-          //
-          // format / type is the couple that define 'data' format and type
-          // internal_format define the way data will be stored by openGL
-          // size is the x/y size of the image data. (ATTENTION: not in fixed pos, but as integers)
-          //
-          // doc: https://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
+          /// set 2D texture data
+          ///
+          /// \param format and \param type is the couple that define 'data' format and type
+          /// \param internal_format define the way data will be stored by openGL
+          /// \param size is the x/y size of the image data. (ATTENTION: not in fixed pos, but as integers)
+          ///
+          /// \link https://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
           auto set_texture_data(GLint internal_format, const ct::vector2 &size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_2D || TextureType::value == GL_TEXTURE_1D_ARRAY), void)
           {
             bind();
             glTexImage2D(TextureType::value, level, internal_format, size.x, size.y, 0, format, type, data);
           }
-          // for rectangle, as the specs says that level MUST be 0.
+
+          /// set 2D texture data (rectangle textures)
+          ///
+          /// \param format and \param type is the couple that define 'data' format and type
+          /// \param internal_format define the way data will be stored by openGL
+          /// \param size is the x/y size of the image data. (ATTENTION: not in fixed pos, but as integers)
+          ///
+          /// \link https://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
+          /// \note for rectangle texture, as the specs says that level MUST be 0.
           auto set_texture_data(GLint internal_format, const ct::vector2 &size, GLenum format, GLenum type, GLvoid *data)
           -> NCR_ENABLE_IF(TextureType::value == GL_TEXTURE_RECTANGLE, void)
           {
@@ -454,7 +536,14 @@ namespace neam
             glTexImage2D(TextureType::value, 0, internal_format, size.x, size.y, 0, format, type, data);
           }
 
-          // the same as the GL_TEXTURE_2D, but you also had to specify the cubemap face
+          /// set 2D texture data (cubemaps)
+          ///
+          /// \param format and \param type is the couple that define 'data' format and type
+          /// \param internal_format define the way data will be stored by openGL
+          /// \param size is the x/y size of the image data. (ATTENTION: not in fixed pos, but as integers)
+          ///
+          /// \link https://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
+          /// \note the same as the GL_TEXTURE_2D one, but you also had to specify the cubemap face
           auto set_texture_data(cubemap_face face, GLint internal_format, const ct::vector2 &size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF(TextureType::value == GL_TEXTURE_CUBE_MAP, void)
           {
@@ -462,14 +551,13 @@ namespace neam
             glTexImage2D(static_cast<GLenum>(face), level, internal_format, size.x, size.y, 0, format, type, data);
           }
 
-          // set 3D texture data
-          // I now this is a bit messy, but it's the best I can do at this hour of the night.
-          //
-          // format / type is the couple that define 'data' format and type
-          // internal_format define the way data will be stored by openGL
-          // size is the x/y/z size of the image data. (ATTENTION: not in fixed pos, but as integers)
-          //
-          // doc: https://www.opengl.org/sdk/docs/man/xhtml/glTexImage3D.xml
+          /// \brief set 3D texture data
+          ///
+          /// \param format and \param type is the couple that define 'data' format and type
+          /// \param internal_format define the way data will be stored by openGL
+          /// \param size is the x/y/z size of the image data. (ATTENTION: not in fixed pos, but as integers)
+          ///
+          /// \link https://www.opengl.org/sdk/docs/man/xhtml/glTexImage3D.xml
           auto set_texture_data(GLint internal_format, const ct::vector3 &size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_3D || TextureType::value == GL_TEXTURE_2D_ARRAY), void)
           {
@@ -477,14 +565,13 @@ namespace neam
             glTexImage3D(TextureType::value, level, internal_format, size.x, size.y, size.z, 0, format, type, data);
           }
 
-          // set 1D texture data
-          // I now this is a bit messy, but it's the best I can do at this hour of the night.
-          //
-          // format / type is the couple that define 'data' format and type
-          // internal_format define the way data will be stored by openGL
-          // size is the x size of the image data. (ATTENTION: not in fixed pos, but as integers)
-          //
-          // doc: https://www.opengl.org/sdk/docs/man/xhtml/glTexImage1D.xml
+          /// \brief set 1D texture data of a particular region of the texture
+          ///
+          /// \param format and \param type is the couple that define 'data' format and type
+          /// \param internal_format define the way data will be stored by openGL
+          /// \param size is the x size of the image data. (ATTENTION: not in fixed pos, but as integers)
+          ///
+          /// \link https://www.opengl.org/sdk/docs/man/xhtml/glTexSubImage1D.xml
           auto set_sub_texture_data(ct::fixed_t offset, ct::fixed_t size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_1D), void)
           {
@@ -492,21 +579,28 @@ namespace neam
             glTexSubImage1D(TextureType::value, level, offset, size, format, type, data);
           }
 
-          // set 2D texture data
-          // I now this is a bit messy, but it's the best I can do at this hour of the night.
-          //
-          // format / type is the couple that define 'data' format and type
-          // internal_format define the way data will be stored by openGL
-          // size is the x/y size of the image data. (ATTENTION: not in fixed pos, but as integers)
-          //
-          // doc: https://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
+          /// set 2D texture data of a particular region of the texture
+          ///
+          /// \param format and \param type is the couple that define 'data' format and type
+          /// \param internal_format define the way data will be stored by openGL
+          /// \param size is the x/y size of the image data. (ATTENTION: not in fixed pos, but as integers)
+          ///
+          /// \link https://www.opengl.org/sdk/docs/man/xhtml/glTexSubImage2D.xml
           auto set_sub_texture_data(const ct::vector2 &offset, const ct::vector2 &size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_2D || TextureType::value == GL_TEXTURE_1D_ARRAY), void)
           {
             bind();
             glTexSubImage2D(TextureType::value, level, offset.x, offset.y, size.x, size.y, format, type, data);
           }
-          // for rectangle, as the specs says that level MUST be 0.
+
+          /// set 2D texture data of a particular region of the texture (rectangle)
+          ///
+          /// \param format and \param type is the couple that define 'data' format and type
+          /// \param internal_format define the way data will be stored by openGL
+          /// \param size is the x/y size of the image data. (ATTENTION: not in fixed pos, but as integers)
+          ///
+          /// \link https://www.opengl.org/sdk/docs/man/xhtml/glTexSubImage2D.xml
+          /// \note for rectangle, as the specs says that level MUST be 0.
           auto set_sub_texture_data(const ct::vector2 &offset, const ct::vector2 &size, GLenum format, GLenum type, GLvoid *data)
           -> NCR_ENABLE_IF(TextureType::value == GL_TEXTURE_RECTANGLE, void)
           {
@@ -514,7 +608,15 @@ namespace neam
             glTexSubImage2D(TextureType::value, 0, offset.x, offset.y, size.x, size.y, format, type, data);
           }
 
-          // the same as the GL_TEXTURE_2D, but you also had to specify the cubemap face
+          /// set 2D texture data of a particular region of the texture (cubemap)
+          ///
+          /// \param format and \param type is the couple that define 'data' format and type
+          /// \param internal_format define the way data will be stored by openGL
+          /// \param size is the x/y size of the image data. (ATTENTION: not in fixed pos, but as integers)
+          ///
+          /// \link https://www.opengl.org/sdk/docs/man/xhtml/glTexSubImage2D.xml
+          /// \note for rectangle, as the specs says that level MUST be 0.
+          /// \note the same as the GL_TEXTURE_2D one, but you also had to specify the cubemap face
           auto set_sub_texture_data(cubemap_face face, const ct::vector2 &offset, const ct::vector2 &size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF(TextureType::value == GL_TEXTURE_CUBE_MAP, void)
           {
@@ -522,14 +624,13 @@ namespace neam
             glTexSubImage2D(static_cast<GLenum>(face), level, offset.x, offset.y, size.x, size.y, format, type, data);
           }
 
-          // set 3D texture data
-          // I now this is a bit messy, but it's the best I can do at this hour of the night.
-          //
-          // format / type is the couple that define 'data' format and type
-          // internal_format define the way data will be stored by openGL
-          // size is the x/y/z size of the image data. (ATTENTION: not in fixed pos, but as integers)
-          //
-          // doc: https://www.opengl.org/sdk/docs/man/xhtml/glTexImage3D.xml
+          /// \brief set 3D texture data
+          ///
+          /// \param format and \param type is the couple that define 'data' format and type
+          /// \param internal_format define the way data will be stored by openGL
+          /// \param size is the x/y/z size of the image data. (ATTENTION: not in fixed pos, but as integers)
+          ///
+          /// \link https://www.opengl.org/sdk/docs/man/xhtml/glTexSubImage3D.xml
           auto set_sub_texture_data(const ct::vector3 &offset, const ct::vector3 &size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_3D || TextureType::value == GL_TEXTURE_2D_ARRAY), void)
           {
@@ -537,42 +638,50 @@ namespace neam
             glTexSubImage3D(TextureType::value, level, offset.x, offset.y, offset.z, size.x, size.y, size.z, format, type, data);
           }
 
-          // set tex parameters (see openGL doc for pname / param @ https://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml)
+          /// \brief set tex parameters (see openGL doc for pname / param @ https://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml)
           void set_gl_parameter(GLenum pname, float param)
           {
             bind();
             glTexParameterf(TextureType::value, pname, param);
           }
+
+          /// \brief set tex parameters (see openGL doc for pname / param @ https://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml)
           void set_gl_parameter(GLenum pname, GLint param)
           {
             bind();
             glTexParameteri(TextureType::value, pname, param);
           }
+
+          /// \brief set tex parameters (see openGL doc for pname / param @ https://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml)
           void set_gl_parameter(GLenum pname, float *params)
           {
             bind();
             glTexParameterfv(TextureType::value, pname, params);
           }
+
+          /// \brief set tex parameters (see openGL doc for pname / param @ https://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml)
           void set_gl_parameter(GLenum pname, GLint *params)
           {
             bind();
             glTexParameteriv(TextureType::value, pname, params);
           }
 
-          // border specific ones
+          /// \brief set tex parameters (see openGL doc for pname / param @ https://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml)
           void set_gl_parameterI(GLenum pname, GLint *params)
           {
             bind();
             glTexParameterIiv(TextureType::value, pname, params);
           }
+
+          /// \brief set tex parameters (see openGL doc for pname / param @ https://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml)
           void set_gl_parameterI(GLenum pname, GLuint *params)
           {
             bind();
             glTexParameterIuiv(TextureType::value, pname, params);
           }
 
-          // create a link to a more generic texture.
-          // no inheritance involved. This cast will create a 'link' program shader object.
+          /// \brief create a link to a more generic texture. (removing from the type any extra Args template parameter)
+          /// no inheritance involved. This cast will create a \e link to the GL texture object.
           operator texture<type::opengl, TextureType> ()
           {
             return texture<type::opengl, TextureType> (*this);
