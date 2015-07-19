@@ -44,15 +44,17 @@ namespace neam
   {
     namespace yaggler
     {
-      // /// some useful usings for materials
+      /// \file material_usings.hpp
+      /// \brief some useful usings for materials and textures
 
       // /// /// texture usings
 
-      // empty texture list
+      /// \brief empty texture list
       using no_textures = texture_list<>;
 
-      // png textures only, no mipmaps from images
-      // it takes only the filename of the textures (as a ct string)
+      /// \brief Create a texture list from a list of filename
+      /// for png textures only, no mipmaps from images
+      /// it takes only the filename of the textures (as a ct string)
       template<const char *... Strings>
       using rgba_png_2d_texture_list =  neam::klmb::yaggler::texture_list
       <
@@ -63,6 +65,7 @@ namespace neam
         >...
       >;
 
+      /// \brief Create a texture from its filename
       template<const char * Filename>
       using rgba_png_2d_texture = neam::yaggler::texture::texture
       <
@@ -73,9 +76,9 @@ namespace neam
       // /// /// shaders usings
       //
       // NOTE:  please note that shared instances also share the source code. If you change the defines in a ct_string and you rebuild the shader,
-      //        every other instances of the class will share the modifs.
+      //        every other instances of the class will share the changes.
 
-      // shader from a file
+      /// \brief shader from a file
       template<GLenum ShaderType, const char *Filename, neam::yaggler::shader::shader_option Flags = neam::yaggler::shader::shader_option::one_shot_compilation>
       using file_shader = neam::yaggler::shader::shader
       <
@@ -84,10 +87,13 @@ namespace neam
         neam::embed::shader::option<Flags>
       >;
 
+      /// \brief shared shader from a file
+      /// \note please note that shared instances also share the source code. If you change the defines in a ct_string and you rebuild the shader,
+      ///        every other instances of the class will share the changes.
       template<GLenum ShaderType, const char *Filename, neam::yaggler::shader::shader_option Flags = neam::yaggler::shader::shader_option::none>
       using shared_file_shader = file_shader<ShaderType, Filename, static_cast<neam::yaggler::shader::shader_option>(neam::yaggler::shader::shader_option::shared_instance | Flags)>;
 
-      // shader from a constexpr string
+      /// \brief shader from a constexpr string
       template<GLenum ShaderType, const char *CTString>
       using ct_string_shader = neam::yaggler::shader::shader
       <
@@ -96,6 +102,9 @@ namespace neam
         neam::embed::shader::option<neam::yaggler::shader::shader_option::one_shot_compilation>
       >;
 
+      /// \brief shared shader from a constexpr string
+      /// \note please note that shared instances also share the source code. If you change the defines in a ct_string and you rebuild the shader,
+      ///        every other instances of the class will share the changes.
       template<GLenum ShaderType, const char *CTString>
       using shared_ct_string_shader = neam::yaggler::shader::shader
       <
@@ -104,7 +113,7 @@ namespace neam
         neam::embed::shader::option<neam::yaggler::shader::shader_option::shared_instance>
       >;
 
-      // shader from a string
+      /// \brief shader from a string
       template<GLenum ShaderType, const char *CTString>
       using string_shader = neam::yaggler::shader::shader
       <
@@ -113,6 +122,9 @@ namespace neam
         neam::embed::shader::option<neam::yaggler::shader::shader_option::one_shot_compilation>
       >;
 
+      /// \brief shared shader from a string
+      /// \note please note that shared instances also share the source code. If you change the defines in a ct_string and you rebuild the shader,
+      ///        every other instances of the class will share the changes.
       template<GLenum ShaderType, const char *CTString>
       using shared_string_shader = neam::yaggler::shader::shader
       <
@@ -122,22 +134,37 @@ namespace neam
       >;
 
 
-      // shader from a file, compiled only one time (no FS watcher)
-      // shader type is deduced from file extension at compile time.
-      //
-      // default YägGLer shader extensions are:
-      //
-      // .frag        --> fragment shader
-      // .geom        --> geometry shader
-      // .tess-eval   --> tesselation evaluation shader
-      // .tess-ctrl   --> tesselation control shader
-      // .vert        --> vertex shader
-      //
-      // .compute     --> compute shader
-      //
+      /// \brief shader from a file, compiled only one time (no FS watcher)
+      /// shader type is deduced from file extension at compile time.
+      ///
+      /// default YägGLer shader extensions are:
+      ///
+      /// .frag        --> fragment shader
+      /// .geom        --> geometry shader
+      /// .tess-eval   --> tesselation evaluation shader
+      /// .tess-ctrl   --> tesselation control shader
+      /// .vert        --> vertex shader
+      ///
+      /// .compute     --> compute shader
+      ///
       template<const char *Filename, neam::yaggler::shader::shader_option Flags = neam::yaggler::shader::shader_option::none>
       using auto_file_shader = file_shader<internal::shader_type_from_filename<Filename>::shader_type, Filename, Flags>;
 
+      /// \brief shader from a file, compiled only one time (no FS watcher)
+      /// shader type is deduced from file extension at compile time.
+      ///
+      /// default YägGLer shader extensions are:
+      ///
+      /// .frag        --> fragment shader
+      /// .geom        --> geometry shader
+      /// .tess-eval   --> tesselation evaluation shader
+      /// .tess-ctrl   --> tesselation control shader
+      /// .vert        --> vertex shader
+      ///
+      /// .compute     --> compute shader
+      ///
+      /// \note please note that shared instances also share the source code. If you change the defines in a ct_string and you rebuild the shader,
+      ///        every other instances of the class will share the changes.
       template<const char *Filename>
       using auto_shared_file_shader = shared_file_shader<internal::shader_type_from_filename<Filename>::shader_type, Filename>;
 

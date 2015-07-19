@@ -43,23 +43,20 @@ namespace neam
   {
     namespace yaggler
     {
-      // an object simply holds a VAO + buffers + drawer
-      // there's no material here/position/... . It simply holds the geom / drawer
+      /// \brief holds a VAO + buffers + drawer
+      /// \note there's no material/position/... . It simply holds the geom + drawer
+      /// \see klmb::yaggled::model
       template<GLenum... CTBufferTypes>
       struct object
       {
         public:
-          // the aabb, to be linked with default_node::initial_bounding_box
-          aabb bounding_box;
+          aabb bounding_box; ///< \brief the aabb, to be linked with default_node::initial_bounding_box
 
-          // the vao
-          neam::yaggler::geometry::vao<neam::yaggler::type::opengl> vao;
+          neam::yaggler::geometry::vao<neam::yaggler::type::opengl> vao; ///< \brief the vao
 
-          // the drawer
-          neam::yaggler::geometry::draw_state<neam::yaggler::type::opengl> drawer;
+          neam::yaggler::geometry::draw_state<neam::yaggler::type::opengl> drawer; ///< \brief the drawer
 
-          // the ct buffers
-          cr::tuple<neam::yaggler::geometry::buffer<neam::yaggler::type::opengl, embed::GLenum<CTBufferTypes>>...> ct_buffers;
+          cr::tuple<neam::yaggler::geometry::buffer<neam::yaggler::type::opengl, embed::GLenum<CTBufferTypes>>...> ct_buffers; ///< \brief some compile time buffers
 
           template<GLenum BufferType>
           using _sub_container_type = std::deque<neam::yaggler::geometry::buffer<neam::yaggler::type::opengl, embed::GLenum<BufferType>>>;
@@ -67,27 +64,28 @@ namespace neam
           template<GLenum... BufferTypes>
           using _container_tuple = cr::tuple<_sub_container_type<BufferTypes>...>;
 
-          // some other buffers, possibly added at runtime.
-          // even if for some of them, it makes no sense in using them in an object ;)
-          // 0:  GL_ARRAY_BUFFER,
-          // 1:  GL_ATOMIC_COUNTER_BUFFER,
-          // 2:  GL_COPY_READ_BUFFER,
-          // 3:  GL_COPY_WRITE_BUFFER,
-          // 4:  GL_DRAW_INDIRECT_BUFFER,
-          // 5:  GL_DISPATCH_INDIRECT_BUFFER,
-          // 6:  GL_ELEMENT_ARRAY_BUFFER,
-          // 7:  GL_PIXEL_PACK_BUFFER,
-          // 8:  GL_PIXEL_UNPACK_BUFFER,
-          // 9:  GL_QUERY_BUFFER,
-          // 10: GL_SHADER_STORAGE_BUFFER,
-          // 11: GL_TEXTURE_BUFFER,
-          // 12: GL_TRANSFORM_FEEDBACK_BUFFER,
-          // 13: GL_UNIFORM_BUFFER
+          /// \brief some other buffers, possibly added at runtime.
+          /// even if for some of them, it makes no sense in using them in an object !
+          /// 0:  GL_ARRAY_BUFFER,
+          /// 1:  GL_ATOMIC_COUNTER_BUFFER,
+          /// 2:  GL_COPY_READ_BUFFER,
+          /// 3:  GL_COPY_WRITE_BUFFER,
+          /// 4:  GL_DRAW_INDIRECT_BUFFER,
+          /// 5:  GL_DISPATCH_INDIRECT_BUFFER,
+          /// 6:  GL_ELEMENT_ARRAY_BUFFER,
+          /// 7:  GL_PIXEL_PACK_BUFFER,
+          /// 8:  GL_PIXEL_UNPACK_BUFFER,
+          /// 9:  GL_QUERY_BUFFER,
+          /// 10: GL_SHADER_STORAGE_BUFFER,
+          /// 11: GL_TEXTURE_BUFFER,
+          /// 12: GL_TRANSFORM_FEEDBACK_BUFFER,
+          /// 13: GL_UNIFORM_BUFFER
           _container_tuple<GL_ARRAY_BUFFER, GL_ATOMIC_COUNTER_BUFFER, GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, GL_DRAW_INDIRECT_BUFFER, GL_DISPATCH_INDIRECT_BUFFER, GL_ELEMENT_ARRAY_BUFFER, GL_PIXEL_PACK_BUFFER, GL_PIXEL_UNPACK_BUFFER, GL_QUERY_BUFFER, GL_SHADER_STORAGE_BUFFER, GL_TEXTURE_BUFFER, GL_TRANSFORM_FEEDBACK_BUFFER, GL_UNIFORM_BUFFER> buffers;
 
           static constexpr GLenum __indexes_container[] = {GL_ARRAY_BUFFER, GL_ATOMIC_COUNTER_BUFFER, GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, GL_DRAW_INDIRECT_BUFFER, GL_DISPATCH_INDIRECT_BUFFER, GL_ELEMENT_ARRAY_BUFFER, GL_PIXEL_PACK_BUFFER, GL_PIXEL_UNPACK_BUFFER, GL_QUERY_BUFFER, GL_SHADER_STORAGE_BUFFER, GL_TEXTURE_BUFFER, GL_TRANSFORM_FEEDBACK_BUFFER, GL_UNIFORM_BUFFER};
 
-          // to help with indexes. Could be used as template parameter ;)
+          /// \brief Return the index in the buffers property from the corresponding GLenum value
+          /// To help with indexes. Could be used as template parameter ;)
           static constexpr size_t get_index_for_enum(GLenum val)
           {
             return _rec_get_index_for_enum(val, 0, sizeof(__indexes_container) / sizeof(__indexes_container[0]));
@@ -99,27 +97,29 @@ namespace neam
           // constructors
           object() {}
 
-          // do not use those two.
           explicit object(neam::yaggler::geometry::vao<neam::yaggler::type::opengl> &&_vao) : vao(std::move(_vao)) {}
           explicit object(const neam::yaggler::geometry::vao<neam::yaggler::type::opengl> &_vao) : vao((_vao)) {}
 
-          // create a link
+          /// \brief create a link (never assume ownership over GL resources)
           object(const object &o)
             : bounding_box(o.bounding_box), vao(o.vao), drawer(o.drawer), ct_buffers(o.ct_buffers), buffers(o.buffers)
           {
             give_up_ownership();
           }
-          // stole ownership
+
+          /// \brief stole ownership of the buffers (only if \p is the owner)
           object(object &o, stole_ownership_t)
           : object(std::move(o), cr::gen_seq<sizeof...(CTBufferTypes)>(), rt_idxs_gen_seq())
           {
           }
+
+          /// \brief stole ownership of the buffers (only if \p is the owner)
           object(object && o)
             : object(std::move(o), cr::gen_seq<sizeof...(CTBufferTypes)>(), rt_idxs_gen_seq())
           {
           }
 
-          // std ownership management
+          /// \brief Give up the ownership of *all* of the GL buffers
           object &give_up_ownership()
           {
             vao.give_up_ownership();
@@ -127,6 +127,8 @@ namespace neam
             buffers_give_up_ownership(rt_idxs_gen_seq());
             return *this;
           }
+
+          /// \brief Assume the ownership of *all* of the GL buffers
           object &assume_ownership()
           {
             vao.assume_ownership();
@@ -135,6 +137,7 @@ namespace neam
             return *this;
           }
 
+          /// \brief copy, but if \p o is owner of some of the buffer, stole their ownership
           object &stole(object &o)
           {
             vao.stole(o.vao);
@@ -145,6 +148,7 @@ namespace neam
             return *this;
           }
 
+          /// \brief copy, but never assume ownership over GL resources
           object &link_to(const object &o)
           {
             vao.link_to(o.vao);
@@ -155,21 +159,22 @@ namespace neam
             return *this;
           }
 
-          // draw the object
+          /// \brief draw the object
           void draw() const
           {
             YAGG_SCOPED_USE(vao);
             drawer.draw();
           }
 
-          // this function is soooo cool... :)
-          // NOTE: the returned object will be the owner of the vao and buffers
+          /// \brief Convert the current object to a more generic one (speaking of the C++ type)
+          /// \note the returned object will be the owner of the vao and buffers
           object<> convert_to_generic()
           {
             return _convert_to_generic(cr::gen_seq<sizeof...(CTBufferTypes)>());
           }
 
-          // NOTE: the returned object will be the owner of the vao and buffers
+          /// \brief Convert the current object to a more generic one (speaking of the C++ type)
+          /// \note the returned object will NOT be the owner of the vao and buffers
           object<> create_generic_link() const
           {
             return _create_generic_link(cr::gen_seq<sizeof...(CTBufferTypes)>());

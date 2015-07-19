@@ -40,45 +40,46 @@ namespace neam
   {
     namespace yaggler
     {
-      // a single pass in a compositor
+      /// \brief a single pass in a compositor
       class compositor_pass
       {
         public:
-          compositor_pass(/*const glm::vec2 &_framebuffer_resolution*/)
+          /// \brief initialize an emtpy pass
+          compositor_pass()
             : fsquad(create_object_from_object_data(object_data::fs_quad).convert_to_generic())
-//               framebuffer_resolution(_framebuffer_resolution)
           {
           }
 
+          /// \brief initialize from another compositor pass (copy)
           compositor_pass(const compositor_pass &cp)
             : fsquad(create_object_from_object_data(object_data::fs_quad).convert_to_generic()),
-//               framebuffer_resolution(cp.framebuffer_resolution),
               material(cp.material)
           {
           }
 
+          /// \brief initialize from another compositor pass (move)
           compositor_pass(compositor_pass &&cp)
             : fsquad(std::move(cp.fsquad)),
-//               framebuffer_resolution(cp.framebuffer_resolution),
               material(std::move(cp.material))
           {
           }
 
+          /// \brief initialize from another compositor pass (ownership shift)
           compositor_pass(compositor_pass &cp, stole_ownership_t)
             : fsquad(std::move(cp.fsquad)),
-//               framebuffer_resolution(cp.framebuffer_resolution),
               material(std::move(cp.material))
           {
           }
 
-          // render the compositor pass
+          /// \brief render the compositor pass
           void render()
           {
             material.use();
             fsquad.draw();
           }
 
-          // set the fragment shader and its parameters
+          /// \brief set the fragment shader and its parameters
+          /// \param mctp is a list of material_ctx_pair
           template<typename Shader, typename... MaterialCtxPairArgs>
           void set_fragment_shader(MaterialCtxPairArgs... mctp)
           {
@@ -96,7 +97,6 @@ namespace neam
             >
             // CONTEXT
             (
-//               neam::klmb::yaggler::make_ctx_pair("screen_resolution", neam::cr::make_const_ref(framebuffer_resolution)),
               neam::klmb::yaggler::make_ctx_pair("global_time", &neam::cr::chrono::now_relative),
               mctp...
             );
@@ -105,7 +105,6 @@ namespace neam
 
         private:
           neam::klmb::yaggler::object<> fsquad;
-//           const glm::vec2 &framebuffer_resolution;
           neam::klmb::yaggler::material_wrapper material;
       };
     } // namespace yaggler

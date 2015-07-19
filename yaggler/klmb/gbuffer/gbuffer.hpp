@@ -47,15 +47,15 @@ namespace neam
         using gbuffer_geom_shader = auto_file_shader<gbuffer_geom_file>;
         using gbuffer_frag_shader = auto_file_shader<gbuffer_frag_file>;
 
-        // the one that create the gbuffer
+        /// \brief create and hold a gbuffer with three custom textures and a depthbuffer (and a fbo)
         class gbuffer
         {
           public:
-            neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> fbo;
-            neam::yaggler::texture::texture<neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>> color_0;
-            neam::yaggler::texture::texture<neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>> color_1;
-            neam::yaggler::texture::texture<neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>> color_2;
-            neam::yaggler::texture::renderbuffer<neam::yaggler::type::opengl> depthbuffer;
+            neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl> fbo; ///< \brief the frame buffer object
+            neam::yaggler::texture::texture<neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>> color_0; ///< \brief the first color texture
+            neam::yaggler::texture::texture<neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>> color_1; ///< \brief the second color texture
+            neam::yaggler::texture::texture<neam::yaggler::type::opengl, neam::embed::GLenum<GL_TEXTURE_2D>> color_2; ///< \brief the third color texture
+            neam::yaggler::texture::renderbuffer<neam::yaggler::type::opengl> depthbuffer; ///< \brief the depthbuffer
 
             GLenum clear_bits = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 
@@ -82,8 +82,8 @@ namespace neam
             {
             }
 
-            // late init
-            // NOTE: MUST BE CALLED.
+            /// \brief late init/update, setup texture sizes
+            /// \note MUST BE CALLED. (at least once)
             void set_screen_size(const ct::vector2 &screen_size)
             {
               color_0.set_texture_sampler(0);
@@ -112,6 +112,7 @@ namespace neam
               glDrawBuffers(3, bufs);
             }
 
+            /// \brief bind the fbo for drawing + clear it
             void use()
             {
               fbo.use_draw();

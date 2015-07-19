@@ -37,8 +37,7 @@ namespace neam
     {
       namespace object_data
       {
-        // The fullscreen quad
-        // [-1..1] quad
+        /// \brief The fullscreen quad (a [-1..1] quad)
         GLfloat fs_quad [] __attribute__((unused)) =
         {
           -1.0f, -1.f, 0.0f,
@@ -49,7 +48,7 @@ namespace neam
           1.0f,  1.0f, 0.0f,
         };
 
-        // [0..1] quad
+        /// \brief a positive [0..1] quad
         GLfloat positive_quad [] __attribute__((unused)) =
         {
           0.0f, 0.f, 0.0f,
@@ -61,7 +60,7 @@ namespace neam
         };
       } // namespace object_data
 
-      // non indexed data
+      /// \brief Create an object from a non indexed, position only vertex data
       template<size_t Size>
       object<GL_ARRAY_BUFFER> create_object_from_object_data(const GLfloat (&data)[Size])
       {
@@ -81,7 +80,7 @@ namespace neam
         return obj;
       }
 
-      // indexed data
+      /// \brief Create an object from both position and indicies
       template<size_t VertexArraySize, size_t IndexArraySize>
       object<GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER> create_object_from_object_data(const GLfloat (&vertex)[VertexArraySize], const GLuint (&indices)[IndexArraySize])
       {

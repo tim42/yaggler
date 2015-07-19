@@ -40,12 +40,12 @@ namespace neam
   {
     namespace yaggler
     {
-      // a simple camera (basically a struct that holds a glm::mat4)
+      /// \brief a simple camera (basically a struct that holds a glm::mat4)
       struct camera
       {
-        glm::mat4 vp_matrix; // the result (to be passed as ref<> to shaders / objects /...)
+        glm::mat4 vp_matrix; ///< \brief the result (to be passed as ref<> to shaders / objects /...)
 
-        glm::mat4 *world_matrix = nullptr; // link this to any node_holder worl mat'.
+        glm::mat4 *world_matrix = nullptr; /// \brief link this to any node_holder world matrix.
 
         // some controls vars
         float fov = M_PI / 4.;
@@ -59,14 +59,14 @@ namespace neam
         glm::vec3 up_vector = glm::vec3(0.0, 1.0, 0.0);
 
         // it's either target_lock or look_at (if target_lock is null)
-        glm::vec3 *target_lock = nullptr;
-        glm::vec3 look_at = glm::vec3(0.0, 0.0, 1.0);
+        glm::vec3 *target_lock = nullptr; ///< \brief if not null, a pointer to a vec3 holding the target position
+        glm::vec3 look_at = glm::vec3(0.0, 0.0, 1.0); ///< \brief if target_lock is not null, a position to look at
 
         // intermediate steps
         glm::mat4 view_matrix;
         glm::mat4 proj_matrix;
 
-        // recompute matrices
+        /// \brief recompute all matrices
         void recompute_matrices()
         {
           _recompute_proj_matrix();
@@ -74,22 +74,28 @@ namespace neam
           _recompute_vp_matrix();
 
         }
+        /// \brief recompute projection and viewprojection matrices (but not the view one)
         void recompute_proj_and_vp_matrices()
         {
           _recompute_proj_matrix();
           _recompute_vp_matrix();
         }
+        /// \brief recompute view and viewprojection matrices (but not the projection one)
         void recompute_view_and_vp_matrices()
         {
           _recompute_view_matrix();
           _recompute_vp_matrix();
         }
 
-        // recompute single matrices (marked as advanced because vp_matrix is not recomputed)
+        /// \brief recompute only the vp matrix
+        /// \note advanced
         void _recompute_vp_matrix()
         {
           vp_matrix = proj_matrix * view_matrix;
         }
+
+        /// \brief recompute only the view matrix
+        /// \note advanced (vp is not recomputed)
         void _recompute_view_matrix()
         {
           glm::vec3 look = look_at;
@@ -104,6 +110,9 @@ namespace neam
           else
             view_matrix = glm::lookAt(position, look, up_vector);
         }
+
+        /// \brief recompute only the projection matrix
+        /// \note advanced (vp is not recomputed)
         void _recompute_proj_matrix()
         {
           if (isinf(far))
@@ -112,17 +121,17 @@ namespace neam
             proj_matrix = glm::perspective(fov, aspect, near, far);
         }
 
-        // constructor.
+        /// \brief constructor.
         camera()
         {
           recompute_matrices();
         }
       };
 
-      // an camera with ortho' params
+      /// \brief an orthographic camera
       struct ortho_camera
       {
-        glm::mat4 vp_matrix; // the result (to be passed as ref<> to shaders / objects /...)
+        glm::mat4 vp_matrix; ///< \brief the result (to be passed as ref<> to shaders / objects /...)
 
         // some controls vars
         glm::vec2 min = glm::vec2(-1, -1);
@@ -131,21 +140,25 @@ namespace neam
         float near = 0;
         float far = 100;
 
-        // recompute matrices
+        /// \brief recompute matrix
         void recompute_matrices()
         {
           vp_matrix = glm::ortho(min.x, max.x, min.y, max.y, near, far);
         }
+
+        /// \brief recompute matrix
         void recompute_proj_and_vp_matrices()
         {
           recompute_matrices();
         }
+
+        /// \brief recompute matrix
         void recompute_view_and_vp_matrices()
         {
           recompute_matrices();
         }
 
-        // constructor.
+        /// \brief constructor.
         ortho_camera()
         {
           recompute_matrices();

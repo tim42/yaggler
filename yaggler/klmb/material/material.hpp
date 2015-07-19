@@ -83,6 +83,7 @@ namespace neam
           }
 
         public:
+          /// \brief the shader program type
           using program_t = typename Shaders::template program_auto_merger
           <
             ct::pair<embed::GLenum<GL_VERTEX_SHADER>, auto_file_shader<framework_files::main_vert>>,
@@ -92,6 +93,10 @@ namespace neam
 
 
         public:
+          /// \brief Initialize the material
+          /// \note You should not use this directly.
+          /// \see create_material()
+          /// \see create_material_ptr()
           template<typename... Pairs>
           base_material(Pairs... pairs)
             : textures(), shader_prog(),
@@ -105,7 +110,7 @@ namespace neam
               variable_strings {{pairs.variable_name...}},
               variable_buffers {{pairs.buffer_storage...}}
           {
-            glGetError(); // because shader_prog is not yet linked.
+            glGetError(); // because shader_prog is not yet linked, we remove the error
 
             // setup shader defines
             _setup_klmb_defines();
@@ -114,6 +119,9 @@ namespace neam
             link_shader();
           }
 
+          /// \brief Moves a shader
+          /// \warning if I remember things correctly, indexed_variables won't work here, as they will keep their references to the old \p mt variables<>
+          /// \todo fix the indexed_variables issue
           base_material(base_material &&mt)
             : textures(std::move(mt.textures)), shader_prog(std::move(mt.shader_prog)),
               variable_values(std::move(mt.variable_values)),
@@ -121,6 +129,7 @@ namespace neam
           {
           }
 
+          /// \brief bind the material for use
           void use()
           {
             shader_prog.use();
@@ -128,79 +137,97 @@ namespace neam
             textures.use();
           }
 
-          // ops
+          /// \brief link the shader and retrieve the uniform variables from it
           void link_shader()
           {
             shader_prog.link();
             _reset_context_variables();
           }
 
-          // some getters
+          /// \brief retrieve a previously declared variable<> by its index
+          /// \note as it return a reference, you could do \code material.get_variable<0>() = 42.f; \endcode
           template<size_t Index>
           auto get_variable() ->  decltype(Variables().template get<Index>())
           {
             return variable_values.template get<Index>();
           }
+
+          /// \brief retrieve a previously declared variable<> by its index
+          /// \note it returns a const reference
           template<size_t Index>
           auto get_variable() const -> decltype(Variables().template get<Index>())
           {
             return variable_values.template get<Index>();
           }
 
-          // some (advanced) getters
+          /// \brief returns the variable context
+          /// \see yaggler::shader::variable_context<>
+          /// \note intended for advanced usage only
           VarCtx &get_variable_context()
           {
             return vctx;
           }
+
+          /// \brief returns the variable context
+          /// \see yaggler::shader::variable_context<>
+          /// \note intended for advanced usage only
           const VarCtx &get_variable_context() const
           {
             return vctx;
           }
 
-          // get the texture tuple
+          /// \brief get the texture tuple
           typename Textures::tuple_type &get_texture_tuple()
           {
             return textures.instance;
           }
+
+          /// \brief get the texture tuple
           typename Textures::tuple_type &get_texture_tuple() const
           {
             return textures.instance;
           }
 
-          // get a specific texture by its index
+          /// \brief get a specific texture by its index
           template<size_t Index>
           typename Textures::template get_type<Index> &get_texture()
           {
             return textures.instance.template get<Index>();
           }
+
+          /// \brief get a specific texture by its index
           template<size_t Index>
           const typename Textures::template get_type<Index> &get_texture() const
           {
             return textures.instance.template get<Index>();
           }
 
-          // return the shader program
+          /// \brief return the shader program
           program_t &get_shader_program()
           {
             return shader_prog;
           }
+
+          /// \brief return the shader program
           const program_t &get_shader_program() const
           {
             return shader_prog;
           }
 
-          // some (very advanced) getters/types
           using _shaders_pack = Shaders;
           using _textures_pack = Textures;
           using _var_ctx = VarCtx;
 
-          // you may want to call this after a program link.
+          /// \brief you may want to call this after a program link.
+          /// \note automatically done after link_shader()
+          /// \note intended for advanced usage only
           void _reset_context_variables()
           {
             _set_variables(cr::gen_seq<VarCtx::get_number_of_variables()>());
           }
 
-          // called to reset the klmb shader 'framework'
+          /// \brief called to reset the klmb shader 'framework'
+          /// \note intended for advanced usage only
           void _setup_klmb_defines()
           {
             _klmb_defines_loop_over_shaders(cr::gen_seq<program_t::get_ct_shaders_number()>());
@@ -257,7 +284,7 @@ namespace neam
 
           // framework shader files
 
-          // the prog :)
+          // the prog
           program_t shader_prog;
 
           Variables variable_values;
@@ -290,15 +317,24 @@ namespace neam
         };
       } // namespace internal
 
-      // a nice helper :)
-      // (particularly useful for building the variable context...)
+      /// \brief an helper for creating raw materials (there's nothing more than you use/defines)
+      /// this particularly useful for building the variable context...
+      /// \note A convention exists where the first variable should be the vp_matrix and the second one the object_matrix
+      /// \see create_material()
+      /// \see variables_indexes::variable_indexes
       template<typename Shaders, typename Textures, typename... VarCtxPairs>
       base_material<Shaders, Textures, typename internal::template context_t<Textures, VarCtxPairs...>, typename internal::variable_filter<VarCtxPairs...>::tuple> create_base_material(VarCtxPairs... vctx)
-      {
+      {      /// \see variables_indexes::variable_indexes
+
         return internal::material_creator<base_material<Shaders, Textures, typename internal::template context_t<Textures, VarCtxPairs...>, typename internal::variable_filter<VarCtxPairs...>::tuple>,
                typename internal::variable_indexer<VarCtxPairs...>::tuple >::create_base_material(std::move(vctx)...);
       }
 
+      /// \brief an helper for creating raw materials (there's nothing more than you use/defines)
+      /// this particularly useful for building the variable context...
+      /// \note A convention exists where the first variable should be the vp_matrix and the second one the object_matrix
+      /// \see create_material_ptr()
+      /// \see variables_indexes::variable_indexes
       template<typename Shaders, typename Textures, typename... VarCtxPairs>
       base_material<Shaders, Textures, typename internal::template context_t<Textures, VarCtxPairs...>, typename internal::variable_filter<VarCtxPairs...>::tuple> *create_base_material_ptr(VarCtxPairs... vctx)
       {
@@ -306,36 +342,39 @@ namespace neam
         typename internal::variable_indexer<VarCtxPairs...>::tuple >::create_base_material_ptr(std::move(vctx)...);
       }
 
-      // C++ 1y anyone ?? :)
+      /// \brief an helper for creating materials
+      /// It adds references to the vp_matrix and the object_matrix automatically (as the first and second variables)
       template<typename Shaders, typename Textures, typename... VarCtxPairs>
       auto create_material(VarCtxPairs... vctx)
       -> decltype(create_base_material<Shaders, Textures>
                   (
-                    neam::klmb::yaggler::make_ctx_pair(nullptr, neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)), // allow camera switchs
+                    neam::klmb::yaggler::make_ctx_pair(nullptr, neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)), // allow camera switches
                     neam::klmb::yaggler::make_ctx_pair(nullptr, neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)),
                     std::move(vctx)...
                   ))
       {
         return create_base_material<Shaders, Textures>
                (
-                 neam::klmb::yaggler::make_ctx_pair("vp_matrix", neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)), // allow camera switchs
+                 neam::klmb::yaggler::make_ctx_pair("vp_matrix", neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)), // allow camera switches
                  neam::klmb::yaggler::make_ctx_pair("object_matrix", neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)),
                  std::move(vctx)...
                );
       }
-      // C++ 1y anyone ?? :)
+
+      /// \brief an helper for creating materials
+      /// It adds references to the vp_matrix and the object_matrix automatically (as the first and second variables)
       template<typename Shaders, typename Textures, typename... VarCtxPairs>
       auto create_material_ptr(VarCtxPairs... vctx)
       -> decltype(create_base_material_ptr<Shaders, Textures>
                   (
-                    neam::klmb::yaggler::make_ctx_pair(nullptr, neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)), // allow camera switchs
+                    neam::klmb::yaggler::make_ctx_pair(nullptr, neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)), // allow camera switches
                     neam::klmb::yaggler::make_ctx_pair(nullptr, neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)),
                     std::move(vctx)...
                   ))
       {
         return create_base_material_ptr<Shaders, Textures>
                (
-                 neam::klmb::yaggler::make_ctx_pair("vp_matrix", neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)), // allow camera switchs
+                 neam::klmb::yaggler::make_ctx_pair("vp_matrix", neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)), // allow camera switches
                  neam::klmb::yaggler::make_ctx_pair("object_matrix", neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)),
                  std::move(vctx)...
                );
@@ -344,6 +383,7 @@ namespace neam
 
       namespace variable_indexes
       {
+        /// \brief holds default, conventional indexes for some most used variable indexes
         enum variable_indexes
         {
           vp_matrix = 0,

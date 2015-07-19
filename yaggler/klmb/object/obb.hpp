@@ -39,31 +39,30 @@ namespace neam
   {
     namespace yaggler
     {
-      // like an aabb, but oriented
+      /// \brief Oriented Bounding Box
+      /// Like an aabb, but oriented
       struct obb
       {
-        // the aligned bb
-        // (the bb is aligned AND 'centered' around the origin --> not moved)
-        aabb bounding_box;
+        aabb bounding_box; ///< \brief the non-transformed aligned bb (aabb in local space)
 
         // transformifications (inverted)
-        glm::vec3 position = 0_vec3_xyz;
-        glm::vec3 scale = 1_vec3_xyz;
-        glm::quat rotation = glm::quat();
+        glm::vec3 position = 0_vec3_xyz; ///< \brief inverted position (world -> local)
+        glm::vec3 scale = 1_vec3_xyz; ///< \brief inverted scale (world -> local)
+        glm::quat rotation = glm::quat(); ///< \brief inverted rotation (world -> local)
 
         // orig_* are non-inverted transformations
-        glm::quat orig_rotation = glm::quat();
-        glm::vec3 orig_scale = 1_vec3_xyz;
+        glm::quat orig_rotation = glm::quat(); ///< \brief rotation (local -> world)
+        glm::vec3 orig_scale = 1_vec3_xyz; ///< \brief scale (local -> world)
 
         obb() {}
 
-        // construct from aabb
+        /// \brief construct from an aabb
         obb(const aabb &bbox)
           : bounding_box(bbox)
         {
         }
 
-        // construct from obb
+        /// \brief construct from an obb
         obb(const obb &bbox)
           : bounding_box(bbox.bounding_box), position(bbox.position), scale(bbox.scale), rotation(bbox.rotation), orig_rotation(bbox.orig_rotation), orig_scale(bbox.orig_scale)
         {
@@ -87,6 +86,7 @@ namespace neam
           return *this;
         }
 
+        /// \brief Set the transformations of the obb
         void set_transform(const glm::vec3 &_position, const glm::vec3 &_scale, const glm::quat &_rotation)
         {
           position = _position;
@@ -96,6 +96,7 @@ namespace neam
           orig_scale = _scale;
         }
 
+        /// \brief Set the aabb AND its transformations
         void set_transform_from(const aabb &o, const glm::vec3 &_position, const glm::vec3 &_scale, const glm::quat &_rotation)
         {
           bounding_box = o;
@@ -106,64 +107,75 @@ namespace neam
           orig_scale = _scale;
         }
 
+        /// \brief Check if a point is inside an OBB
         bool is_inside(const glm::vec3 &pos) const
         {
           return bounding_box.is_inside(untransform_position(pos));
         }
 
+        /// \brief Check if a ray intersects an OBB
+        /// \param pos a position alongside the ray
+        /// \param dir the ray direction
+        /// \param[out] distances the intersection point distances
         bool intersect(const glm::vec3 &pos, const glm::vec3 &dir, glm::vec2 &distances) const
         {
           return bounding_box.intersect(untransform_position(pos), untransform_direction(dir), distances);
         }
 
-        // add a point (in world coords) to the obb
+        /// \brief add a point (in world coords) to the obb
         void add_world_vertex(const glm::vec3 &point)
         {
           bounding_box.add_vertex(untransform_position(point));
         }
 
-        // add a point (in local coords) to the obb
+        /// \brief add a point (in local coords) to the obb
         void add_local_vertex(const glm::vec3 &point)
         {
           bounding_box.add_vertex(point);
         }
 
-        // add an aabb to the obb
-        // in world coords
+        /// \brief add an aabb to the obb (in world coords)
+        /// \todo make it work
         void add_world_aabb(const aabb &aa)
         {
+          // TODO: Fix this as it, obviously enought, isn't correct
           bounding_box.add_vertex(untransform_position(aa.max));
           bounding_box.add_vertex(untransform_position(aa.min));
         }
 
-        // in local coords
+        /// \brief add an aabb to the obb (in local coords)
         void add_local_aabb(const aabb &aa)
         {
           bounding_box.add_aabb(aa);
         }
 
-        // add an obb to the obb (yo dawg!)
-        // in world coords
+        /// \brief add an obb to the obb (in world coords)
+        /// \todo make it work
         void add_world_obb(const obb &o)
         {
+          // TODO: Fix this as it, obviously enought, isn't correct
           bounding_box.add_vertex(untransform_position(o.transform_direction(o.bounding_box.max)));
           bounding_box.add_vertex(untransform_position(o.transform_direction(o.bounding_box.min)));
         }
 
-        // in local coords. Faster.
+        /// \brief add an obb to the obb (in world coords)
+        /// \todo make it work
         void add_local_obb(const obb &o)
         {
+          // TODO: Fix this as it, obviously enought, isn't correct
           bounding_box.add_vertex(o.transform_direction(o.bounding_box.max));
           bounding_box.add_vertex(o.transform_direction(o.bounding_box.min));
         }
 
         // utility functions
-        // world -> local
+
+        /// \brief transform world -> local
         glm::vec3 untransform_position(const glm::vec3 &pos) const
         {
           return  rotation * ((pos - position) * scale);
         }
-        // local -> world
+
+        /// \brief transform local -> world
         glm::vec3 transform_position(const glm::vec3 &pos) const
         {
           return (orig_rotation * pos) * orig_scale + position;;
@@ -171,19 +183,21 @@ namespace neam
 
         // only apply scale and reverse rotation.
         // no translation
-        // world -> local
+
+        /// \brief transform world -> local, but for directions only (no translation applied)
         glm::vec3 untransform_direction(const glm::vec3 &dir) const
         {
           return rotation * (dir * scale);
         }
-        // local -> world
+
+        /// \brief transform local -> world, but for directions only (no translation applied)
         glm::vec3 transform_direction(const glm::vec3 &dir) const
         {
           return (orig_rotation * dir) * orig_scale;
         }
 
-        // project this obb and return an AABB (the 2D bounding box + depth)
-        // FIXME: does this function works ???
+        /// \brief project this obb and return an AABB (the 2D bounding box + depth)
+        /// \todo make it work
         aabb project(glm::mat4 *vp_matrix) const
         {
           // apply Rotation Scale Translation (RST)

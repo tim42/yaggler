@@ -34,19 +34,22 @@ namespace neam
   {
     namespace yaggler
     {
-      // a 'placeholder' camera 'man',
-      // allow mainly to switch camera on the fly, without bothering about resetting refs in every shaders.
+      /// \brief a placeholder camera-man.
+      /// Allows mainly to switch camera on the fly, without bothering about resetting refs in every shaders.
       struct camera_holder
       {
         public:
-          glm::mat4 *vp_matrix = nullptr; // yep, that's it.
+          glm::mat4 *vp_matrix = nullptr; ///< \brief the result (to be passed as ref<> to shaders / objects /...)
 
+          /// \brief Set a standard (perspective) camera to the holder
           void use_camera(camera &cam)
           {
             ortho_cam = nullptr;
             std_cam = &cam;
             vp_matrix = &(cam.vp_matrix);
           }
+
+          /// \brief Set an orthographic camera to the holder
           void use_camera(ortho_camera &cam)
           {
             std_cam = nullptr;
@@ -54,6 +57,7 @@ namespace neam
             vp_matrix = &(cam.vp_matrix);
           }
 
+          /// \brief Recompute the matrices/matrix of the wrapped camera
           void recompute_cam_matrices()
           {
             if (std_cam)
@@ -62,11 +66,13 @@ namespace neam
               ortho_cam->recompute_matrices();
           }
 
+          /// \brief return the perspective (standard) camera, or nullptr
           camera *_get_std_cam()
           {
             return std_cam;
           }
 
+          /// \brief return the orthographic camera, or nullptr
           ortho_camera *_get_ortho_cam()
           {
             return ortho_cam;

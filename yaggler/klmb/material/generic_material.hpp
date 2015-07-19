@@ -36,32 +36,40 @@ namespace neam
   {
     namespace yaggler
     {
-
-      // here we are. The first inheritance system in YägGLer... :/
-      // even if it's not directly visible, there's some virtual functions here.
+      /// \brief wraps the complicated material class in a more generic one (speaking of C++ types)
       class material_wrapper
       {
         public:
+          /// \brief default constructor, initialize with an empty material
           material_wrapper() : wrapper(nullptr) {}
 
+          /// \brief wrap a material, but don't manage its lifetime
           template<typename MaterialType>
           material_wrapper(MaterialType &mt) : wrapper(new spec_wrapper<MaterialType>(&mt)) {}
 
+          /// \brief wrap a material, but don't manage its lifetime
           template<typename MaterialType>
           material_wrapper(MaterialType *mt) : wrapper(new spec_wrapper<MaterialType>(mt)) {}
 
+          /// \brief wrap a material and manage its lifetime
           template<typename MaterialType>
           material_wrapper(MaterialType *mt, assume_ownership_t) : wrapper(new spec_wrapper<MaterialType>(mt, assume_ownership)) {}
 
+          /// \brief wrap a material and manage its lifetime
           template<typename MaterialType>
           material_wrapper(MaterialType &&mt) : wrapper(new spec_wrapper<MaterialType>(new MaterialType(std::move(mt)), assume_ownership)) {}
 
+          /// \brief Copy another material_wrapper but don't manage the lifetime of the wrapped material
           material_wrapper(const material_wrapper &mw) : wrapper(mw.wrapper ? mw.wrapper->clone() : nullptr) {}
+
+          /// \brief Move another material_wrapper AND manage the lifetime of the wrapped material
+          /// \note The moved material_wraper will be emptied
           material_wrapper(material_wrapper &&mw) : wrapper(mw.wrapper)
           {
             mw.wrapper = nullptr;
           }
 
+          /// \brief Copy another material_wrapper but don't manage the lifetime of the wrapped material
           material_wrapper &operator = (const material_wrapper &mw)
           {
             if (&mw != this)
@@ -72,6 +80,9 @@ namespace neam
             }
             return *this;
           }
+
+          /// \brief Move another material_wrapper AND manage the lifetime of the wrapped material
+          /// \note The moved material_wraper will be emptied
           material_wrapper &operator = (material_wrapper &&mw)
           {
             if (wrapper)
@@ -98,23 +109,27 @@ namespace neam
             return *this;
           }
 
+          /// \brief check whether the wrapper wrap a material or not
           bool is_empty() const
           {
             return !wrapper;
           }
 
+          /// \brief bind the material
           void use() const
           {
             if (wrapper)
               wrapper->use();
           }
 
+          /// \brief relink the shader program
           void link_shader()
           {
             if (wrapper)
               wrapper->link_shader();
           }
 
+          /// \brief Return a reference to the pointer of the view-projection matrix
           glm::mat4 *& get_vp_matrix()
           {
             if (!wrapper)
@@ -122,6 +137,7 @@ namespace neam
             return wrapper->get_vp_matrix();
           }
 
+          /// \brief Return a reference to the pointer of the world matrix
           glm::mat4 *& get_object_matrix()
           {
             if (!wrapper)

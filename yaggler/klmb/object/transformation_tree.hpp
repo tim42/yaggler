@@ -44,24 +44,26 @@ namespace neam
   {
     namespace yaggler
     {
+      /// \brief This will hold the full "scene tree", speaking of hierarchical transformations
       template<typename Node>
       class transformation_tree
       {
         public:
+          /// \brief holds a "node" 
           class node_holder
           {
             private:
               using child_container = std::list<node_holder>;
 
             public:
-              Node *local; // local will be used to _overwrite_ world (if dirty is setted to true, or if the parent has been updated).
-              Node *world; // the world transformation.
+              Node *local; ///< \brief local will be used to _overwrite_ world (if dirty is setted to true, or if the parent has been updated).
+              Node *world; ///< \brief the world transformation.
 
-              child_container &childs;
+              child_container &children; ///< the list of every children the node have
 
-              node_holder *parent = nullptr;
+              node_holder *parent = nullptr; ///< \brief the parent node holder
 
-              // create a child
+              /// \brief create a child node
               node_holder &create_child(const Node &_node = Node())
               {
                 Node *local_node_ptr = new (tree->node_pool) Node(_node);
@@ -70,28 +72,28 @@ namespace neam
                 local_node_ptr->compute_matrix();
                 local_node_ptr->compute_world(world, world_node_ptr);
 
-                childs_cont.emplace_back(local_node_ptr, world_node_ptr, tree);
-                node_holder &ret = childs_cont.back();
+                children_cont.emplace_back(local_node_ptr, world_node_ptr, tree);
+                node_holder &ret = children_cont.back();
                 ret.parent = this;
                 return ret;
               }
 
-              // remove this node
+              /// \brief remove this node and all its children
               void remove()
               {
                 if (parent)
                 {
-                  auto it = std::find(parent->childs.begin(), parent->childs.end(), *this);
-                  if (it != parent->childs.end())
-                    parent->childs.erase(it);
+                  auto it = std::find(parent->children.begin(), parent->children.end(), *this);
+                  if (it != parent->children.end())
+                    parent->children.erase(it);
                   // here the node is deleted.
                 }
                 else
                   neam::cr::out.warning() << LOGGER_INFO << "trying to remove the root" << std::endl;
               }
 
-              // compute and propagate matrices transformations to every childs
-              // NOTE: non recursive.
+              /// \brief compute and propagate matrices transformations to every children
+              /// \note iterative
               void recompute_matrices()
               {
                 int world_recompute = 0;
@@ -116,9 +118,9 @@ namespace neam
                   world_recompute = 1;
                 }
 
-                std::vector<decltype(childs.begin())> idxs;
+                std::vector<decltype(children.begin())> idxs;
                 idxs.reserve(100);
-                idxs.push_back(childs.begin());
+                idxs.push_back(children.begin());
 
                 node_holder *hldr = this;
 
@@ -129,7 +131,7 @@ namespace neam
 
                   auto *current = &idxs.back();
 
-                  while (*current != hldr->childs_cont.end())
+                  while (*current != hldr->children_cont.end())
                   {
                     bool inc = false;
                     if ((*current)->local->dirty || world_recompute)
@@ -155,17 +157,17 @@ namespace neam
                     }
 
 
-                    // iterate over the childs.
-                    if ((*current)->childs_cont.size())
+                    // iterate over the children.
+                    if ((*current)->children_cont.size())
                     {
                       hldr = &(**current);
                       ++*current;
-                      idxs.push_back(hldr->childs.begin());
+                      idxs.push_back(hldr->children.begin());
                       current = &idxs.back();
                       continue;
                     }
 
-                    if (inc) // no childs. undo incrementation.
+                    if (inc) // no children. undo incrementation.
                     {
                       deinc = true;
                       --world_recompute;
@@ -182,14 +184,17 @@ namespace neam
                 }
               }
 
-              // ATTENTION: DO NOT USE DIRECTLY.
-              node_holder(Node *_local, Node *_world, transformation_tree *_tree) : local(_local), world(_world), childs(childs_cont), tree(_tree)
+              /// \attention DO NOT USE DIRECTLY.
+              /// (it is here ONLY for casting issues)
+              /// \see create_child()
+              node_holder(Node *_local, Node *_world, transformation_tree *_tree) : local(_local), world(_world), children(children_cont), tree(_tree)
               {
                 // TODO: find another way to do it.
                 local->holder = reinterpret_cast<decltype(local->holder)>(this);
                 world->holder = reinterpret_cast<decltype(world->holder)>(this);
               }
 
+              /// \brief destructor
               ~node_holder()
               {
                 if (local)
@@ -204,11 +209,14 @@ namespace neam
                 }
               }
 
+              /// \brief Test for equality
+              /// \note This will only test for local being the same instance as \p o.local
               bool operator == (const node_holder &o)
               {
                 return local == o.local;
               }
 
+              /// \brief copy world and local nodes
               node_holder &operator = (const node_holder &o)
               {
                 if (local)
@@ -228,6 +236,8 @@ namespace neam
                 world->holder = reinterpret_cast<decltype(world->holder)>(this);
                 return *this;
               }
+
+              /// \brief moves world and local nodes
               node_holder &operator = (node_holder && o)
               {
                 if (local)
@@ -251,7 +261,7 @@ namespace neam
               }
 
             private:
-              node_holder(transformation_tree *_tree) : childs(childs_cont), tree(_tree)
+              node_holder(transformation_tree *_tree) : children(children_cont), tree(_tree)
               {
                 local = new (tree->node_pool) Node;
                 world = new (tree->node_pool) Node;
@@ -261,7 +271,7 @@ namespace neam
 
             private:
               transformation_tree *tree;
-              child_container childs_cont;
+              child_container children_cont;
 
               friend class transformation_tree;
               friend child_container;
@@ -269,39 +279,39 @@ namespace neam
           };
 
         public:
+          /// \brief Creates the tree
           transformation_tree() : root(this) {}
 
+          cr::memory_pool<Node> node_pool; ///< \brief the allocation pool for nodes
 
-          cr::memory_pool<Node> node_pool;
-
-          node_holder root;
+          node_holder root; ///< \brief The root node of the tree (don't remove it...)
       };
 
       namespace transformation_node
       {
-        // a node MUST have: compute_matrix(void), compute_world(const node *parent_world, node *world_dest) and dirty
-
-        // the default node
+        /// \brief the default node
+        /// \note a node MUST have: compute_matrix(void), compute_world(const node *parent_world, node *world_dest) and a dirty flag
         struct default_node
         {
-          transformation_tree<default_node>::node_holder *holder = nullptr;
+          transformation_tree<default_node>::node_holder *holder = nullptr; ///< \brief a reference to the node holder (to access either world or local)
 
-          glm::vec3 position = glm::vec3(0., 0., 0.);
-          glm::vec3 scale = glm::vec3(1., 1., 1.);
-          glm::quat rotation = glm::quat();
+          glm::vec3 position = glm::vec3(0., 0., 0.); ///< \brief position (if changed, set dirty to true)
+          glm::vec3 scale = glm::vec3(1., 1., 1.); ///< \brief scale (if changed, set dirty to true)
+          glm::quat rotation = glm::quat(); ///< \brief rotation (if changed, set dirty to true)
 
-          bool dirty = false;
-          glm::mat4 matrix = glm::mat4(1.); // the local transformation
+          bool dirty = false; ///< \brief a dirty flag indicating if the matrices have to be recomputed
+          glm::mat4 matrix = glm::mat4(1.); ///< \brief the local transformation (local to this node)
 
-          aabb *initial_bounding_box = nullptr;// projected for visibility tests ? ;)
-                                            // projected for GUI on_clicks ? :)
+          aabb *initial_bounding_box = nullptr;// projected for visibility tests ?
+                                            // projected for GUI on_clicks ?
                                             // (NOTE: not projected here, simply 'world tranformed')
 
           obb transformed_bounding_box;
 
-          // called when the node is dirty
-          // re-compute the matrix,
-          // re-init the obb.
+          /// \brief called when the node is dirty
+          /// re-compute the matrix,
+          /// re-init the obb.
+          /// \note advanced usage only
           void compute_matrix()
           {
             matrix = glm::translate(position) * glm::mat4_cast(rotation) * glm::scale(scale);
@@ -312,7 +322,8 @@ namespace neam
               transformed_bounding_box.set_transform_from(aabb(), position, scale, rotation);
           }
 
-          // called to retransform the world node.
+          /// \brief called to retransform the world node.
+          /// \note advanced usage only
           void compute_world(const default_node *parent_world, default_node *world_dest) const
           {
             if (parent_world)

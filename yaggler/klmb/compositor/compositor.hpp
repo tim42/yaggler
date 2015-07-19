@@ -52,21 +52,32 @@ namespace neam
         return output_texture_indexes<Indexes...>{{(GLuint)attachment...}};
       }
 
-      // a set of passes
+      /// \brief a multipass, full screen compositor
+      /// A "pass" is simply a fragment shader applyed to the whole framebuffer
+      /// A pass could have input and output textures and custom uniform bindings
+      /// \see compositor_pass for mode detail about how passes are implemented.
       template<typename... Textures>
       class compositor
       {
         public:
+          /// \brief initialize the compositor from a framebuffer_pack
+          /// \see make_compositor()
           compositor(const framebuffer_pack<Textures...> &_pack)
             : pack(_pack)
           {
           }
+
+          /// \brief initialize the compositor from a temporary framebuffer_pack
+          /// \see make_compositor()
           compositor(framebuffer_pack<Textures...> &&_pack)
             : pack(std::move(_pack))
           {
           }
 
-          // output pass (use the framebuffer in the framebuffer_pack)
+          /// \brief add an output pass (a pass that will output to the framebuffer in the framebuffer_pack)
+          /// \param gl_clear is forwarded to glClear (except if it's 0 which means "do not clear")
+          /// \param input_texture_indexes<InputTextureIndex...> the list of textures to be bound to specific uniforms
+          /// \param amctp a list of additional material_ctx_pair to describe how uniforms will be bounded
           template<typename Shader, size_t... InputTextureIndex, typename... AdditionalMaterialCtxPairArgs>
           compositor &add_pass(GLenum gl_clear, input_texture_indexes<InputTextureIndex...>, AdditionalMaterialCtxPairArgs... amctp)
           {
@@ -83,7 +94,11 @@ namespace neam
             return *this;
           }
 
-          // std pass (with an output framebuffer created for it)
+          /// \brief standard pass (with an output framebuffer created for it)
+          /// \param gl_clear is forwarded to glClear (except if it's 0 which means "do not clear")
+          /// \param input_texture_indexes<InputTextureIndex...> the list of textures to be bound to their uniforms
+          /// \param oidxs (for Output InDeXeS) the list of textures to be used as output for this pass
+          /// \param amctp a list of additional material_ctx_pair to describe how uniforms will be bounded
           template<typename Shader, size_t... InputTextureIndex, size_t... OutputTextureIndex, typename... AdditionalMaterialCtxPairArgs>
           compositor &add_pass(GLenum gl_clear, input_texture_indexes<InputTextureIndex...>, const output_texture_indexes<OutputTextureIndex...> &oidxs,  AdditionalMaterialCtxPairArgs... amctp)
           {
@@ -105,6 +120,7 @@ namespace neam
             return *this;
           }
 
+          /// \brief render the compositors and all its passes
           void render()
           {
             for (auto &it : passes)
@@ -113,6 +129,8 @@ namespace neam
             }
           }
 
+          /// \brief the pack used
+          /// \see framebuffer_pack
           framebuffer_pack<Textures...> pack;
 
         private:
@@ -215,12 +233,18 @@ namespace neam
           std::deque<gen_pass_holder> passes;
       };
 
-      // makers
+      /// \brief create a compositor by specifying the framebuffer pack to use.
+      /// \param Textures is inferred from the framebuffer_pack type
+      /// \note You should use make_framebuffer_pack() to handle the creation of a framebuffer pack
       template<typename... Textures>
       compositor<Textures...> make_compositor(const framebuffer_pack<Textures...> &_pack)
       {
         return compositor<Textures...>(_pack);
       }
+
+      /// \brief create a compositor by specifying the framebuffer pack to use.
+      /// \param Textures is inferred from the framebuffer_pack type
+      /// \note You should use make_framebuffer_pack() to handle the creation of a framebuffer pack
       template<typename... Textures>
       compositor<Textures...> make_compositor(framebuffer_pack<Textures...> &&_pack)
       {

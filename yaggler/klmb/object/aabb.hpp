@@ -37,22 +37,26 @@ namespace neam
   {
     namespace yaggler
     {
+      /// \brief Axis Aligned Bounding Box
       struct aabb
       {
-        glm::vec3 min = glm::vec3(INFINITY, INFINITY, INFINITY);
-        glm::vec3 max = glm::vec3(-INFINITY, -INFINITY, -INFINITY);
+        glm::vec3 min = glm::vec3(INFINITY, INFINITY, INFINITY);    ///< \brief the min point of the aabb
+        glm::vec3 max = glm::vec3(-INFINITY, -INFINITY, -INFINITY); ///< \brief the max point of the aabb
 
         aabb() {}
         aabb(const aabb &o) : min(o.min), max(o.max) {}
         aabb(const glm::vec3 &_min, const glm::vec3 &_max) : min(_min), max(_max) {}
 
-        void add_aabb(const aabb &o)
+        /// \brief make the current aabb the union of itself and the aabb \p o
+        aabb &add_aabb(const aabb &o)
         {
           add_vertex(o.min);
           add_vertex(o.max);
+          return *this;
         }
 
-        void add_vertex(const glm::vec3 &point)
+        /// \brief make the current aabb the union of itself and the point \p point
+        aabb &add_vertex(const glm::vec3 &point)
         {
           if (point.x < min.x)
             min.x = point.x;
@@ -68,13 +72,21 @@ namespace neam
             min.z = point.z;
           else if (point.z > max.z)
             max.z = point.z;
+
+          return *this;
         }
 
+        /// \brief Check if a point is inside a bounding box
         bool is_inside(const glm::vec3 &point) const
         {
           return (point.x >= min.x && point.x <= max.x && point.y >= min.y && point.z <= max.z);
         }
 
+        /// \brief Check if a ray intersect the bounding box
+        /// \param pos A position that's on the ray
+        /// \param dir The ray direction
+        /// \param[out] distances The intersection distances (if any)
+        /// \return true/false indicating if there's a collision or not.
         bool intersect(const glm::vec3 &pos, const glm::vec3 &dir, glm::vec2 &distances) const
         {
           // from http://prideout.net/blog/p64/SinglePass.glsl

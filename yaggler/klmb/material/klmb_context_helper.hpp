@@ -35,20 +35,30 @@ namespace neam
   {
     namespace yaggler
     {
-      // the material's shader context key/value 'pair'
+      /// \brief the material's shader context key/value 'pair'
+      /// \see make_ctx_pair()
       template<typename Value>
       struct material_ctx_pair
       {
-        using value_t = Value;
+        using value_t = Value; ///< \brief the value type
 
+        /// \brief Initialize the ctx_pair
         material_ctx_pair(const std::string &name, const Value &val, bool buffer = false) : variable_name(name), value(val), buffer_storage(buffer) {}
+
+        /// \brief Initialize the ctx_pair
         material_ctx_pair(std::string &&name, const Value &val, bool buffer = false) : variable_name(name), value(val), buffer_storage(buffer) {}
+
+        /// \brief Initialize the ctx_pair
         material_ctx_pair(const std::string &name, Value &&val, bool buffer = false) : variable_name(name), value(val), buffer_storage(buffer) {}
+
+        /// \brief Initialize the ctx_pair
         material_ctx_pair(std::string &&name, Value &&val, bool buffer = false) : variable_name(name), value(val), buffer_storage(buffer) {}
 
+        /// \brief Initialize by copy the ctx_pair
         template<typename OtherValue>
         material_ctx_pair(const material_ctx_pair<OtherValue> &o) : variable_name(o.variable_name), value(o.value), buffer_storage(o.buffer_storage) {}
 
+        /// \brief Initialize by move the ctx_pair
         template<typename OtherValue>
         material_ctx_pair(material_ctx_pair<OtherValue> &&o) : variable_name(std::move(o.variable_name)), value(std::move(o.value)), buffer_storage(o.buffer_storage) {}
 
@@ -57,23 +67,28 @@ namespace neam
         bool buffer_storage;
       };
 
-      // a maker (for uniform variable)
+      /// \brief a material_ctx_pair maker for uniform variable
       template<typename Value>
       material_ctx_pair<Value> make_ctx_pair(const std::string &name, Value val)
       {
         return material_ctx_pair<Value>(name, std::move(val), false);
       }
+
+      /// \brief a material_ctx_pair maker for uniform variable
       template<typename Value>
       material_ctx_pair<Value> make_ctx_pair(std::string &&name, Value val)
       {
         return material_ctx_pair<Value>(std::move(name), std::move(val), false);
       }
-      // for uniform buffer
+
+      /// \brief a material_ctx_pair maker for uniform buffer
       template<typename Value>
       material_ctx_pair<Value> make_ctx_buffer_pair(const std::string &name, Value val)
       {
         return material_ctx_pair<Value>(name, std::move(val), true);
       }
+
+      /// \brief a material_ctx_pair maker for uniform buffer
       template<typename Value>
       material_ctx_pair<Value> make_ctx_buffer_pair(std::string &&name, Value val)
       {
@@ -81,18 +96,20 @@ namespace neam
       }
 
 
-      // reference a texture in the material's shader context
-      // will be replaced by a real (C++) reference to the texture.
+      /// \brief reference a texture in the material's shader context
+      /// will be replaced by a real (C++) reference to the texture.
       template<size_t Index>
       struct reference_to_texture
       {
       };
 
-      // create a variable a reference it in the context
-      // you can always change its value later in the material.
+      /// \brief create a variable and reference it in the context
+      /// you can always change its value later in the material.
+      /// \see material::get_variable()
       template<typename VariableType>
       struct variable
       {
+        /// \brief Initialize the variable from its default value
         variable(const VariableType &_default_value)
           : value(_default_value)
         {
@@ -103,9 +120,12 @@ namespace neam
         VariableType value;
       };
 
+      /// \brief create a reference to a variable<>
+      /// \see class variable
       template<typename VariableType, size_t Index>
       struct indexed_variable
       {
+        /// \brief Initialize the indexed_variable from another variable
         indexed_variable(const variable<VariableType> &_default_value)
           : value(_default_value.value)
         {
@@ -115,6 +135,8 @@ namespace neam
         using variable_t = VariableType;
         static constexpr size_t index = Index;
 
+        // FIXME shouldn't this be a cr::ref<> ?
+        //       (combined with an operator VariableType () {return value.value;} )
         VariableType value;
       };
     } // namespace yaggler

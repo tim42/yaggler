@@ -58,6 +58,8 @@
 
 namespace neam
 {
+  /// \brief Holds an upper level set of utilities that doesn't mimic at 1:1 the openGL functionalities
+  /// but trades some runtime -- as least as possible -- for some usability.
   namespace klmb
   {
     namespace yaggler

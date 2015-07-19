@@ -48,35 +48,39 @@ namespace neam
         struct default_node;
       }
 
-      // object + position + material.
+      /// \brief gather in one place klmb::object + position + material.
+      /// This is an instance of a mesh (or a klmb::object)
       class model
       {
         public:
-          // the object geometry
-          object<> geometry;
+          object<> geometry; ///< \brief the object geometry
 
-          glm::mat4 **vp_matrix = nullptr; // a pointer to the vp_matrix of the camera_holder.
-          glm::mat4 *world_pos = nullptr;  // a pointer to the world_pos of the transformation_tree node.
+          glm::mat4 **vp_matrix = nullptr; ///< \brief a pointer to the vp_matrix of the camera_holder.
+          glm::mat4 *world_pos = nullptr;  ///< \brief a pointer to the world_pos of the transformation_tree node.
 
-          // the material
-          material_wrapper material;
+          material_wrapper material; ///< \brief the material
 
-          // the node (for rendering. optional)
-          transformation_node::default_node *node = nullptr;
+          transformation_node::default_node *node = nullptr; ///< \brief the node (aka. the position of the model in the world space)
 
         public:
+          /// \brief construct by: linking geometry to _geometry and linking material to _material
           model(const object<> &_geometry, glm::mat4 **_vp_matrix = nullptr, glm::mat4 *_world_pos = nullptr, const material_wrapper &_material = material_wrapper())
             : geometry(_geometry), vp_matrix(_vp_matrix), world_pos(_world_pos), material(_material) {}
 
+          /// \brief construct by: transfering the ownership from _geometry to geometry and linking material to _material
           model(object<> && _geometry, glm::mat4 **_vp_matrix = nullptr, glm::mat4 *_world_pos = nullptr, const material_wrapper & _material = material_wrapper())
             : geometry(std::move(_geometry)), vp_matrix(_vp_matrix), world_pos(_world_pos), material((_material)) {}
 
+          /// \brief construct by: transfering the ownership from _geometry to geometry and from _material to material
           model(object<> &&_geometry, glm::mat4 **_vp_matrix, glm::mat4 *_world_pos, material_wrapper &&_material)
             : geometry(std::move(_geometry)), vp_matrix(_vp_matrix), world_pos(_world_pos), material(std::move(_material)) {}
 
+          /// \brief construct by: linking geometry to _geometry and transfering the ownership from _material to material
           model(const object<> & _geometry, glm::mat4 **_vp_matrix, glm::mat4 *_world_pos, material_wrapper && _material)
             : geometry((_geometry)), vp_matrix(_vp_matrix), world_pos(_world_pos), material(std::move(_material)) {}
 
+          /// \brief draw the model
+          /// \todo some optimisations (check for visibility, ...)
           void draw()
           {
             if (!material.is_empty())
