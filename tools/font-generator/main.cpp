@@ -285,13 +285,13 @@ int main(int argc, char **argv)
       neam::klmb::yaggler::make_texture_entry("fnt_texture", tmp_texture, 0)
     )
   );
-  blur_compositor.add_pass<neam::klmb::yaggler::shared_ct_string_shader<GL_FRAGMENT_SHADER, blur_shader_string>>(GL_COLOR_BUFFER_BIT, neam::klmb::yaggler::input_texture_indexes<0>(), neam::klmb::yaggler::make_output_indexes<1>(GL_COLOR_ATTACHMENT0),
+  blur_compositor.add_pass<neam::klmb::yaggler::shared_ct_string_shader<GL_FRAGMENT_SHADER, blur_shader_string>>(GL_COLOR_BUFFER_BIT, neam::klmb::yaggler::make_output_indexes<1>(GL_COLOR_ATTACHMENT0), neam::klmb::yaggler::input_texture_indexes<0>(),
       // UNIFORMS
       neam::klmb::yaggler::make_ctx_pair("buffer_size", glm::vec2(FONT_TEXTURE_SIZE, FONT_TEXTURE_SIZE)),
       neam::klmb::yaggler::make_ctx_pair("direction", glm::vec2(1, 1)),
       neam::klmb::yaggler::make_ctx_pair("initial", 0.51f)
   );
-  blur_compositor.add_pass<neam::klmb::yaggler::shared_ct_string_shader<GL_FRAGMENT_SHADER, blur_shader_string>>(GL_COLOR_BUFFER_BIT, neam::klmb::yaggler::input_texture_indexes<1>(), neam::klmb::yaggler::make_output_indexes<0>(GL_COLOR_ATTACHMENT0),
+  blur_compositor.add_pass<neam::klmb::yaggler::shared_ct_string_shader<GL_FRAGMENT_SHADER, blur_shader_string>>(GL_COLOR_BUFFER_BIT, neam::klmb::yaggler::make_output_indexes<0>(GL_COLOR_ATTACHMENT0), neam::klmb::yaggler::input_texture_indexes<1>(),
       // UNIFORMS
       neam::klmb::yaggler::make_ctx_pair("buffer_size", glm::vec2(FONT_TEXTURE_SIZE, FONT_TEXTURE_SIZE)),
       neam::klmb::yaggler::make_ctx_pair("direction", glm::vec2(-1., 1.)),

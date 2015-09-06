@@ -96,11 +96,11 @@ namespace neam
 
           /// \brief standard pass (with an output framebuffer created for it)
           /// \param gl_clear is forwarded to glClear (except if it's 0 which means "do not clear")
-          /// \param input_texture_indexes<InputTextureIndex...> the list of textures to be bound to their uniforms
           /// \param oidxs (for Output InDeXeS) the list of textures to be used as output for this pass
+          /// \param input_texture_indexes<InputTextureIndex...> the list of textures to be bound to their uniforms
           /// \param amctp a list of additional material_ctx_pair to describe how uniforms will be bounded
           template<typename Shader, size_t... InputTextureIndex, size_t... OutputTextureIndex, typename... AdditionalMaterialCtxPairArgs>
-          compositor &add_pass(GLenum gl_clear, input_texture_indexes<InputTextureIndex...>, const output_texture_indexes<OutputTextureIndex...> &oidxs,  AdditionalMaterialCtxPairArgs... amctp)
+          compositor &add_pass(GLenum gl_clear, const output_texture_indexes<OutputTextureIndex...> &oidxs, input_texture_indexes<InputTextureIndex...>,  AdditionalMaterialCtxPairArgs... amctp)
           {
             compositor_pass pass;
 
