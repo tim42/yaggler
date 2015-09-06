@@ -41,9 +41,10 @@ namespace neam
   {
     namespace geometry
     {
-      // GeomType is an GLenum embed.
-      //
-      // Args... should be used to init "at ct" (in fact, also a bit at runtime) the buffer.
+      /// \brief This is an openGL buffer
+      /// \param GeomType is an GLenum embed.
+      ///
+      /// \param Args... should be used to init "at ct" (in fact, thre's also a bit at runtime) the buffer.
       template<typename GeomType, typename... Args>
       class buffer<type::opengl, GeomType, Args...>
       {
@@ -78,7 +79,7 @@ namespace neam
           }
 
         public:
-          // constructors
+          /// \brief Allocate a new buffer and acquire its ownership
           buffer()
           : id(0), ownership(true)
           {
@@ -86,18 +87,27 @@ namespace neam
             __tpl_init();
           }
 
+          /// \brief Create a wrapper linked to an openGL buffer ID, allowing the GL buffer object to be managed for a short time
+          /// by this class. When the created instance has ended its life, the GL object won't be destructed
+          /// \param _id the openGL buffer object ID
           explicit buffer(GLuint _id)
             : id(_id), ownership(false)
           {
             __tpl_init();
           }
 
+          /// \brief Create a wrapper of an openGL buffer ID, allowing the GL buffer object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed
+          /// \param _id the openGL buffer object ID
           buffer(GLuint _id, assume_ownership_t)
             : id(_id), ownership(true)
           {
             __tpl_init();
           }
 
+          /// \brief create a wrapper of the same GL buffer object in another buffer instance, allowing the GL buffer object to be managed for a short time
+          /// by this class. When the created instance has ended its life, the GL object won't be destructed
+          /// \param b the other buffer class to copy the information from
           template<typename... BArgs>
           buffer(const buffer<type::opengl, GeomType, BArgs...> &b)
           : id(b.get_id()), ownership(false), binding_index(b.get_binding_point())
@@ -105,6 +115,9 @@ namespace neam
             __tpl_init();
           }
 
+          /// \brief create a wrapper of the same GL buffer object in another buffer instance, allowing the GL buffer object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p b HAS THE OWNERSHIP)
+          /// \param b the other buffer class to copy the information from
           template<typename... BArgs>
           buffer(buffer<type::opengl, GeomType, BArgs...> &&b)
           : id(b.get_id()), ownership(true), binding_index(b.get_binding_point())
@@ -113,6 +126,9 @@ namespace neam
             __tpl_init();
           }
 
+          /// \brief create a wrapper of the same GL buffer object in another buffer instance, allowing the GL buffer object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p b HAS THE OWNERSHIP)
+          /// \param b the other buffer class to copy the information from
           template<typename... BArgs>
           buffer(buffer<type::opengl, GeomType, BArgs...> &b, stole_ownership_t)
           : id(b.get_id()), ownership(true), binding_index(b.get_binding_point())
@@ -121,7 +137,7 @@ namespace neam
             __tpl_init();
           }
 
-          // destructor
+          /// \brief destructor
           ~buffer()
           {
             if (ownership)
@@ -130,21 +146,25 @@ namespace neam
             }
           }
 
-          // give up the buffer WITHOUT DELETING IT
-          // (simply become a link)
+          /// \brief give up the buffer GL object ownership WITHOUT DELETING IT
+          /// (When the buffer<> instance has ended its life, the GL object won't be destructed)
           buffer &give_up_ownership()
           {
             ownership = false;
             return *this;
           }
 
+          /// \brief assume the buffer GL object ownership
+          /// (When the buffer<> instance has ended its life, the GL object WILL be destructed)
           buffer &assume_ownership()
           {
             ownership = true;
             return *this;
           }
 
-          // see stole_ownership_t
+          /// \brief create a wrapper of the same GL buffer object in another buffer instance, allowing the GL buffer object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p b HAS THE OWNERSHIP)
+          /// \param b the other buffer class to copy the information from
           template<typename... BArgs>
           buffer &stole(buffer<type::opengl, GeomType, BArgs...> &b)
           {
@@ -161,7 +181,9 @@ namespace neam
             return *this;
           }
 
-          // create a simple link
+          /// \brief create a wrapper of the same GL buffer object in another buffer instance, allowing the GL buffer object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p b HAS THE OWNERSHIP)
+          /// \param b the other buffer class to copy the information from
           template<typename... BArgs>
           buffer &link_to(const buffer<type::opengl, GeomType, BArgs...> &b)
           {
@@ -180,29 +202,32 @@ namespace neam
           // this won't do what you want.
           buffer &operator = (const buffer &) = delete;
 
-          // getters
+          /// \brief return the GL object id for the buffer
           GLuint get_id() const
           {
             return id;
           }
 
+          /// \brief return true if the instance has the ownership of the GL object, false otherwise
           bool has_ownership() const
           {
             return ownership;
           }
 
-          // bind the buffer
+          /// \brief bind the buffer
           void bind() const
           {
             glBindBuffer(GeomType::value, id);
           }
 
+          /// \brief unbind the buffer
           void unbind() const
           {
             glBindBuffer(GeomType::value, 0);
           }
 
-          // _use_ the buffer
+          /// \brief _use_ the buffer, binding the buffer to its binding_index if applicable
+          /// \see set_binding_point()
           void use() const
           {
             if (GeomType::value == GL_UNIFORM_BUFFER || GeomType::value == GL_ATOMIC_COUNTER_BUFFER || GeomType::value == GL_SHADER_STORAGE_BUFFER  || GeomType::value == GL_TRANSFORM_FEEDBACK_BUFFER)
@@ -211,6 +236,7 @@ namespace neam
               glBindBuffer(GeomType::value, id);
           }
 
+          /// \brief un-use the buffer, unbinding it from its binding point
           void unuse() const
           {
             if (GeomType::value == GL_UNIFORM_BUFFER || GeomType::value == GL_ATOMIC_COUNTER_BUFFER || GeomType::value == GL_SHADER_STORAGE_BUFFER  || GeomType::value == GL_TRANSFORM_FEEDBACK_BUFFER)
@@ -220,32 +246,33 @@ namespace neam
           }
 
 
+          /// \brief set the binding index of the buffer
+          /// \param index the binding index of the buffer
           void set_binding_point(GLuint index)
           {
             binding_index = index;
           }
 
+          /// \brief get the binding point of the buffer
           GLuint get_binding_point() const
           {
             return binding_index;
           }
 
 
-          // set the data from a C array (with fixed size)
+          /// \brief set the data from a C array (with fixed size)
+          /// \param data the data to set
+          /// \param draw_type a hint for openGL to choose the memory where the buffer will be stored
           template<typename ArrayType, size_t ArraySize>
           void set_data(const ArrayType (&data)[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
             bind();
             glBufferData(GeomType::value, sizeof(ArrayType) * ArraySize, data, draw_type);
           }
-          // set the data from a C array (with fixed size)
-//           template<typename ArrayType, size_t ArraySize>
-//           void set_data(const ArrayType (&)[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
-//           {
-//             bind();
-//             glBufferData(GeomType::value, sizeof(data), data, draw_type);
-//           }
-          // set the data from an array_wrapper
+
+          /// \brief set the data from an array_wrapper
+          /// \param data the data to set
+          /// \param draw_type a hint for openGL to choose the memory where the buffer will be stored
           template<typename ArrayType>
           void set_data(const array_wrapper<ArrayType> &w, GLenum draw_type = GL_STATIC_DRAW)
           {
@@ -253,98 +280,9 @@ namespace neam
             glBufferData(GeomType::value, (sizeof(ArrayType) * w.size), w.array, draw_type);
           }
 
-//           void set_data(const array_wrapper<glm::vec4> &data, GLenum draw_type = GL_STATIC_DRAW)
-//           {
-//             bind();
-//             GLfloat *dest_data = new GLfloat[data.size * 4];
-//             for (size_t i = 0; i < data.size; ++i)
-//             {
-//               dest_data[i + 0] = (data.array[i].x);
-//               dest_data[i + 1] = (data.array[i].y);
-//               dest_data[i + 2] = (data.array[i].z);
-//               dest_data[i + 3] = (data.array[i].w);
-//             }
-// 
-//             glBufferData(GeomType::value, sizeof(GLfloat) * 4 * data.size, dest_data, draw_type);
-//             delete [] dest_data;
-//           }
-// 
-//           void set_data(const array_wrapper<glm::vec3> &data, GLenum draw_type = GL_STATIC_DRAW)
-//           {
-//             bind();
-//             GLfloat *dest_data = new GLfloat[data.size * 3];
-//             for (size_t i = 0; i < data.size; ++i)
-//             {
-//               dest_data[i * 3 + 0] = (data.array[i].x);
-//               dest_data[i * 3 + 1] = (data.array[i].y);
-//               dest_data[i * 3 + 2] = (data.array[i].z);
-//             }
-//             glBufferData(GeomType::value, sizeof(GLfloat) * 3 * data.size, dest_data, draw_type);
-//             delete [] dest_data;
-//           }
-//           void set_data(const array_wrapper<glm::vec2> &data, GLenum draw_type = GL_STATIC_DRAW)
-//           {
-//             bind();
-//             GLfloat *dest_data = new GLfloat[data.size * 2];
-//             for (size_t i = 0; i < data.size; ++i)
-//             {
-//               dest_data[i + 0] = (data.array[i].x);
-//               dest_data[i + 1] = (data.array[i].y);
-//             }
-//             glBufferData(GeomType::value, sizeof(GLfloat) * 2 * data.size, dest_data, draw_type);
-//             delete [] dest_data;
-//           }
-
-//           // set the data from an C array (with fixed size)
-//           template<size_t ArraySize>
-//           void set_data(glm::vec4 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
-//           {
-//             bind();
-//             GLfloat *dest_data = new GLfloat[ArraySize * 4];
-//             for (size_t i = 0; i < ArraySize; ++i)
-//             {
-//               dest_data[i + 0] = (data[i].x);
-//               dest_data[i + 1] = (data[i].y);
-//               dest_data[i + 2] = (data[i].z);
-//               dest_data[i + 3] = (data[i].w);
-//             }
-// 
-//             glBufferData(GeomType::value, sizeof(GLfloat) * 4 * ArraySize, dest_data, draw_type);
-//             delete [] dest_data;
-//           }
-//           // set the data from an C array (with fixed size)
-//           template<size_t ArraySize>
-//           void set_data(glm::vec3 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
-//           {
-//             bind();
-//             GLfloat *dest_data = new GLfloat[ArraySize * 3];
-//             for (size_t i = 0; i < ArraySize; ++i)
-//             {
-//               dest_data[i + 0] = (data[i].x);
-//               dest_data[i + 1] = (data[i].y);
-//               dest_data[i + 2] = (data[i].z);
-//             }
-// 
-//             glBufferData(GeomType::value, sizeof(GLfloat) * 3 * ArraySize, dest_data, draw_type);
-//             delete [] dest_data;
-//           }
-//           // set the data from an C array (with fixed size)
-//           template<size_t ArraySize>
-//           void set_data(glm::vec2 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
-//           {
-//             bind();
-//             GLfloat *dest_data = new GLfloat[ArraySize * 2];
-//             for (size_t i = 0; i < ArraySize; ++i)
-//             {
-//               dest_data[i + 0] = (data[i].x);
-//               dest_data[i + 1] = (data[i].y);
-//             }
-// 
-//             glBufferData(GeomType::value, sizeof(GLfloat) * 2 * ArraySize, dest_data, draw_type);
-//             delete [] dest_data;
-//           }
-
-          // set the data from an C array (with fixed size)
+          /// \brief set the data from an C array (with fixed size)
+          /// \param data the data to set
+          /// \param draw_type a hint for openGL to choose the memory where the buffer will be stored
           template<size_t ArraySize>
           void set_data_convert_to_float(ct::vector4 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
@@ -361,7 +299,10 @@ namespace neam
             glBufferData(GeomType::value, sizeof(GLfloat) * 4 * ArraySize, dest_data, draw_type);
             delete [] dest_data;
           }
-          // set the data from an C array (with fixed size)
+
+          /// \brief set the data from an C array (with fixed size)
+          /// \param data the data to set
+          /// \param draw_type a hint for openGL to choose the memory where the buffer will be stored
           template<size_t ArraySize>
           void set_data_convert_to_float(ct::vector3 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
@@ -377,7 +318,10 @@ namespace neam
             glBufferData(GeomType::value, sizeof(GLfloat) * 3 * ArraySize, dest_data, draw_type);
             delete [] dest_data;
           }
-          // set the data from an C array (with fixed size)
+
+          /// \brief set the data from an C array (with fixed size)
+          /// \param data the data to set
+          /// \param draw_type a hint for openGL to choose the memory where the buffer will be stored
           template<size_t ArraySize>
           void set_data_convert_to_float(ct::vector2 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
@@ -392,7 +336,10 @@ namespace neam
             glBufferData(GeomType::value, sizeof(GLfloat) * 2 * ArraySize, dest_data, draw_type);
             delete [] dest_data;
           }
-          // set the data from an C array (with fixed size)
+
+          /// \brief set the data from an C array (with fixed size)
+          /// \param data the data to set
+          /// \param draw_type a hint for openGL to choose the memory where the buffer will be stored
           template<size_t ArraySize>
           void set_data_convert_to_float(ct::fixed_t data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
@@ -407,8 +354,8 @@ namespace neam
             delete [] dest_data;
           }
 
-          // create a link to a more generic buffer.
-          // no inheritance involved. This cast will create a 'link' program shader object.
+          /// \brief create a link to a more generic buffer (generic when speaking of C++ types).
+          /// no inheritance involved. This cast will create a 'link' program shader object.
           operator buffer<type::opengl, GeomType> ()
           {
             return buffer<type::opengl, GeomType> (*this);

@@ -33,9 +33,9 @@ namespace neam
   {
     namespace geometry
     {
-      // this class represent a buffer view.
-      // (a quite wrong name for the underlying concept, but...
-      //  this is called "totalitarism")
+      /// \brief this class represent a buffer view.
+      /// (a quite wrong name for the underlying concept, but...)
+      /// It is used mostly for geometry buffers when having interleaved data
       template<typename BufferViewType, typename... Args>
       class buffer_view
       {

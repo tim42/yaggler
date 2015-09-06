@@ -33,7 +33,8 @@ namespace neam
   {
     namespace geometry
     {
-      // this class represent a 'draw state'.
+      /// \brief this class represent a draw state.
+      /// (which kind of geometry will be draw, its size, ...)
       template<typename DrawStateType, typename... Args>
       class draw_state
       {

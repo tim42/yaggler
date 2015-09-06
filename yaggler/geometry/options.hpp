@@ -39,7 +39,7 @@ namespace neam
   {
     namespace geometry
     {
-      // used in buffer_view
+      /// \brief used in buffer_view to describe the precision of a component
       enum class destination_precision
       {
         integer,
@@ -51,7 +51,7 @@ namespace neam
       // some cool options for ct/- init
       namespace options
       {
-        // ct view init
+        /// \brief compile time buffer_view init
         template<GLuint AttributeIndex, GLuint Size, GLenum Type, GLuint Stride, GLuint Offset, bool Normalized = false>
         struct ct_buffer_view_init
         {
@@ -60,10 +60,10 @@ namespace neam
           static constexpr GLenum type = Type;
           static constexpr GLuint stride = Stride;
           static constexpr GLuint offset = Offset;
-          static constexpr bool normalized = Normalized;
+          static constexpr bool normalized = Normalized ? GL_TRUE : GL_FALSE;
         };
 
-        // ct buffer init
+        /// \brief compile time buffer init
         template<typename Data, GLenum DrawType, bool Convert = false>
         struct ct_buffer_init
         {
@@ -79,8 +79,7 @@ namespace neam
         template<typename Data, GLenum DrawType, bool Convert>
         constexpr typename ct_buffer_init<Data, DrawType, Convert>::data_t ct_buffer_init<Data, DrawType, Convert>::data;
 
-        // ct vao init
-        // (and here, you can see the powa of those ct inits :) )
+        /// \brief compile time vao init
         template<typename Buffer, typename... Views>
         struct ct_vao_init
         {

@@ -33,7 +33,7 @@ namespace neam
   {
     namespace geometry
     {
-      // this class represent a vao.
+      /// \brief this class represent a vao.
       template<typename VaoType, typename... Args>
       class vao
       {

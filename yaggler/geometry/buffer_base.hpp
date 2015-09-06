@@ -33,7 +33,7 @@ namespace neam
   {
     namespace geometry
     {
-      // this class represent a buffer.
+      /// \brief This class represents a buffer.
       template<typename BufferType, typename... Args>
       class buffer
       {

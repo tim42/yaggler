@@ -42,6 +42,7 @@ namespace neam
   {
     namespace geometry
     {
+      /// \brief an openGL VAO
       template<typename... Init>
       class vao<type::opengl, Init...>
       {
@@ -61,7 +62,7 @@ namespace neam
           }
 
         public:
-          // constructors
+          /// \brief Allocate a new vao and acquire its ownership
           vao()
           : id(0), ownership(true)
           {
@@ -70,6 +71,9 @@ namespace neam
             __int_from_ct(cr::gen_seq<sizeof...(Init)>());
           }
 
+          /// \brief Create a wrapper linked to an openGL vao ID, allowing the GL vao object to be managed for a short time
+          /// by this class. When the created instance has ended its life, the GL object won't be destructed
+          /// \param _id the openGL vao object ID
           explicit vao(GLuint _id)
             : id(_id), ownership(false)
           {
@@ -77,6 +81,9 @@ namespace neam
             __int_from_ct(cr::gen_seq<sizeof...(Init)>());
           }
 
+          /// \brief Create a wrapper of an openGL vao ID, allowing the GL vao object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed
+          /// \param _id the openGL vao object ID
           vao(GLuint _id, assume_ownership_t)
             : id(_id), ownership(true)
           {
@@ -84,6 +91,10 @@ namespace neam
             __int_from_ct(cr::gen_seq<sizeof...(Init)>());
           }
 
+
+          /// \brief create a wrapper of the same GL vao object in another vao instance, allowing the GL vao object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p o HAS THE OWNERSHIP)
+          /// \param o the other vao class to copy the information from
           template<typename... OInit>
           vao(vao<type::opengl, OInit...> &o, stole_ownership_t)
             : id(o.get_id()), ownership(o.has_ownership())
@@ -92,6 +103,10 @@ namespace neam
             bind();
             __int_from_ct(cr::gen_seq<sizeof...(Init)>());
           }
+
+          /// \brief create a wrapper of the same GL vao object in another vao instance, allowing the GL vao object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p o HAS THE OWNERSHIP)
+          /// \param o the other vao class to copy the information from
           template<typename... OInit>
           vao(vao<type::opengl, OInit...> && o)
             : id(o.get_id()), ownership(o.has_ownership())
@@ -101,6 +116,9 @@ namespace neam
             __int_from_ct(cr::gen_seq<sizeof...(Init)>());
           }
 
+          /// \brief create a wrapper of the same GL vao object in another vao instance, allowing the GL vao object to be managed for a short time
+          /// by this class. When the created instance has ended its life, the GL object won't be destructed
+          /// \param b the other vao class to copy the information from
           template<typename... OInit>
           vao(const vao<type::opengl, OInit...> &o)
           : id(o.get_id()), ownership(false)
@@ -109,28 +127,32 @@ namespace neam
             __int_from_ct(cr::gen_seq<sizeof...(Init)>());
           }
 
-          // destructor
+          /// \brief destructor
           ~vao()
           {
             if (ownership)
               glDeleteVertexArrays(1, &id);
           }
 
-          // give up the buffer WITHOUT DELETING IT
-          // (simply become a link)
+          /// \brief give up the vao GL object ownership WITHOUT DELETING IT
+          /// (When the vao<> instance has ended its life, the GL object won't be destructed)
           vao &give_up_ownership()
           {
             ownership = false;
             return *this;
           }
 
+          /// \brief assume the vao GL object ownership
+          /// (When the vao<> instance has ended its life, the GL object WILL be destructed)
           vao &assume_ownership()
           {
             ownership = true;
             return *this;
           }
 
-          // see stole_ownership_t
+          /// \brief create a wrapper of the same GL vao object in another vao instance, allowing the GL vao object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p o HAS THE OWNERSHIP)
+          /// \param b the other vao class to copy the information from
           template<typename... OInit>
           vao &stole(vao<type::opengl, OInit...> &t)
           {
@@ -146,7 +168,9 @@ namespace neam
             return *this;
           }
 
-          // create a simple link
+          /// \brief create a wrapper of the same GL vao object in another vao instance, allowing the GL vao object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p o HAS THE OWNERSHIP)
+          /// \param b the other vao class to copy the information from
           template<typename... OInit>
           vao &link_to(const vao<type::opengl, OInit...> &t)
           {
@@ -161,34 +185,43 @@ namespace neam
             return *this;
           }
 
-          // getters
+          /// \brief return the ID  of the underlying GL resource
           GLuint get_id() const
           {
             return id;
           }
 
+          /// \brief return whether or not the current instance has the ownership of the underlying GL resource
           bool has_ownership() const
           {
             return ownership;
           }
 
-          // bind the vao
+          /// \brief bind the vao
           void bind() const
           {
             glBindVertexArray(id);
           }
 
+          /// \brief bind the vao
           void use() const
           {
             glBindVertexArray(id);
           }
 
+          /// \brief unbind the vao
+          void unbind() const
+          {
+            glBindVertexArray(0);
+          }
+
+          /// \brief unbind the vao
           void unuse() const
           {
             glBindVertexArray(0);
           }
 
-          // add buffer / views to the vao
+          /// \brief add a buffer and its views to the vao
           template<typename Buffer, typename... Views>
           void add_buffer(const Buffer &b, const Views &... vs)
           {
@@ -201,33 +234,30 @@ namespace neam
             NEAM_EXECUTE_PACK((vs.unuse()));
           }
 
-          // create a link to a more generic texture.
-          // no inheritance involved. This cast will create a 'link' program shader object.
+          /// \brief create a link to a more generic vao.
+          /// no inheritance is involved. This cast will create a 'link' program shader object.
           operator vao<type::opengl> ()
           {
             return vao<type::opengl> (*this);
           }
 
-          // YAY :D
-          // (but there'll always be that annoying GeomType around... :( )
-          //
-          // return a "link" to the buffer at the specified index.
-          // (buffers from the ct init)
+          /// \brief return a "link" to the buffer from the ct init at the specified index.
           template<size_t Idx, GLenum GeomType>
           buffer<type::opengl, neam::embed::GLenum<GeomType>> get_buffer_link()
           {
             return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get<Idx>());
           }
 
-          // simply return a ref to the buffer
+          /// \brief return a reference to the buffer from the ct init at the specified index.
           template<size_t Idx>
           auto get_buffer() -> typename ct::type_at_index<Idx, Init...>::type &
           {
             return (ct_buffers_views.template get<Idx>());
           }
 
-          // see stole_ownership_t
-          // COULD ONLY WORK ONE TIME for a given buffer (else throw)
+          /// \brief stole a buffer from the ct init at a specified index
+          /// \see stole_ownership_t
+          /// \attention COULD ONLY WORK ONE TIME for a given buffer (else throw)
           template<size_t Idx, GLenum GeomType>
           buffer<type::opengl, neam::embed::GLenum<GeomType>> stole_buffer()
           {
