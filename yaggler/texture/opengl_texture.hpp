@@ -162,7 +162,7 @@ namespace neam
             __tpl_init();
           }
 
-          /// \brief create a wrapper of the same GL texture object that another texture, allowing the GL texture object to be managed for a short time
+          /// \brief create a wrapper of the same GL texture object in another texture instance, allowing the GL texture object to be managed for a short time
           /// by this class. When the created instance has ended its life, the GL object won't be destructed
           /// \param o the other texture class to copy the information from
           texture(const texture &o)
@@ -172,7 +172,7 @@ namespace neam
             __tpl_init();
           }
 
-          /// \brief create a wrapper of the same GL texture object that another texture, allowing the GL texture object to be managed for a short time
+          /// \brief create a wrapper of the same GL texture object in another texture instance, allowing the GL texture object to be managed for a short time
           /// by this class. When the created instance has ended its life, the GL object won't be destructed
           /// \param o the other texture class to copy the information from
           template<typename... TArgs>
@@ -183,7 +183,7 @@ namespace neam
             __tpl_init();
           }
 
-          /// \brief create a wrapper of the same GL texture object that another texture, allowing the GL texture object to be managed
+          /// \brief create a wrapper of the same GL texture object in another texture instance, allowing the GL texture object to be managed
           /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p o HAS THE OWNERSHIP)
           /// \param o the other texture class to copy the information from
           texture(texture &o, stole_ownership_t)
@@ -194,7 +194,7 @@ namespace neam
             __tpl_init();
           }
 
-          /// \brief create a wrapper of the same GL texture object that another texture, allowing the GL texture object to be managed
+          /// \brief create a wrapper of the same GL texture object in another texture instance, allowing the GL texture object to be managed
           /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p o HAS THE OWNERSHIP)
           /// \param o the other texture class to copy the information from
           template<typename... TArgs>
@@ -206,7 +206,7 @@ namespace neam
             __tpl_init();
           }
 
-          /// \brief create a wrapper of the same GL texture object that another texture, allowing the GL texture object to be managed
+          /// \brief create a wrapper of the same GL texture object in another texture instance, allowing the GL texture object to be managed
           /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p o HAS THE OWNERSHIP)
           /// \param o the other texture class to copy the information from
           texture(texture &&o)
@@ -217,7 +217,7 @@ namespace neam
             __tpl_init();
           }
 
-          /// \brief create a wrapper of the same GL texture object that another texture, allowing the GL texture object to be managed
+          /// \brief create a wrapper of the same GL texture object in another texture instance, allowing the GL texture object to be managed
           /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p o HAS THE OWNERSHIP)
           /// \param o the other texture class to copy the information from
           template<typename... TArgs>
@@ -252,7 +252,7 @@ namespace neam
             return *this;
           }
 
-          /// \brief create a wrapper of the same GL texture object that another texture, allowing the GL texture object to be managed
+          /// \brief create a wrapper of the same GL texture object in another texture instance, allowing the GL texture object to be managed
           /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p o HAS THE OWNERSHIP)
           /// \param o the other texture class to copy the information from
           template<typename... BArgs>
@@ -275,7 +275,7 @@ namespace neam
             return *this;
           }
 
-          /// \brief create a wrapper of the same GL texture object that another texture, allowing the GL texture object to be managed
+          /// \brief create a wrapper of the same GL texture object in another texture instance, allowing the GL texture object to be managed
           /// by this class. When the created instance has ended its life, the GL object will be destructed (ONLY IF THE \p o HAS THE OWNERSHIP)
           /// \param o the other texture class to copy the information from
           template<typename... BArgs>
