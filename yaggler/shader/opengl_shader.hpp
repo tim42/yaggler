@@ -280,19 +280,21 @@ namespace neam
           /// \note it will not cache results (so this could be slow !)
           std::string get_preprocessor_value(const std::string &name, const std::string &preprocessor_token = "define") const
           {
-            std::string token = '#' + preprocessor_token;
-
             // get the version string
-            for (size_t i = 0; source.size() > token.size() && i < source.size() - token.size(); ++i)
+            for (size_t i = 0; source.size() > preprocessor_token.size() && i < source.size() - preprocessor_token.size(); ++i)
             {
               if (source[i] == '\n' && source[i + 1] == '#')
               {
-                // we got our #[preprocessor_token]
-                if (!strncmp(source.data() + i + 1, token.data(), token.size()) && isspace(source[i + 1 + token.size()]))
+                i += 2;
+                while (isspace(source[i]) && source[i] != '\n')
+                  ++i;
+
+                // we got our #[\w*][preprocessor_token][\w]
+                if (!strncmp(source.data() + i, preprocessor_token.data(), preprocessor_token.size()) && isspace(source[i + preprocessor_token.size()]))
                 {
                   // skip whitespaces
                   size_t ws = 0;
-                  size_t pos = i + 1 + token.size();
+                  size_t pos = i + preprocessor_token.size();
 
                   while (isspace(source[pos + ws]) && source[pos + ws] != '\n')
                     ++ws;

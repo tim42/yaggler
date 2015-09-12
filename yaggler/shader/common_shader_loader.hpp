@@ -35,6 +35,7 @@
 # include <unistd.h>
 #endif
 
+#include "tools/logger/logger.hpp"
 #include "shader_loader.hpp"
 #include "shader_options.hpp"
 
@@ -128,8 +129,23 @@ namespace neam
         /// \brief return the source code of the shader
         static inline std::string get_source_string()
         {
+          std::ifstream file(FileName::get());
+          if (!file)
+          {
+#ifndef YAGGLER_NO_MESSAGES
+            neam::cr::out.error() << LOGGER_INFO << "shader_loader<File>: Could not open '" << FileName::get() << "'" << std::endl;
+#endif
+            return "";
+          }
           // load the content of a file into a std::sring
-          return static_cast<const std::ostringstream &>(std::ostringstream() << (std::ifstream(FileName::get()).rdbuf())).str();
+          std::string str = static_cast<const std::ostringstream &>(std::ostringstream() << (file.rdbuf())).str();
+#ifndef YAGGLER_NO_MESSAGES
+          if (!str.size())
+          {
+            neam::cr::out.error() << LOGGER_INFO << "shader_loader<File>: Reading '" << FileName::get() << "': Empty file !" << std::endl;
+          }
+#endif
+          return str;
         }
 
         /// \brief return the source name

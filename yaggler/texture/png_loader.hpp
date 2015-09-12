@@ -86,7 +86,7 @@ namespace neam
               size.y = szy;
 
               if (ret)
-                throw runtime_error<png_texture_init>(lodepng_error_text(ret));
+                throw runtime_error<png_texture_init>(lodepng_error_text(ret) + std::string(" when opening ") + std::string(File::value));
 
               uint8_t *data = new uint8_t[size.x * size.y * 8];
               memcpy(data, image.data(), size.x * size.y * 8);
@@ -176,7 +176,7 @@ namespace neam
               size.y = szy;
 
               if (ret)
-                throw runtime_error<png_texture_loader>(lodepng_error_text(ret));
+                throw runtime_error<png_texture_loader>(lodepng_error_text(ret) + std::string(" when opening ") + file);
 
               uint8_t *data = new uint8_t[size.x * size.y * 8];
               memcpy(data, image.data(), image.size());
