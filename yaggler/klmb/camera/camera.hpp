@@ -65,6 +65,7 @@ namespace neam
         // intermediate steps
         glm::mat4 view_matrix;
         glm::mat4 proj_matrix;
+        glm::vec3 world_position;
 
         /// \brief recompute all matrices
         void recompute_matrices()
@@ -105,10 +106,14 @@ namespace neam
           if (world_matrix)
           {
             glm::vec4 tpos = ((*world_matrix) * glm::vec4(position, 1.));
-            view_matrix = glm::lookAt(glm::vec3(tpos.x, tpos.y, tpos.z), look, up_vector);
+            world_position = glm::vec3(tpos.x, tpos.y, tpos.z);
+            view_matrix = glm::lookAt(world_position, look, up_vector);
           }
           else
-            view_matrix = glm::lookAt(position, look, up_vector);
+          {
+            world_position = position;
+            view_matrix = glm::lookAt(world_position, look, up_vector);
+          }
         }
 
         /// \brief recompute only the projection matrix
