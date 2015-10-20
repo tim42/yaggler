@@ -23,9 +23,9 @@ uniform sampler2D geometry;             // normal + depth       (rgb + a)
 uniform vec2 direction;                 // blur direction
 uniform vec2 buffer_size;               // screen size
 
-uniform float center = 9.;              // the focus point (z-distance
-uniform float max_distance = 100.;       // the minimal distance from 'center' where the blur will be maximal.
-uniform float min_distance = 10.;       // the maximal distance from 'center' where the blur will be null.
+uniform float center = 40.0;              // the focus point (z-distance
+uniform float max_distance = 9.;       // the minimal distance from 'center' where the blur will be maximal.
+uniform float min_distance = 0.;       // the maximal distance from 'center' where the blur will be null.
 
 KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_0); // color          (rgba)
 // KLMB_OUTPUT_VAR vec4 KLMB_SHARED_NAME(color_1); // normal + depth (rgb + a)
@@ -59,23 +59,26 @@ void KLMB_MAIN_FUNCTION()
     alpha = 1.;
 
 
-  for (float i = 0.; i < NUM_BLUR_SAMPLES * alpha; ++i)
+  for (float i = 0.; i < NUM_BLUR_SAMPLES * alpha * alpha * alpha; ++i)
   {
-    float idx = i - (NUM_BLUR_SAMPLES * alpha / 2.0);
+    float idx = i - (NUM_BLUR_SAMPLES * alpha * alpha * alpha / 2.0);
     vec2 nuv = uv + o * (idx * 1.0);
 
     float coef = GAUSS(idx);
     vec4 color = texture(scene, nuv);
     float depth = texture(geometry, nuv).w;
     if (depth == 0)
-      depth = 1.;
+      depth = alpha;
     else
       depth = (clamp(abs(center - depth), min_distance, max_distance) - min_distance) / (max_distance - min_distance);
 
-    float k = (1. + length(color.xyz) * cos(i / (NUM_BLUR_SAMPLES * alpha) * (3.1415 / 2.)));
-    float d = clamp((depth - alpha + 0.9) * depth, 0, 0.9) * 2.0;
-    sum += color * coef * alpha * (sqrt((k))) * d;
-    denom += coef * alpha * d;
+    float k = (1. + 15. * length(color.xyz) * cos(i / (NUM_BLUR_SAMPLES /** alpha*/) * (3.1415 / 6.)));
+//     float d = clamp((depth - alpha + 0.9) * depth, 0, 0.9) * 2.0;
+    float diff = abs(alpha - depth);
+    float d = (1. - sqrt(diff) / k) * depth * depth * 2. * coef * alpha * alpha * (/*sqrt*/((k)));
+//     sum += color * coef * alpha * (sqrt((k))) * d;
+    sum += color * d;
+    denom += d;
   }
 
   KLMB_SHARED_NAME(color_0) = vec4((sum / denom).xyzw);

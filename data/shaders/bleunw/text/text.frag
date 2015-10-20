@@ -31,7 +31,6 @@ void KLMB_MAIN_FUNCTION()
 {
   float mask = texture(font_texture, uv).r;
   vec4 color = font_color;
-
   // take account of the scale of the font.
   color.a = smoothstep(0.400 + clamp(length(font_scale) * 0.1, 0., 0.055), 0.47, mask) * font_color.a;
 

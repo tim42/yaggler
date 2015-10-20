@@ -1,0 +1,52 @@
+
+#version 450 core
+#line 4
+
+// // some mandatory K:LMB macros
+
+// this file is using the 'framework'
+#define KLMB_IS_USING_FRAMEWORK
+// this file is a shader entry point
+#define KLMB_IS_ENTRY_POINT
+
+layout(vertices = 6) out;
+
+out gl_PerVertex
+{
+  vec4 gl_Position;
+} gl_out[];
+
+#define ID gl_InvocationID
+
+uniform float global_time;
+in mat4 v_vpm_matrix[];
+patch out mat4 vpm_matrix;
+
+// main
+void KLMB_MAIN_FUNCTION()
+{
+  gl_out[ID].gl_Position = gl_in[ID].gl_Position;
+  vpm_matrix = v_vpm_matrix[0];
+
+
+  if (ID == 0)
+  {
+//   vec3 proj = (vpm_matrix[ID] * vec4(floor(gl_in[ID].gl_Position.xyz), 1.)).xyz;
+
+  float f = 2.;//floor(8. - clamp(dot(proj, proj) / 280., 0., 8.)) + 4.;
+//     gl_TessLevelInner[0] = 1. + abs(1. + cos(global_time * 4.)) * 2.;
+//     gl_TessLevelInner[1] = 1. + abs(1. + cos(global_time * 4.)) * 2.;
+// 
+//     gl_TessLevelOuter[0] = 1. + abs(1. + cos(global_time)) * 2.;
+//     gl_TessLevelOuter[1] = 1. + abs(1. + cos(global_time)) * 2.;
+//     gl_TessLevelOuter[2] = 1. + abs(1. + cos(global_time)) * 2.;
+//     gl_TessLevelOuter[3] = 1. + abs(1. + cos(global_time)) * 2.;
+    gl_TessLevelInner[0] = f;
+    gl_TessLevelInner[1] = f;
+
+    gl_TessLevelOuter[0] = f;
+    gl_TessLevelOuter[1] = f;
+    gl_TessLevelOuter[2] = f;
+    gl_TessLevelOuter[3] = f;
+  }
+}

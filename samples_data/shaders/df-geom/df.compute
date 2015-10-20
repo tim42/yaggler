@@ -1,0 +1,17 @@
+
+#version 430 core
+
+#line 5
+
+// // some mandatory K:LMB macros
+
+// this file is using the 'framework'
+#define KLMB_IS_USING_FRAMEWORK
+// this file is a shader entry point
+#define KLMB_IS_ENTRY_POINT
+
+// main
+void KLMB_MAIN_FUNCTION()
+{
+  
+}

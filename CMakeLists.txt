@@ -92,19 +92,11 @@ endif()
 
 # build the samples
 if (${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
-  add_subdirectory(samples/path-tracer/)
-  add_subdirectory(samples/gui-test/)
-#  add_subdirectory(samples/editor/)
+  add_subdirectory(samples/)
 endif()
 
-# build the samples
-# add_subdirectory(samples/test)
-# add_subdirectory(samples/dev)
-# add_subdirectory(samples/dev-klmb)
-
-#add_subdirectory(samples/test-klmb)
-
-
-
-# copy
+# copy the main data/ folder
 file(COPY ./data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+
+# copy the samples_data/ folder
+file(COPY ./samples_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
