@@ -33,6 +33,8 @@
 #include "shader/opengl_program.hpp"
 #include "shader/opengl_uniform_var.hpp"
 #include "shader/context.hpp"
+#include "shader/common_shader_loader.hpp"
+#include "shader/common_shader_env.hpp"
 
 namespace neam
 {

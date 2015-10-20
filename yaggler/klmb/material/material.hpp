@@ -249,7 +249,7 @@ namespace neam
 
             shader._preload();
 
-            bool is_using_klmb = tools::is_true(shader.get_preprocessor_value("KLMB_IS_USING_FRAMEWORK"));
+            bool is_using_klmb = tools::is_true(shader.environment.get_preprocessor_value("KLMB_IS_USING_FRAMEWORK"));
 
             // setup klmb frmwk
             if (is_using_klmb)

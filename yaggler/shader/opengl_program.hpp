@@ -59,15 +59,72 @@ namespace neam
       template<typename... CTShaders>
       class program<type::opengl, CTShaders...>
       {
-        private: // iterate over ct shaders. [helper]
+        private:
+          template<typename Shader, typename... Shaders, int = 0>
+          static constexpr bool _have_watchable_shaders_it()
+          {
+            return Shader::shader_config_option == reload_on_change || _have_watchable_shaders_it<Shaders...>();
+          }
+          template<int = 0>
+          static constexpr bool _have_watchable_shaders_it()
+          {
+            return false;
+          }
+
+        private:
+          static constexpr bool has_watchable_ct_shaders = _have_watchable_shaders_it<CTShaders...>();
+
+        private:
+          /// \brief iterate over ct shaders. [helper]
           template<size_t... Idx>
           inline void it_over_cts_attach(cr::seq<Idx...>)
           {
             NEAM_EXECUTE_PACK((glAttachShader(pg_id, shaders.template get<Idx>().get_id())));
           }
 
+          // // RECOMPILE IF CHANGED // //
+
           template<typename Shader>
-          inline void _it_recompile_cts_inner(Shader &shader)
+          inline void _it_cts_inner_recompile_if_changed(Shader &shader, bool &st)
+          {
+            st |= shader.recompile_if_changed();
+            failed |= shader.has_failed();
+          }
+
+          template<size_t... Idx>
+          inline bool it_over_cts_recompile_if_changed(cr::seq<Idx...>)
+          {
+            bool ret = false;
+            failed = false;
+            NEAM_EXECUTE_PACK((_it_cts_inner_recompile_if_changed(shaders.template get<Idx>(), ret)));
+            return ret;
+          }
+
+          // // RECOMPILE reload_on_change CT SHADERS // //
+
+          template<typename Shader>
+          inline void _it_watch_cts_inner_recompile_if_changed(Shader &shader, bool &st)
+          {
+            if (shader.shader_config_option == reload_on_change)
+            {
+              st |= shader.recompile_if_changed();
+              failed |= shader.has_failed();
+            }
+          }
+
+          template<size_t... Idx>
+          inline bool it_over_watch_cts_recompile_if_changed(cr::seq<Idx...>)
+          {
+            bool ret = false;
+            failed = false;
+            NEAM_EXECUTE_PACK((_it_cts_inner_recompile_if_changed(shaders.template get<Idx>(), ret)));
+            return ret;
+          }
+
+          // // BRUTEFORCE RECOMPILE // //
+
+          template<typename Shader>
+          inline void _it_cts_inner_recompile(Shader &shader)
           {
             shader.recompile();
             failed |= shader.has_failed();
@@ -77,7 +134,7 @@ namespace neam
           inline void it_over_cts_recompile(cr::seq<Idx...>)
           {
             failed = false;
-            NEAM_EXECUTE_PACK((_it_recompile_cts_inner(shaders.template get<Idx>())));
+            NEAM_EXECUTE_PACK((_it_cts_inner_recompile(shaders.template get<Idx>())));
           }
 
         public:
@@ -250,8 +307,28 @@ namespace neam
             return ownership;
           }
 
-          /// \brief recompile shaders in the CTShaders template parameter and relink the program
+          /// \brief recompile shaders in the CT (compile-time) Shaders template parameter and relink the program if needed
           void recompile_cts_shader_if_changed()
+          {
+            bool need_link;
+            try
+            {
+              need_link = it_over_cts_recompile_if_changed(cr::gen_seq<sizeof...(CTShaders)>());
+            }
+            catch(const shader_exception &e)
+            {
+              neam::cr::out.error() << LOGGER_INFO << "program<type::opengl>::recompile_cts_shader_if_changed: shader_exception: " << e.what() << std::endl;
+              failed = true;
+              return;
+            }
+            if (need_link)
+              link();
+          }
+
+          /// \brief recompile shaders in the CT (compile-time) Shaders template parameter and relink the program
+          /// \note slower than recompile_cts_shader_if_changed()
+          /// \see recompile_cts_shader_if_changed()
+          void recompile_cts_shader()
           {
             try
             {
@@ -259,7 +336,8 @@ namespace neam
             }
             catch(const shader_exception &e)
             {
-              neam::cr::out.error() << LOGGER_INFO << "program<type::opengl>::recompile_cts_shader_if_changed: shader_exception: " << e.what() << std::endl;
+              neam::cr::out.error() << LOGGER_INFO << "program<type::opengl>::recompile_cts_shader: shader_exception: " << e.what() << std::endl;
+              failed = true;
               return;
             }
             link();
@@ -270,11 +348,12 @@ namespace neam
           {
             try
             {
-              it_over_cts_recompile(cr::gen_seq<sizeof...(CTShaders)>());
+              it_over_cts_recompile_if_changed(cr::gen_seq<sizeof...(CTShaders)>());
             }
             catch(const shader_exception &e)
             {
               neam::cr::out.error() << LOGGER_INFO << "program<type::opengl>::link: shader_exception: " << e.what() << std::endl;
+              failed = true;
               return;
             }
 
@@ -329,19 +408,33 @@ namespace neam
           }
 
           /// \brief bind the program for the current rendering context
-          /// \note relink
+          /// \note relink only if any change is pending on one of the compile-time shaders
           void relink_and_use()
           {
-            try
+            recompile_cts_shader_if_changed();
+            glUseProgram(pg_id);
+          }
+
+          /// \brief lighter version than relink_and_use that only watch compile time shader marked for reload_on_change.
+          /// \see the const version for an even more light version
+          void use()
+          {
+            if (has_watchable_ct_shaders) // the extra code is removed at compilation time
             {
-              it_over_cts_recompile(cr::gen_seq<sizeof...(CTShaders)>());
+              bool need_link;
+              try
+              {
+                need_link = it_over_watch_cts_recompile_if_changed(cr::gen_seq<sizeof...(CTShaders)>());
+              }
+              catch(const shader_exception &e)
+              {
+                neam::cr::out.error() << LOGGER_INFO << "program<type::opengl>::use: shader_exception: " << e.what() << std::endl;
+                failed = true;
+                return;
+              }
+              if (need_link)
+                link();
             }
-            catch(const shader_exception &e)
-            {
-              neam::cr::out.error() << LOGGER_INFO << "program<type::opengl>::use: shader_exception: " << e.what() << std::endl;
-              return;
-            }
-            link();
             glUseProgram(pg_id);
           }
 
@@ -379,7 +472,6 @@ namespace neam
           {
             return failed;
           }
-
 
           /// \brief create a link to a more generic shader.
           /// no inheritance is involved. This cast will create a 'link' program shader object.

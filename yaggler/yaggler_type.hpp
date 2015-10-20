@@ -44,9 +44,15 @@ namespace neam
 
     namespace shader
     {
+      // Shader types (TODO: move in shader/ folder)
       NYST_CLASS(file);
       NYST_CLASS(constexpr_string);
       NYST_CLASS(dyn_string);
+
+      // Shader Envs (TODO: move in shader/ folder)
+      NYST_CLASS(no_env);
+      NYST_CLASS(simple_preprocessor);
+      NYST_CLASS(advanced_preprocessor);
     } // namespace shader
   } // namespace yaggler
 

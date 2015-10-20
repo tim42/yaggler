@@ -90,7 +90,7 @@
 #include "geometry/geometry.hpp"
 
 // simple check stuff
-#if defined __NO_INLINE__ or (not defined __OPTIMIZE__ and defined __GNUC__)
+#if defined __NO_INLINE__
 #warning you shall enable optimisations / do not disable inlining to get some perfs boost from yaggler.
 #endif
 

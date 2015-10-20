@@ -110,8 +110,8 @@ namespace neam
           template<typename Shader>
           static uint8_t setup(Shader &shader, uint8_t, _shader_framework_data &fdata)
           {
-            bool is_entry_point = tools::is_true(shader.get_preprocessor_value("KLMB_IS_ENTRY_POINT"));
-            bool is_framework_main = tools::is_true(shader.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
+            bool is_entry_point = tools::is_true(shader.environment.get_preprocessor_value("KLMB_IS_ENTRY_POINT"));
+            bool is_framework_main = tools::is_true(shader.environment.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
 
             if (is_framework_main && fdata.vertex__framework_registered)
               neam::cr::out.error() << LOGGER_INFO << "K:LMB/YAGGLER : material: vertex shader framework: framework has already been registered." << std::endl;
@@ -150,8 +150,8 @@ namespace neam
             }
 
             // cleanup 'additional strings'
-            shader.clear_additional_strings();
-            shader.append_to_additional_strings(base_framework_defs);
+            shader.environment.clear_additional_strings();
+            shader.environment.append_to_additional_strings(base_framework_defs);
 
             // increment the prog counter.
             if (is_entry_point)
@@ -170,8 +170,8 @@ namespace neam
           template<typename Shader>
           static uint8_t setup(Shader &shader, uint8_t, _shader_framework_data &fdata)
           {
-            bool is_entry_point = tools::is_true(shader.get_preprocessor_value("KLMB_IS_ENTRY_POINT"));
-            bool is_framework_main = tools::is_true(shader.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
+            bool is_entry_point = tools::is_true(shader.environment.get_preprocessor_value("KLMB_IS_ENTRY_POINT"));
+            bool is_framework_main = tools::is_true(shader.environment.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
 
             if (is_framework_main && fdata.geometry__framework_registered)
               neam::cr::out.error() << LOGGER_INFO << "K:LMB/YAGGLER : material: geometry shader framework: framework has already been registered." << std::endl;
@@ -210,8 +210,8 @@ namespace neam
             }
 
             // cleanup 'additional strings'
-            shader.clear_additional_strings();
-            shader.append_to_additional_strings(base_framework_defs);
+            shader.environment.clear_additional_strings();
+            shader.environment.append_to_additional_strings(base_framework_defs);
 
             // increment the prog counter.
             if (is_entry_point)
@@ -230,8 +230,8 @@ namespace neam
           template<typename Shader>
           static uint8_t setup(Shader &shader, uint8_t, _shader_framework_data &fdata)
           {
-            bool is_entry_point = tools::is_true(shader.get_preprocessor_value("KLMB_IS_ENTRY_POINT"));
-            bool is_framework_main = tools::is_true(shader.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
+            bool is_entry_point = tools::is_true(shader.environment.get_preprocessor_value("KLMB_IS_ENTRY_POINT"));
+            bool is_framework_main = tools::is_true(shader.environment.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
 
             if (is_framework_main && fdata.geometry__framework_registered)
               neam::cr::out.error() << LOGGER_INFO << "K:LMB/YAGGLER : material: TEC shader framework: framework has already been registered." << std::endl;
@@ -270,8 +270,8 @@ namespace neam
             }
 
             // cleanup 'additional strings'
-            shader.clear_additional_strings();
-            shader.append_to_additional_strings(base_framework_defs);
+            shader.environment.clear_additional_strings();
+            shader.environment.append_to_additional_strings(base_framework_defs);
 
             // increment the prog counter.
             if (is_entry_point)
@@ -290,8 +290,8 @@ namespace neam
           template<typename Shader>
           static uint8_t setup(Shader &shader, uint8_t, _shader_framework_data &fdata)
           {
-            bool is_entry_point = tools::is_true(shader.get_preprocessor_value("KLMB_IS_ENTRY_POINT"));
-            bool is_framework_main = tools::is_true(shader.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
+            bool is_entry_point = tools::is_true(shader.environment.get_preprocessor_value("KLMB_IS_ENTRY_POINT"));
+            bool is_framework_main = tools::is_true(shader.environment.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
 
             if (is_framework_main && fdata.tes__framework_registered)
               neam::cr::out.error() << LOGGER_INFO << "K:LMB/YAGGLER : material: TES shader framework: framework has already been registered." << std::endl;
@@ -330,8 +330,8 @@ namespace neam
             }
 
             // cleanup 'additional strings'
-            shader.clear_additional_strings();
-            shader.append_to_additional_strings(base_framework_defs);
+            shader.environment.clear_additional_strings();
+            shader.environment.append_to_additional_strings(base_framework_defs);
 
             // increment the prog counter.
             if (is_entry_point)
@@ -350,8 +350,8 @@ namespace neam
           template<typename Shader>
           static uint8_t setup(Shader &shader, uint8_t, _shader_framework_data &fdata)
           {
-            bool is_entry_point = tools::is_true(shader.get_preprocessor_value("KLMB_IS_ENTRY_POINT"));
-            bool is_framework_main = tools::is_true(shader.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
+            bool is_entry_point = tools::is_true(shader.environment.get_preprocessor_value("KLMB_IS_ENTRY_POINT"));
+            bool is_framework_main = tools::is_true(shader.environment.get_preprocessor_value("KLMB_FRAMEWORK_MAIN"));
 
             if (is_framework_main && fdata.fragment__framework_registered)
               neam::cr::out.error() << LOGGER_INFO << "K:LMB/YAGGLER : material: fragment shader framework: framework has already been registered." << std::endl;
@@ -359,7 +359,7 @@ namespace neam
             fdata.fragment__framework_registered |= is_framework_main;
 
             // get output buffer number
-            uint8_t number_of_output_buffer = atoi(shader.get_preprocessor_value("KLMB_NUMBER_OF_OUTPUT_BUFFER").data());
+            uint8_t number_of_output_buffer = atoi(shader.environment.get_preprocessor_value("KLMB_NUMBER_OF_OUTPUT_BUFFER").data());
             number_of_output_buffer = fdata.fragment__output_buffers = std::max(fdata.fragment__output_buffers, number_of_output_buffer);
 
             // setup / load defs
@@ -412,8 +412,8 @@ namespace neam
             }
 
             // cleanup 'additional strings'
-            shader.clear_additional_strings();
-            shader.append_to_additional_strings(base_framework_defs);
+            shader.environment.clear_additional_strings();
+            shader.environment.append_to_additional_strings(base_framework_defs);
 
             // increment the prog counter.
             if (is_entry_point)

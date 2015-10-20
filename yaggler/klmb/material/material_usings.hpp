@@ -33,6 +33,7 @@
 #include <shader/shader_base.hpp>
 #include <shader/shader_options.hpp>
 #include <shader/common_shader_loader.hpp>
+#include <shader/common_shader_env.hpp>
 
 #include <texture/texture_base.hpp>
 #include <texture/opengl_texture.hpp>
@@ -84,7 +85,8 @@ namespace neam
       <
         neam::yaggler::type::opengl, neam::embed::GLenum<ShaderType>,
         neam::yaggler::shader::shader_loader<neam::yaggler::shader::file, neam::embed::string<Filename>>,
-        neam::embed::shader::option<Flags>
+        neam::embed::shader::option<Flags>,
+        neam::yaggler::shader::shader_env<neam::yaggler::shader::advanced_preprocessor>
       >;
 
       /// \brief shared shader from a file
@@ -99,7 +101,8 @@ namespace neam
       <
         neam::yaggler::type::opengl, neam::embed::GLenum<ShaderType>,
         neam::yaggler::shader::shader_loader<neam::yaggler::shader::constexpr_string, neam::embed::string<CTString>>,
-        neam::embed::shader::option<neam::yaggler::shader::shader_option::one_shot_compilation>
+        neam::embed::shader::option<neam::yaggler::shader::shader_option::one_shot_compilation>,
+        neam::yaggler::shader::shader_env<neam::yaggler::shader::simple_preprocessor>
       >;
 
       /// \brief shared shader from a constexpr string
@@ -110,7 +113,8 @@ namespace neam
       <
         neam::yaggler::type::opengl, neam::embed::GLenum<ShaderType>,
         neam::yaggler::shader::shader_loader<neam::yaggler::shader::constexpr_string, neam::embed::string<CTString>>,
-        neam::embed::shader::option<neam::yaggler::shader::shader_option::shared_instance>
+        neam::embed::shader::option<neam::yaggler::shader::shader_option::shared_instance>,
+        neam::yaggler::shader::shader_env<neam::yaggler::shader::simple_preprocessor>
       >;
 
       /// \brief shader from a string
@@ -119,7 +123,8 @@ namespace neam
       <
         neam::yaggler::type::opengl, neam::embed::GLenum<ShaderType>,
         neam::yaggler::shader::shader_loader<neam::yaggler::shader::dyn_string, neam::embed::string<CTString>>,
-        neam::embed::shader::option<neam::yaggler::shader::shader_option::one_shot_compilation>
+        neam::embed::shader::option<neam::yaggler::shader::shader_option::one_shot_compilation>,
+        neam::yaggler::shader::shader_env<neam::yaggler::shader::simple_preprocessor>
       >;
 
       /// \brief shared shader from a string
@@ -130,7 +135,8 @@ namespace neam
       <
         neam::yaggler::type::opengl, neam::embed::GLenum<ShaderType>,
         neam::yaggler::shader::shader_loader<neam::yaggler::shader::dyn_string, neam::embed::string<CTString>>,
-        neam::embed::shader::option<neam::yaggler::shader::shader_option::shared_instance>
+        neam::embed::shader::option<neam::yaggler::shader::shader_option::shared_instance>,
+        neam::yaggler::shader::shader_env<neam::yaggler::shader::simple_preprocessor>
       >;
 
 
