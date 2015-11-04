@@ -80,11 +80,11 @@ namespace neam
                 frame_counter = 0;
                 chrono.reset();
 
-// #ifndef YAGGLER_NO_MESSAGES
+#ifndef YAGGLER_NO_MESSAGES
                 neam::cr::out.debug() << LOGGER_INFO << "f/s: "       << std::setw(9) << std::left <<  1000.0 / mps_1s
                           << "  |  ms/f: " << std::setw(9) << std::left << mps_1s
                           << std::endl;
-// #endif
+#endif
               }
             }
 

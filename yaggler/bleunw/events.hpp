@@ -361,9 +361,8 @@ namespace neam
             void _window_pos(GLFWwindow *, int x, int y)
             {
               glm::vec2 v(x, y);
-//               for (events::window_listener * wl : wlisteners)
-//               {
-//               }
+              for (events::window_listener * wl : wlisteners)
+                wl->window_position_changed(v);
             }
 
             void _window_size(GLFWwindow *, int x, int y)

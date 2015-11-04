@@ -67,6 +67,7 @@ namespace neam
           virtual void framebuffer_resized(const glm::vec2 &new_size) = 0;
 
           virtual void window_content_refresh() {}
+          virtual void window_position_changed(const glm::vec2 &new_pos) { (void)new_pos; }
         };
 
         struct listener : public mouse_listener, public keyboard_listener, public window_listener
