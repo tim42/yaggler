@@ -58,7 +58,7 @@ namespace neam
         // (allow something more than only a fixed size font)
         struct font_face
         {
-          // NOTE: the version is part of the magic ;)
+          // NOTE: the version is part of the magic.
           static constexpr string_t magic_line = "[bfont 0.1]";
 
           // types

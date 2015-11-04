@@ -3,7 +3,7 @@
 
 #version 330
 
-#line 10
+#line 6
 
 uniform float global_time;
 uniform vec2 screen_resolution;
