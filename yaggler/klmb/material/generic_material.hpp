@@ -59,11 +59,11 @@ namespace neam
 
           /// \brief wrap a material and manage its lifetime
           template<typename MaterialType>
-          material_wrapper(MaterialType *mt, assume_ownership_t) : wrapper(new spec_wrapper<MaterialType>(mt, assume_ownership)) {}
+          material_wrapper(MaterialType *mt, assume_ownership_t) : wrapper(new spec_wrapper<MaterialType>(mt, neam::assume_ownership)) {}
 
           /// \brief wrap a material and manage its lifetime
           template<typename MaterialType>
-          material_wrapper(MaterialType &&mt) : wrapper(new spec_wrapper<MaterialType>(new MaterialType(std::move(mt)), assume_ownership)) {}
+          material_wrapper(MaterialType &&mt) : wrapper(new spec_wrapper<MaterialType>(new MaterialType(std::move(mt)), neam::assume_ownership)) {}
 
           /// \brief Copy another material_wrapper but don't manage the lifetime of the wrapped material
           material_wrapper(const material_wrapper &mw) : wrapper(mw.wrapper ? mw.wrapper->clone() : nullptr) {}
