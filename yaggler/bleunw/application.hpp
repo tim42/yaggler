@@ -73,6 +73,34 @@ namespace neam
               emgr.unregister_window_listener(this);
             }
 
+            /// \brief Default run method, could be overrided if needed
+            virtual void run()
+            {
+              register_update_and_render_tasks();
+
+              while (!window.should_close() && !do_quit)
+              {
+                glViewport(0, 0, framebuffer_resolution.x, framebuffer_resolution.y);
+
+                // run the tasks
+                scheduler.run_some();
+
+                // end that loop
+                end_render_loop();
+
+                if (get_fps() < 30.f) // We got a poor framerate, try to release some CPU for the rendering
+                  scheduler.enforce_task_repartition(true);
+                else if (get_fps() > 40.f && scheduler.is_late(0.7)) // We got some lateness recently, optimize for throughput
+                  scheduler.enforce_task_repartition(false);
+              }
+
+              // cleanup the scheduler (we have tasks that reference local elements)
+              // after the call, all threads will be locked in the wait_for_frame_end() method
+              scheduler.clear();
+              // so we just release them by calling end_frame(), as do_quit is set, all the threads will exit
+              scheduler.end_frame();
+            }
+
           protected:
             /// \brief End the current frame
             /// \note should ALWAYS be called at the end of the render loop as it call scheduler.end_frame()
@@ -167,6 +195,8 @@ namespace neam
             neam::bleunw::yaggler::gui::manager gmgr; ///< \brief The GUI manager
 
             neam::bleunw::yaggler::task::scheduler scheduler; ///< \brief A default task scheduler for the application
+
+            bool do_quit = false; ///< \brief Exit flag (simply set it to true to end the render loop)
 
           protected:
             /// \brief Called when the framebuffer is resized
