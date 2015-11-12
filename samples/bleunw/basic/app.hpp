@@ -28,11 +28,9 @@
 
 #include <iomanip>
 
-#include "io.hpp"
 #include <bleunw/application.hpp>
 
 #include <klmb/klmb.hpp>
-#include "loader.hpp"
 
 
 #define CRAP__VAR_TO_STRING(var)              static_cast<const std::ostringstream&>(std::ostringstream() << var).str()
@@ -48,7 +46,7 @@ namespace neam
     namespace sample
     {
       class main_application : public neam::bleunw::yaggler::application::base_application<main_application>,
-        neam::bleunw::yaggler::events::keyboard_listener, neam::bleunw::yaggler::events::mouse_listener
+        neam::bleunw::yaggler::events::keyboard_listener
       {
         public:
           using default_transformation_tree_node_type = neam::klmb::yaggler::transformation_node::default_node;
@@ -64,8 +62,10 @@ namespace neam
             : base_application(neam::yaggler::glfw_window(neam::yaggler::window_mode::windowed, {980, 980}))
           {
             init();
+            init_compositor();
+
             emgr.register_keyboard_listener(this);
-            // emgr.register_mouse_listener(this); // unused/able in this demo
+            // emgr.register_mouse_listener(this); // unused in this demo
 
             // Load the task scheduler
             for (size_t i = 0; i < 4200; ++i)
@@ -94,65 +94,6 @@ namespace neam
             }
             // Configure the scheduler to get the maximum throughput
             scheduler.assume_stable_second_thread(true);
-          }
-
-          void run()
-          {
-            // the bg renderer
-            auto simple_compositor = neam::klmb::yaggler::make_compositor(neam::klmb::yaggler::make_framebuffer_pack
-            (
-              neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl>(0) // output to screen
-            ));
-            simple_compositor.add_pass<neam::klmb::yaggler::auto_file_shader<test_frag>>(0,
-                neam::klmb::yaggler::input_texture_indexes<>(),
-
-                neam::klmb::yaggler::make_ctx_pair("screen_resolution", cr::make_ref(framebuffer_resolution)),
-                neam::klmb::yaggler::make_ctx_pair("global_time", &neam::cr::chrono::now_relative)
-            );
-
-            // compositor render task
-            auto *ctrl = &scheduler.push_task([this, &simple_compositor](float, neam::bleunw::yaggler::task::task_control &)
-            {
-              simple_compositor.render();
-            }, neam::bleunw::yaggler::task::execution_type::pre_buffer_swap);
-            ctrl->repeat = true;
-            ctrl->priority = neam::bleunw::yaggler::application::scene_priority + 1;
-
-            // Update task
-            ctrl = &scheduler.push_task([this](float, neam::bleunw::yaggler::task::task_control &)
-            {
-              fps_gui_text.color.g = glm::clamp(1.f - scheduler.get_lateness(), 0.2f, 1.f);
-              fps_gui_text.color.b = fps_gui_text.color.g;
-
-              std::lock_guard<neam::spinlock> _u0(text_local_node->lock);
-              text_local_node->scale.x = 0.05f + scheduler.get_lateness() * 0.05f;
-              text_local_node->scale.y = text_local_node->scale.x;
-              text_local_node->scale.z = text_local_node->scale.x;
-              // text_local_node->rotation = glm::rotate<float>(text_local_node->rotation, M_PI / 10.f * dt * 2.f, glm::vec3(1, 0, 0.1));
-              text_local_node->dirty = true;
-            });
-            ctrl->repeat = true;
-
-            register_update_and_render_tasks();
-
-            while (!window.should_close() && !do_quit)
-            {
-              glViewport(0, 0, framebuffer_resolution.x, framebuffer_resolution.y);
-
-              scheduler.run_some();
-
-              // end that loop
-              end_render_loop();
-
-              if (get_fps() < 30.f) // We get a poor framerate, try to release some CPU for the rendering
-                scheduler.enforce_task_repartition(true);
-            }
-
-            // cleanup the scheduler (we have tasks that reference local elements)
-            // after the call, all threads will be locked in the wait_for_frame_end() method
-            scheduler.clear();
-            // so we just release them by calling end_frame(), as do_quit is set, all the threads will exit
-            scheduler.end_frame();
           }
 
         private:
@@ -203,23 +144,63 @@ namespace neam
                                        << "\nlateness: " << std::setprecision(4) << scheduler.get_lateness()));
             }, neam::bleunw::yaggler::task::execution_type::gl);
             ctrl->repeat = true;
+
+            // Sample asynchronous update task
+            ctrl = &scheduler.push_task([this](float, neam::bleunw::yaggler::task::task_control &)
+            {
+              fps_gui_text.color.g = glm::clamp(1.f - scheduler.get_lateness(), 0.2f, 1.f);
+              fps_gui_text.color.b = fps_gui_text.color.g;
+
+              std::lock_guard<neam::spinlock> _u0(text_local_node->lock);
+              text_local_node->scale.x = 0.05f + scheduler.get_lateness() * 0.05f;
+              text_local_node->scale.y = text_local_node->scale.x;
+              text_local_node->scale.z = text_local_node->scale.x;
+              // text_local_node->rotation = glm::rotate<float>(text_local_node->rotation, M_PI / 10.f * dt * 2.f, glm::vec3(1, 0, 0.1));
+              text_local_node->dirty = true;
+            });
+            ctrl->repeat = true;
           }
 
-          virtual void button_pressed(const bleunw::yaggler::events::mouse_status &ms, bleunw::yaggler::events::mouse_buttons::mouse_buttons mb);
-          virtual void button_released(const bleunw::yaggler::events::mouse_status &ms, bleunw::yaggler::events::mouse_buttons::mouse_buttons mb);
-          virtual void mouse_moved(const bleunw::yaggler::events::mouse_status &ms);
+          void init_compositor()
+          {
+            // the bg renderer
+            auto simple_compositor = neam::klmb::yaggler::make_compositor(neam::klmb::yaggler::make_framebuffer_pack
+            (
+              neam::yaggler::texture::framebuffer<neam::yaggler::type::opengl>(0) // output to screen
+            ));
+            simple_compositor.add_pass<neam::klmb::yaggler::auto_file_shader<test_frag>>(0,
+                neam::klmb::yaggler::input_texture_indexes<>(),
 
-          virtual void key_pressed(const bleunw::yaggler::events::keyboard_status &ks, bleunw::yaggler::events::key_code::key_code kc);
-          virtual void key_released(const bleunw::yaggler::events::keyboard_status &ks, bleunw::yaggler::events::key_code::key_code kc);
+                neam::klmb::yaggler::make_ctx_pair("screen_resolution", cr::make_ref(framebuffer_resolution)),
+                neam::klmb::yaggler::make_ctx_pair("global_time", &neam::cr::chrono::now_relative)
+            );
+
+            compositor = std::move(simple_compositor);
+
+            // compositor render task
+            auto *ctrl = &scheduler.push_task([this](float, neam::bleunw::yaggler::task::task_control &)
+            {
+              compositor.render();
+            }, neam::bleunw::yaggler::task::execution_type::pre_buffer_swap);
+            ctrl->repeat = true;
+            ctrl->priority = neam::bleunw::yaggler::application::scene_priority + 1;
+
+          }
+
+          virtual void key_pressed(const bleunw::yaggler::events::keyboard_status &ks, bleunw::yaggler::events::key_code::key_code kc)
+          {
+            if (ks.modifiers == bleunw::yaggler::events::modifier_keys::none && kc == bleunw::yaggler::events::key_code::escape)
+              do_quit = true;
+          }
+
+          virtual void key_released(const bleunw::yaggler::events::keyboard_status &, bleunw::yaggler::events::key_code::key_code) {}
 
         private:
           neam::bleunw::yaggler::gui::text fps_gui_text;
           neam::bleunw::yaggler::gui::text random_gui_text;
 
           neam::klmb::yaggler::transformation_node::default_node *text_local_node;
-
-          // app control
-          bool do_quit = false;
+          neam::klmb::yaggler::compositor_wrapper compositor;
 
           std::thread worker[1];
       };
@@ -228,9 +209,6 @@ namespace neam
 } // namespace neam
 
 #endif /*__N_1657502776544798074_976431267__APP_HPP__*/
-
-// implementations
-#include "app_events.hpp"
 
 // kate: indent-mode cstyle; indent-width 2; replace-tabs on; 
 

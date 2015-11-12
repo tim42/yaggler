@@ -35,9 +35,7 @@ using opengl_version = neam::yaggler::setup::opengl<3, 3, neam::yaggler::setup::
 #include <iostream>
 #include <iomanip>
 
-#include "loader.hpp"
 #include "app.hpp"
-
 
 int main(int argc, char **argv)
 {
