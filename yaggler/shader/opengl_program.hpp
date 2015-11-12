@@ -162,7 +162,7 @@ namespace neam
             if (!(pg_id = glCreateProgram()))
             {
               glGetError(); // discard error
-              throw shader_exception("Unable to create the shader (glCreateShader)");
+              throw shader_exception("Unable to create the shader (glCreateProgram)");
             }
 
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
@@ -235,7 +235,7 @@ namespace neam
           /// \brief destructor
           ~program()
           {
-            if (pg_id && ownership)
+            if (ownership)
               glDeleteProgram(pg_id);
           }
 
