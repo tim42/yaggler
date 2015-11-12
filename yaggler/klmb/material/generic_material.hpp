@@ -40,6 +40,12 @@ namespace neam
       class material_wrapper
       {
         public:
+          /// \brief destructor
+          ~material_wrapper()
+          {
+            delete wrapper;
+          }
+
           /// \brief default constructor, initialize with an empty material
           material_wrapper() : wrapper(nullptr) {}
 
@@ -85,11 +91,14 @@ namespace neam
           /// \note The moved material_wraper will be emptied
           material_wrapper &operator = (material_wrapper &&mw)
           {
-            if (wrapper)
-              delete wrapper;
+            if (&mw != this)
+            {
+              if (wrapper)
+                delete wrapper;
 
-            wrapper = mw.wrapper;
-            mw.wrapper = nullptr;
+              wrapper = mw.wrapper;
+              mw.wrapper = nullptr;
+            }
 
             return *this;
           }
