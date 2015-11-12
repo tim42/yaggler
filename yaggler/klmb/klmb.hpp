@@ -52,6 +52,7 @@
 
 // compositors
 #include <klmb/compositor/compositor.hpp>
+#include <klmb/compositor/generic_compositor.hpp>
 
 // gbuffer
 #include <klmb/gbuffer/gbuffer.hpp>

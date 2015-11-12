@@ -74,6 +74,18 @@ namespace neam
           {
           }
 
+          /// \brief move a compositor (must be a compositor of exactly the same type)
+          compositor(compositor &&o)
+            : pack(std::move(o.pack)), passes(std::move(o.passes))
+          {
+          }
+
+          /// \brief copy a compositor (must be a compositor of exactly the same type)
+          compositor(const compositor &o)
+            : pack(o.pack), passes(o.passes)
+          {
+          }
+
           /// \brief add an output pass (a pass that will output to the framebuffer in the framebuffer_pack)
           /// \param gl_clear is forwarded to glClear (except if it's 0 which means "do not clear")
           /// \param input_texture_indexes<InputTextureIndex...> the list of textures to be bound to specific uniforms
