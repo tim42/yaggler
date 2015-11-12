@@ -97,28 +97,35 @@ namespace neam
             }
 
           public:
-            klmb::yaggler::transformation_tree<TrTreeNodeType> transformation_tree;
+            klmb::yaggler::transformation_tree<TrTreeNodeType> transformation_tree; ///< \brief The transformation tree (hold the relative / absolute transformation for each models / cameras)
 
             // data
-            indexed_container<klmb::yaggler::object<>> objects;
-            indexed_container<klmb::yaggler::material_wrapper> materials;
+            indexed_container<klmb::yaggler::object<>> objects; ///< \brief The list of objects (the geometry buffers)
+            indexed_container<klmb::yaggler::material_wrapper> materials; ///< \brief The list of materials
 
             // render
-            klmb::yaggler::camera_holder camera_holder;
-            indexed_container<klmb::yaggler::camera *> camera_list;
-            indexed_container<klmb::yaggler::ortho_camera *> ortho_camera_list;
+            klmb::yaggler::camera_holder camera_holder; ///< \brief The current camera
+            indexed_container<klmb::yaggler::camera *> camera_list; ///< \brief The list of perspective cameras
+            indexed_container<klmb::yaggler::ortho_camera *> ortho_camera_list; ///< \brief The list of orthographic cameras
 
-            indexed_container<klmb::yaggler::model *> model_list;
+            indexed_container<klmb::yaggler::model *> model_list; ///< \brief The list of models
 
           public: // operations
-            void render()
+            /// \brief Update the scene (the camera and all of the dirtied matrices)
+            void update()
             {
               transformation_tree.root.recompute_matrices();
               camera_holder.recompute_cam_matrices();
+            }
 
+            /// \brief render the scene
+            void render()
+            {
               for (klmb::yaggler::model *model : model_list)
                 model->draw();
             }
+
+            /// \brief render the scene, const version
             void render() const
             {
               for (klmb::yaggler::model *model : model_list)

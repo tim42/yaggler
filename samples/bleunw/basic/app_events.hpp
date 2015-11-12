@@ -28,9 +28,6 @@
 
 #include "app.hpp"
 
-// yep, everything is in the events receivers, sometimes code are duplicated...
-// [GET IT DONE] :(
-
 namespace neam
 {
   namespace klmb

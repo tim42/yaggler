@@ -61,8 +61,11 @@ namespace neam
             manager(const manager &) = delete;
             manager &operator =(const manager &) = delete;
 
+            /// \brief Initialize the GUI manager with a given framebuffer resolution and an event manager
             manager(const glm::vec2 &framebuffer_resolution, events::manager &_emgr) : emgr(_emgr)
             {
+              camera.far = 100.f;
+              camera.near = -100.f;
               framebuffer_resized(framebuffer_resolution);
 
               internal_vp_ptr = &camera.vp_matrix;
@@ -72,13 +75,15 @@ namespace neam
               emgr.register_window_listener(this);
             }
 
+            /// \brief destructor
             ~manager()
             {
               emgr.unregister_window_listener(this);
             }
 
-            // ghdl will held the handle to this renderable and will be set to the correct value after a call to the non-const render() method.
-            // you should set it to &(rd->handle) (and that's the default, when ghdl is == to nullptr)
+            /// \brief Add a renderable element to the GUI
+            /// \node ghdl will held the handle to this renderable and will be set to the correct value after a call to the non-const render() method.
+            /// you should set it to &(rd->handle) (and that's the default, when ghdl is == to nullptr)
             void add_renderable(renderable *rd, handle_t *ghdl = nullptr)
             {
               rd->vp_matrix = vp_matrix;
@@ -90,6 +95,7 @@ namespace neam
               ++count;
             }
 
+            /// \brief Remove an element from the GUI
             void remove_renderable(handle_t rd)
             {
               if (rd < elements.size() && count)
@@ -99,12 +105,17 @@ namespace neam
               }
             }
 
+            /// \brief Update the GUI scene (all the matrices)
+            void update()
+            {
+              transformation_tree.root.recompute_matrices();
+            }
+
+            /// \brief render the gui
             virtual void render() final
             {
               size_t i = 0;
               size_t last = 0;
-
-              transformation_tree.root.recompute_matrices();
 
               for (; i < elements.size(); ++i)
               {
@@ -136,7 +147,8 @@ namespace neam
                 elements.erase(elements.begin() + last, elements.end());
             }
 
-            // prevent any modification (no add will be in effect here).
+            /// \brief render the gui / const version
+            /// \note prevent any modification (no add will be in effect here).
             virtual void render() const final
             {
               for (size_t i = 0; i < elements.size(); ++i)
@@ -147,6 +159,7 @@ namespace neam
             }
 
           public: // window_listener
+            /// \brief Event handler for framebuffer resize events
             virtual void framebuffer_resized(const glm::vec2 &framebuffer_resolution)
             {
 //               camera.min = glm::vec2(-1, -framebuffer_resolution.y / framebuffer_resolution.x);
@@ -165,9 +178,8 @@ namespace neam
             virtual void window_resized(const glm::vec2 &) {}
 
           public:
-            // the font manager
-            font_manager fmgr;
-            neam::klmb::yaggler::transformation_tree</*transformation_node::gui_node*/klmb::yaggler::transformation_node::default_node> transformation_tree;
+            font_manager fmgr; ///< \brief The font manager
+            neam::klmb::yaggler::transformation_tree</*transformation_node::gui_node*/klmb::yaggler::transformation_node::default_node> transformation_tree; ///< \brief The transformation tree (handler absolute & relative position for each of the gui elements)
 
           private:
             events::manager &emgr;

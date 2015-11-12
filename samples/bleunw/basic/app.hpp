@@ -31,8 +31,6 @@
 #include "io.hpp"
 #include <bleunw/application.hpp>
 
-#include <bleunw/gui.hpp>
-
 #include <klmb/klmb.hpp>
 #include "loader.hpp"
 
@@ -56,16 +54,46 @@ namespace neam
           using default_transformation_tree_node_type = neam::klmb::yaggler::transformation_node::default_node;
 
         public:
-          virtual ~main_application() {}
+          virtual ~main_application()
+          {
+            for (size_t i = 0; i < sizeof(worker) / sizeof(worker[0]); ++i)
+              worker[i].join();
+          }
 
           main_application()
-//             : base_application(neam::yaggler::glfw_window(neam::yaggler::window_mode::fullscreen)),
-            : base_application(neam::yaggler::glfw_window(neam::yaggler::window_mode::windowed, {980, 980})),
-              gmgr(framebuffer_resolution, emgr)
+            : base_application(neam::yaggler::glfw_window(neam::yaggler::window_mode::windowed, {980, 980}))
           {
             init();
             emgr.register_keyboard_listener(this);
-//             emgr.register_mouse_listener(this); // unused/able in this demo
+            // emgr.register_mouse_listener(this); // unused/able in this demo
+
+            // Load the task scheduler
+            for (size_t i = 0; i < 4200; ++i)
+            {
+              auto &ctrl = scheduler.push_task([](float, neam::bleunw::yaggler::task::task_control &)
+              {
+                volatile size_t j = 0;
+                volatile const size_t max = rand() % 15000;
+                for (; j < max; ++j) {};
+              }, (i % 5) ? neam::bleunw::yaggler::task::execution_type::normal : neam::bleunw::yaggler::task::execution_type::gl);
+              ctrl.repeat = true;
+              ctrl.delay = (i % 6) / 3.f;
+            }
+
+            // Launch a runner thread
+            for (size_t i = 0; i < sizeof(worker) / sizeof(worker[0]); ++i)
+            {
+              worker[i] = std::thread([this]()
+              {
+                while (!this->do_quit)
+                {
+                  this->scheduler.wait_for_frame_end();
+                  this->scheduler.run_some();
+                }
+              });
+            }
+            // Configure the scheduler to get the maximum throughput
+            scheduler.assume_stable_second_thread(true);
           }
 
           void run()
@@ -82,36 +110,49 @@ namespace neam
                 neam::klmb::yaggler::make_ctx_pair("global_time", &neam::cr::chrono::now_relative)
             );
 
-            end_render_loop();
+            // compositor render task
+            auto *ctrl = &scheduler.push_task([this, &simple_compositor](float, neam::bleunw::yaggler::task::task_control &)
+            {
+              simple_compositor.render();
+            }, neam::bleunw::yaggler::task::execution_type::pre_buffer_swap);
+            ctrl->repeat = true;
+            ctrl->priority = neam::bleunw::yaggler::application::scene_priority + 1;
 
+            // Update task
+            ctrl = &scheduler.push_task([this](float, neam::bleunw::yaggler::task::task_control &)
+            {
+              fps_gui_text.color.g = glm::clamp(1.f - scheduler.get_lateness(), 0.2f, 1.f);
+              fps_gui_text.color.b = fps_gui_text.color.g;
 
-            cr::chrono chrono;
+              std::lock_guard<neam::spinlock> _u0(text_local_node->lock);
+              text_local_node->scale.x = 0.05f + scheduler.get_lateness() * 0.05f;
+              text_local_node->scale.y = text_local_node->scale.x;
+              text_local_node->scale.z = text_local_node->scale.x;
+              // text_local_node->rotation = glm::rotate<float>(text_local_node->rotation, M_PI / 10.f * dt * 2.f, glm::vec3(1, 0, 0.1));
+              text_local_node->dirty = true;
+            });
+            ctrl->repeat = true;
+
+            register_update_and_render_tasks();
 
             while (!window.should_close() && !do_quit)
             {
               glViewport(0, 0, framebuffer_resolution.x, framebuffer_resolution.y);
 
-              main_smgr.render();
-
-              simple_compositor.render();
-
-//               text_local_node->rotation = glm::rotate<float>(text_local_node->rotation, M_PI / 10.f * chrono.delta(), glm::vec3(0, 1, 1));
-//               text_local_node->dirty = true;
-
-              // disable depth test for THIS 3D text rendering. (only in this case: we render over a fullscreen quad in Z = 0)
-              glDisable(GL_DEPTH_TEST);
-
-              fps_gui_text.set_text("fps: " + CRAP__VAR_TO_STRING(std::fixed << std::setprecision(1) << 1000.0 / get_imediate_mps()));
-              random_gui_text.set_text("mps: " + CRAP__VAR_TO_STRING(std::fixed << std::setprecision(2) << get_imediate_mps() << "\n" << "time: " << cr::chrono::now_relative()));
-
-              gmgr.render();
-
-              // re-enable depth test
-              glEnable(GL_DEPTH_TEST);
+              scheduler.run_some();
 
               // end that loop
               end_render_loop();
+
+              if (get_fps() < 30.f) // We get a poor framerate, try to release some CPU for the rendering
+                scheduler.enforce_task_repartition(true);
             }
+
+            // cleanup the scheduler (we have tasks that reference local elements)
+            // after the call, all threads will be locked in the wait_for_frame_end() method
+            scheduler.clear();
+            // so we just release them by calling end_frame(), as do_quit is set, all the threads will exit
+            scheduler.end_frame();
           }
 
         private:
@@ -130,7 +171,7 @@ namespace neam
 
             auto &text_node = gmgr.transformation_tree.root.create_child();
             text_local_node = text_node.local;
-            text_node.local->position = 0.05_vec3_y;
+            text_node.local->position = 0.07_vec3_y;
             text_node.local->scale = 0.05_vec3_xyz;
             text_node.local->dirty = true;
 
@@ -141,16 +182,27 @@ namespace neam
 
             // links
             fps_gui_text.world_pos = &text_node.world->matrix;
-            fps_gui_text.color = glm::vec4(1., 1., 1., 0.5f);
+            fps_gui_text.color = glm::vec4(1., 1., 1., 0.85f);
             random_gui_text.world_pos = &ch_text_node.world->matrix;
             random_gui_text.color = glm::vec4(1., 0.9, 0.5, 1.f);
 
-            // yay: gl calls :D
+            gmgr.update();
+
+            // yay !: gl calls.
             glEnable(GL_DEPTH_TEST);
             glDepthFunc(GL_LESS);
 
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+            // register the task to update the text
+            auto *ctrl = &scheduler.push_task([this](float, neam::bleunw::yaggler::task::task_control &)
+            {
+              fps_gui_text.set_text("fps: " + CRAP__VAR_TO_STRING(std::fixed << std::setprecision(1) << 1000.0 / get_imediate_mpf()));
+              random_gui_text.set_text("mps: " + CRAP__VAR_TO_STRING(std::fixed << std::setprecision(2) << get_imediate_mpf() << "\n" << "time: " << cr::chrono::now_relative() 
+                                       << "\nlateness: " << std::setprecision(4) << scheduler.get_lateness()));
+            }, neam::bleunw::yaggler::task::execution_type::gl);
+            ctrl->repeat = true;
           }
 
           virtual void button_pressed(const bleunw::yaggler::events::mouse_status &ms, bleunw::yaggler::events::mouse_buttons::mouse_buttons mb);
@@ -163,14 +215,13 @@ namespace neam
         private:
           neam::bleunw::yaggler::gui::text fps_gui_text;
           neam::bleunw::yaggler::gui::text random_gui_text;
-          neam::bleunw::yaggler::gui::manager gmgr;
 
-          neam::klmb::yaggler::transformation_node::default_node *parent_camera_local_node;
-          neam::klmb::yaggler::transformation_node::default_node *camera_local_node;
           neam::klmb::yaggler::transformation_node::default_node *text_local_node;
 
           // app control
           bool do_quit = false;
+
+          std::thread worker[1];
       };
     } // namespace sample
   } // namespace klmb

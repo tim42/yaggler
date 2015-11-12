@@ -117,7 +117,7 @@ namespace neam
 
         neam::cr::out.debug() << LOGGER_INFO << "YAGGLER: loaded model file  '" << filename << "'" << " with " << tri_count << " triangles and " << vert_count << " vertices" << std::endl;
 
-        return std::move(object);
+        return (object);
       }
     } // namespace sample
   } // namespace klmb

@@ -30,6 +30,8 @@
 
 #include <bleunw/events.hpp>
 #include <bleunw/scene.hpp>
+#include <bleunw/task.hpp>
+#include <bleunw/gui.hpp>
 #include <tools/chrono.hpp>
 #include <iomanip>
 
@@ -41,80 +43,133 @@ namespace neam
     {
       namespace application
       {
-        // CRTP class
-        // the child class must define the type 'default_transformation_tree_node_type'
+        // constants
+        constexpr int gui_priority = 100;
+        constexpr int scene_priority = 50;
+        constexpr int update_priority = 0;
+
+
+        /// \brief Application base-class
+        /// \note the child class must define the type 'default_transformation_tree_node_type'
         template<typename ChildClass>
         class base_application : private events::window_listener
         {
           public:
+            /// \brief Initialize the application from a window
             base_application(neam::yaggler::glfw_window &&_window)
-              : window(std::move(_window)), emgr(window), framebuffer_resolution(_framebuffer_resolution), mps_1s(0), mps_immediate(0), frame_counter(0)
+              : window(std::move(_window)), emgr(window), framebuffer_resolution(_framebuffer_resolution),
+                gmgr(framebuffer_resolution, emgr), mpf_1s(0), mpf_immediate(0), frame_counter(0)
             {
               _framebuffer_resolution.x = window.get_framebuffer_size().x;
               _framebuffer_resolution.y = window.get_framebuffer_size().y;
 
+              gmgr.framebuffer_resized(framebuffer_resolution);
               emgr.register_window_listener(this);
             }
 
+            /// \brief destructor
             virtual ~base_application()
             {
               emgr.unregister_window_listener(this);
             }
 
           protected:
-            // should be called at the end of the render loop
+            /// \brief End the current frame
+            /// \note should ALWAYS be called at the end of the render loop as it call scheduler.end_frame()
             void end_render_loop()
             {
               constexpr double max_acc_time = 2.5;
+
+              scheduler.end_frame(); // sync the scheduler
 
               glfwPollEvents();
               window.swap_buffers();
               glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-              mps_immediate = 1000.0 * immed_chrono.delta();
+              mpf_immediate = 1000.0 * immed_chrono.delta();
 
               ++frame_counter;
               if (chrono.get_accumulated_time() >= max_acc_time)
               {
-                mps_1s = max_acc_time * 1000.0 / static_cast<double>(frame_counter);
+                mpf_1s = max_acc_time * 1000.0 / static_cast<double>(frame_counter);
                 frame_counter = 0;
                 chrono.reset();
 
 #ifndef YAGGLER_NO_MESSAGES
-                neam::cr::out.debug() << LOGGER_INFO << "f/s: "       << std::setw(9) << std::left <<  1000.0 / mps_1s
-                          << "  |  ms/f: " << std::setw(9) << std::left << mps_1s
+                neam::cr::out.debug() << LOGGER_INFO << "f/s: "       << std::setw(9) << std::left <<  1000.0 / mpf_1s
+                          << "  |  ms/f: " << std::setw(9) << std::left << mpf_1s
                           << std::endl;
 #endif
               }
             }
 
-            // return milliseconds per frames (averaged on 1s)
-            double get_mps() const
+            /// \brief return milliseconds per frames (averaged on 1s)
+            double get_mpf() const
             {
-              return mps_1s;
+              return mpf_1s;
             }
 
-            double get_imediate_mps() const
+            /// \brief Return the last frame milliseconds per frame
+            double get_imediate_mpf() const
             {
-              return mps_immediate;
+              return mpf_immediate;
             }
 
-            // return frames per seconds (averaged on 1s)
+            /// \brief Return frames per seconds (averaged on 1s)
             double get_fps() const
             {
-              return 1000.0 / mps_1s;
+              return 1000.0 / mpf_1s;
+            }
+
+            /// \brief Register the scene manager / gui manager render & update tasks
+            void register_update_and_render_tasks()
+            {
+              // register the task to update the tr-trees of both the scene and the GUI
+              auto *ctrl = &scheduler.push_task([this](float, neam::bleunw::yaggler::task::task_control &)
+              {
+                main_smgr.update();
+                gmgr.update();
+              });
+              ctrl->repeat = true;
+              ctrl->priority = update_priority;
+
+              // Render tasks
+              ctrl = &scheduler.push_task([this](float, neam::bleunw::yaggler::task::task_control &)
+              {
+                main_smgr.render();
+              }, neam::bleunw::yaggler::task::execution_type::pre_buffer_swap);
+              ctrl->repeat = true;
+              ctrl->priority = scene_priority;
+
+              ctrl = &scheduler.push_task([this](float, neam::bleunw::yaggler::task::task_control &)
+              {
+                // disable depth test for THIS 3D text rendering. (only in this case: we render over a fullscreen quad in Z = 0)
+                glDisable(GL_DEPTH_TEST);
+
+                gmgr.render();
+
+                // re-enable depth test
+                glEnable(GL_DEPTH_TEST);
+              }, neam::bleunw::yaggler::task::execution_type::pre_buffer_swap);
+              ctrl->repeat = true;
+              ctrl->priority = gui_priority;
             }
 
           protected:
-            neam::yaggler::glfw_window window;
-            neam::bleunw::yaggler::events::manager emgr;
+            neam::yaggler::glfw_window window; ///< \brief the window of the application
+            neam::bleunw::yaggler::events::manager emgr; ///< \brief The event manager of the application
 
-            neam::bleunw::yaggler::scene::manager<> main_smgr;
+            neam::bleunw::yaggler::scene::manager<> main_smgr; ///< \brief the main scene manager of the application
 
             // used in shaders
-            const glm::vec2 &framebuffer_resolution;
+            const glm::vec2 &framebuffer_resolution; ///< \brief The current framebuffer resolution
+
+            neam::bleunw::yaggler::gui::manager gmgr; ///< \brief The GUI manager
+
+            neam::bleunw::yaggler::task::scheduler scheduler; ///< \brief A default task scheduler for the application
 
           protected:
+            /// \brief Called when the framebuffer is resized
             virtual void framebuffer_resized(const glm::vec2 &size) override
             {
               if (main_smgr.camera_holder._get_std_cam())
@@ -122,18 +177,18 @@ namespace neam
               _framebuffer_resolution = size;
             }
 
-            virtual void window_closed() {}
-            virtual void window_focused(bool ) {}
-            virtual void window_iconified(bool ) {}
-            virtual void window_resized(const glm::vec2 &) {}
+            virtual void window_closed() override {}
+            virtual void window_focused(bool ) override {}
+            virtual void window_iconified(bool ) override {}
+            virtual void window_resized(const glm::vec2 &) override {}
 
           private:
             glm::vec2 _framebuffer_resolution;
             cr::chrono chrono;
             cr::chrono immed_chrono;
 
-            double mps_1s;
-            double mps_immediate;
+            double mpf_1s;
+            double mpf_immediate;
             size_t frame_counter;
         };
 
