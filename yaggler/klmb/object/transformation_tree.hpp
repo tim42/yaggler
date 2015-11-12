@@ -29,10 +29,12 @@
 #include <deque>
 #include <vector>
 #include <list>
+#include <mutex>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
 
 #include <tools/memory_pool.hpp>
+#include <tools/spinlock.hpp>
 #include <tools/logger/logger.hpp>
 
 #include <klmb/object/aabb.hpp>
@@ -56,6 +58,7 @@ namespace neam
               using child_container = std::list<node_holder>;
 
             public:
+              neam::spinlock lock; ///< \brief Protect local, world, children and parent (but NOT *local, *world nor *parent)
               Node *local; ///< \brief local will be used to _overwrite_ world (if dirty is setted to true, or if the parent has been updated).
               Node *world; ///< \brief the world transformation.
 
@@ -72,10 +75,14 @@ namespace neam
                 local_node_ptr->compute_matrix();
                 local_node_ptr->compute_world(world, world_node_ptr);
 
-                children_cont.emplace_back(local_node_ptr, world_node_ptr, tree);
-                node_holder &ret = children_cont.back();
-                ret.parent = this;
-                return ret;
+                node_holder *ret;
+                {
+                  std::lock_guard<neam::spinlock> _us(lock);
+                  children_cont.emplace_back(local_node_ptr, world_node_ptr, tree);
+                  ret = &children_cont.back();
+                }
+                ret->parent = this;
+                return *ret;
               }
 
               /// \brief remove this node and all its children
@@ -83,6 +90,8 @@ namespace neam
               {
                 if (parent)
                 {
+                  std::lock_guard<neam::spinlock> _up(parent->lock); // always in this order: parent > child > ...
+                  std::lock_guard<neam::spinlock> _us(lock);
                   auto it = std::find(parent->children.begin(), parent->children.end(), *this);
                   if (it != parent->children.end())
                     parent->children.erase(it);
@@ -94,32 +103,45 @@ namespace neam
 
               /// \brief compute and propagate matrices transformations to every children
               /// \note iterative
+              /// \note We have to lock recursively the hierarchy because this uses iterators, so if you have to lock both a parent and a child,
+              ///       lock first the parent then the child to avoid deadlocks
               void recompute_matrices()
               {
                 int world_recompute = 0;
+                std::unique_lock<neam::spinlock> _us(lock);
 
                 // recompute world if local is dirty
-                if (local->dirty)
                 {
-                  // we recompute world here.
-                  world_recompute = 1;
+                  std::lock_guard<neam::spinlock> _ul(local->lock);
+                  if (local->dirty)
+                  {
+                    // we recompute world here.
+                    world_recompute = 1;
 
-                  local->compute_matrix();
-                  if (parent)
-                    local->compute_world(parent->world, world);
-                  else
-                    local->compute_world(nullptr, world);
+                    local->compute_matrix();
+                    if (parent)
+                      local->compute_world(parent->world, world);
+                    else
+                      local->compute_world(nullptr, world);
 
-                  local->dirty = false;
+                    local->dirty = false;
+                  }
                 }
-                if (world->dirty)
                 {
-                  world->compute_matrix();
-                  world_recompute = 1;
+                  std::lock_guard<neam::spinlock> _uw(world->lock);
+                  if (world->dirty)
+                  {
+                    world->compute_matrix();
+                    world_recompute = 1;
+                  }
                 }
 
                 std::vector<decltype(children.begin())> idxs;
+                std::vector<std::unique_lock<neam::spinlock>> lidxs;
                 idxs.reserve(100);
+                lidxs.reserve(100);
+
+                lidxs.push_back(std::unique_lock<neam::spinlock>(lock, std::defer_lock));
                 idxs.push_back(children.begin());
 
                 node_holder *hldr = this;
@@ -134,26 +156,33 @@ namespace neam
                   while (*current != hldr->children_cont.end())
                   {
                     bool inc = false;
-                    if ((*current)->local->dirty || world_recompute)
                     {
-                      // we recompute world here.
-                      ++world_recompute;
-                      inc = true;
+                      std::lock_guard<neam::spinlock> _ul((*current)->local->lock);
+                      if ((*current)->local->dirty || world_recompute)
+                      {
+                        // we recompute world here.
+                        ++world_recompute;
+                        inc = true;
 
-                      (*current)->local->compute_matrix();
-                      (*current)->local->compute_world(hldr->world, (*current)->world);
+                        (*current)->local->compute_matrix();
+                        (*current)->local->compute_world(hldr->world, (*current)->world);
 
-                      (*current)->local->dirty = false;
-                      (*current)->world->dirty = false;
+                        (*current)->local->dirty = false;
+                        std::lock_guard<neam::spinlock> _uw((*current)->world->lock);
+                        (*current)->world->dirty = false;
+                      }
                     }
                     // only 'world' has been touched
-                    if ((*current)->world->dirty)
                     {
-                      (*current)->world->compute_matrix();
-                      (*current)->world->dirty = false;
+                      std::lock_guard<neam::spinlock> _uw((*current)->world->lock);
+                      if ((*current)->world->dirty)
+                      {
+                        (*current)->world->compute_matrix();
+                        (*current)->world->dirty = false;
 
-                      ++world_recompute;
-                      inc = true;
+                        ++world_recompute;
+                        inc = true;
+                      }
                     }
 
 
@@ -162,6 +191,7 @@ namespace neam
                     {
                       hldr = &(**current);
                       ++*current;
+                      lidxs.emplace_back(hldr->lock);
                       idxs.push_back(hldr->children.begin());
                       current = &idxs.back();
                       continue;
@@ -180,6 +210,7 @@ namespace neam
                     --world_recompute;
 
                   idxs.pop_back();
+                  lidxs.pop_back();
                   hldr = hldr->parent;
                 }
               }
@@ -197,6 +228,7 @@ namespace neam
               /// \brief destructor
               ~node_holder()
               {
+                std::lock_guard<neam::spinlock> _us(lock);
                 if (local)
                 {
                   tree->node_pool.destroy(local);
@@ -219,6 +251,7 @@ namespace neam
               /// \brief copy world and local nodes
               node_holder &operator = (const node_holder &o)
               {
+                std::lock_guard<neam::spinlock> _us(lock);
                 if (local)
                 {
                   tree->node_pool.destroy(local);
@@ -230,8 +263,11 @@ namespace neam
                   tree->node_pool.deallocate(world);
                 }
 
-                local = new (tree->node_pool) Node(*o.local);
-                world = new (tree->node_pool) Node(*o.world);
+                {
+                  std::lock_guard<neam::spinlock> _uo(o.lock);
+                  local = new(tree->node_pool) Node(*o.local);
+                  world = new(tree->node_pool) Node(*o.world);
+                }
                 local->holder = reinterpret_cast<decltype(local->holder)>(this);
                 world->holder = reinterpret_cast<decltype(world->holder)>(this);
                 return *this;
@@ -240,6 +276,7 @@ namespace neam
               /// \brief moves world and local nodes
               node_holder &operator = (node_holder && o)
               {
+                std::lock_guard<neam::spinlock> _us(lock);
                 if (local)
                 {
                   tree->node_pool.destroy(local);
@@ -251,10 +288,13 @@ namespace neam
                   tree->node_pool.deallocate(world);
                 }
 
-                local = o.local;
-                world = o.world;
-                o.local = nullptr;
-                o.world = nullptr;
+                {
+                  std::lock_guard<neam::spinlock> _uo(o.lock);
+                  local = o.local;
+                  world = o.world;
+                  o.local = nullptr;
+                  o.world = nullptr;
+                }
                 local->holder = reinterpret_cast<decltype(local->holder)>(this);
                 world->holder = reinterpret_cast<decltype(world->holder)>(this);
                 return *this;
@@ -293,7 +333,25 @@ namespace neam
         /// \note a node MUST have: compute_matrix(void), compute_world(const node *parent_world, node *world_dest) and a dirty flag
         struct default_node
         {
+          default_node() {}
+          ~default_node() {}
+
+          default_node(const default_node &o)
+          {
+            std::lock_guard<neam::spinlock> _u0(o.lock);
+            holder = o.holder;
+            position = o.position;
+            scale = o.scale;
+            rotation = o.rotation;
+            dirty = o.dirty;
+            matrix = o.matrix;
+            initial_bounding_box = o.initial_bounding_box;
+            transformed_bounding_box = o.transformed_bounding_box;
+          }
+
           transformation_tree<default_node>::node_holder *holder = nullptr; ///< \brief a reference to the node holder (to access either world or local)
+
+          mutable neam::spinlock lock; ///< \brief the lock for the current node
 
           glm::vec3 position = glm::vec3(0., 0., 0.); ///< \brief position (if changed, set dirty to true)
           glm::vec3 scale = glm::vec3(1., 1., 1.); ///< \brief scale (if changed, set dirty to true)
@@ -326,8 +384,11 @@ namespace neam
           /// \note advanced usage only
           void compute_world(const default_node *parent_world, default_node *world_dest) const
           {
+            std::lock_guard<neam::spinlock> _uw(world_dest->lock);
+
             if (parent_world)
             {
+              std::lock_guard<neam::spinlock> _up(parent_world->lock);
               world_dest->position = parent_world->position + (parent_world->rotation * position) * parent_world->scale;
               world_dest->scale = parent_world->scale * scale;
               world_dest->rotation = parent_world->rotation * rotation;
