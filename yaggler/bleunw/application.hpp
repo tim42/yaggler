@@ -93,6 +93,7 @@ namespace neam
                 else if (get_fps() > 40.f && scheduler.is_late(0.7)) // We got some lateness recently, optimize for throughput
                   scheduler.enforce_task_repartition(false);
               }
+              do_quit = true;
 
               // cleanup the scheduler (we have tasks that reference local elements)
               // after the call, all threads will be locked in the wait_for_frame_end() method
