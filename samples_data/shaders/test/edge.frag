@@ -17,7 +17,6 @@
 
 // raymarcher defines
 #define RM_MAX_STEPS                    22.
-// #define RM_MAX_STEPS                    40.
 #define INTO_STEP_DST                   0.35
 
 // prog defines
@@ -28,9 +27,9 @@
 
 // glow
 #define GLOW_MAX_DST                    1.0
-/*vec3(0.7, 0.70, 1.5)*/
+
 #define GLOW_COLOR                      scene_color
-// #define GLOW_STRENGTH                   0.04
+
 #define GLOW_STRENGTH                   0.04
 
 
@@ -63,15 +62,10 @@ float map(vec3 position)
 {
   const float c = 15.;
 
-  vec3 p = mod(position, 50.) - 50. * 0.5;
+  float d = length(mod(position, 50.) - 50. * 0.5) - c;
 
-  float d = length(p) - c;
-
-  float td;
-
-  p = mod(position, c) - c * 0.5;
-  td = length(p) - c / 1.8;
-  return max(-td, d);
+  vec3 p = mod(position, c) - c * 0.5;
+  return max(-(length(p) - c / 1.8), d);
 }
 
 // do the raymarch

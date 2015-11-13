@@ -21,7 +21,7 @@
 
 # define KLMB_OUTPUT_VAR                        out
 
-#else
+#else /*KLMB_IS_MAIN*/
 # define _KLMB_SHARED_BASE_NAME(pid, name)      p ## pid ## _klmb_ ## name
 
 // nvidia...
@@ -33,6 +33,6 @@
 
 # define KLMB_OUTPUT_VAR
 
-#endif
+#endif /*KLMB_IS_MAIN*/
 
 
