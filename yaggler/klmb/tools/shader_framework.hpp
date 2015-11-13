@@ -379,6 +379,7 @@ namespace neam
               base_framework_defs += "#define KLMB_TOTAL_PROG_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.fragment__shader_number)) + '\n';
               base_framework_defs += "#define KLMB_TOTAL_OUTPUT_BUFFER_NUMBER " + __KLMB__VAR_TO_STRING(static_cast<uint16_t>(fdata.fragment__output_buffers)) + '\n';
             }
+
             base_framework_defs += __KLMB__FILE_TO_STRING(KLMB_YAGGLER_GLOBAL_DEFS) + "\n";
 
             // framework main specifics

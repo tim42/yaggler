@@ -49,6 +49,16 @@ namespace neam
           /// \brief default constructor, initialize with an empty material
           material_wrapper() : wrapper(nullptr) {}
 
+          /// \brief Copy another material_wrapper but don't manage the lifetime of the wrapped material
+          material_wrapper(const material_wrapper &mw) : wrapper(mw.wrapper ? mw.wrapper->clone() : nullptr) {}
+
+          /// \brief Move another material_wrapper AND manage the lifetime of the wrapped material
+          /// \note The moved material_wraper will be emptied
+          material_wrapper(material_wrapper &&mw) : wrapper(mw.wrapper)
+          {
+            mw.wrapper = nullptr;
+          }
+
           /// \brief wrap a material, but don't manage its lifetime
           template<typename MaterialType>
           material_wrapper(MaterialType &mt) : wrapper(new spec_wrapper<MaterialType>(&mt)) {}
@@ -64,16 +74,6 @@ namespace neam
           /// \brief wrap a material and manage its lifetime
           template<typename MaterialType>
           material_wrapper(MaterialType &&mt) : wrapper(new spec_wrapper<MaterialType>(new MaterialType(std::move(mt)), neam::assume_ownership)) {}
-
-          /// \brief Copy another material_wrapper but don't manage the lifetime of the wrapped material
-          material_wrapper(const material_wrapper &mw) : wrapper(mw.wrapper ? mw.wrapper->clone() : nullptr) {}
-
-          /// \brief Move another material_wrapper AND manage the lifetime of the wrapped material
-          /// \note The moved material_wraper will be emptied
-          material_wrapper(material_wrapper &&mw) : wrapper(mw.wrapper)
-          {
-            mw.wrapper = nullptr;
-          }
 
           /// \brief Copy another material_wrapper but don't manage the lifetime of the wrapped material
           material_wrapper &operator = (const material_wrapper &mw)

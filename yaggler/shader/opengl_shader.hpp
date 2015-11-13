@@ -299,6 +299,7 @@ namespace neam
               source.data(),
             };
 
+            glGetError();
             glShaderSource(shader_id, sizeof(source_array) / sizeof(source_array[0]), source_array, nullptr);
             failed = true;
             throw_on_glerror<shader_exception>("unable to set the shader source (glShaderSource): ");

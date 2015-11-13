@@ -30,8 +30,7 @@
 #include <fstream>
 #include <sstream>
 
-// if anybody says there's a shorter way to load a file into a string in C++, perhaps he is lying ;)
-// (but is this safe ??)
+// FIXME is this safe ??
 #define __KLMB__FILE_TO_STRING(filename)        static_cast<const std::ostringstream&>(std::ostringstream() << (std::ifstream(filename).rdbuf())).str()
 // THIS IS SO UGLY.
 #define __KLMB__VAR_TO_STRING(var)              static_cast<const std::ostringstream&>(std::ostringstream() << (var)).str()

@@ -87,10 +87,14 @@ namespace neam
           template<typename... AdditionalShaders>
           using program_t = neam::yaggler::shader::program<neam::yaggler::type::opengl, Shaders..., AdditionalShaders...>;
 
+          /// \brief Base class used to allow list extraction from the ct::type_list<...>
+          template<typename>
+          struct program_auto_merger {};
+
           /// \brief merge each shaders of \p Values only if \p Shaders contain a shader of the same type.
           /// \param Values a serie of \code ct::pair<X, Y> \endcode [with X the shader type (embed) and Y the \code shader::shader<opengl> \endcode to append]
           template<typename... Values>
-          struct program_auto_merger
+          struct program_auto_merger<ct::type_list<Values...>>
           {
             private:
               template<typename...>
