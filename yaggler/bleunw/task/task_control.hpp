@@ -47,6 +47,7 @@ namespace neam
         {
           public:
             ctrl_func_t run_func; ///< \brief The method to run (either a proxy function or the final function)
+            task_func_t func;     ///< \brief The original task function
 
             scheduler *task_scheduler = nullptr; ///< \brief The scheduler to use to re-register tasks
 
@@ -62,7 +63,7 @@ namespace neam
           public:
 
             /// \brief Register the task.
-            void register_task();
+            void register_task(double now = -1.);
 
             /// \brief Dismiss the task, but does not unregister it
             /// register_once() will undo the dismiss and handle the case where
@@ -120,7 +121,7 @@ namespace neam
     {
       namespace task
       {
-        void task_control::register_task()
+        void task_control::register_task(double now)
         {
           if (!task_scheduler)
             return;
@@ -129,6 +130,8 @@ namespace neam
           if (!registered.compare_exchange_strong(f, true)) // Make sure we have been here only one time
             return;
           task_scheduler->push_task(std::move(*linked_task), task_type);
+          if (now > 0.)
+            linked_task->registered_ts = now;
         }
       } // namespace task
     } // namespace yaggler

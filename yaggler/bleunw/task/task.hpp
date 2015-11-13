@@ -48,9 +48,10 @@ namespace neam
             /// \brief The task constructor
             /// \note purposedly without \e explicit : it may be easier to simply
             ///       forget the task construct when registering a single function !
-            task(const task_func_t &_func) noexcept : func(_func), ctrl(new task_control)
+            task(const task_func_t &_func) noexcept : ctrl(new task_control)
             {
               ctrl->linked_task = this;
+              ctrl->func = _func;
 
               // We can't reference the task inside the function, as the task will probably be move-contrustructed
               // at another place in the memory prior its execution. We have to rely on ctrl and ctrl->linked_task
@@ -59,13 +60,10 @@ namespace neam
               ctrl->run_func = [](float dt, task_control &ctrl, double now)
               {
                 if (ctrl.repeat)
-                {
-                  ctrl.register_task();
-                  ctrl.linked_task->registered_ts = now > 0 ? now : neam::cr::chrono::now();
-                }
+                  ctrl.register_task(now);
                 try
                 {
-                  ctrl.linked_task->func(dt, ctrl);
+                  ctrl.func(dt, ctrl);
                 }
                 catch (...)
                 {
@@ -76,7 +74,7 @@ namespace neam
             }
 
             /// \brief Move the task to another one
-            task(task &&t) noexcept : registered_ts(t.registered_ts), func(std::move(t.func)), ctrl(t.ctrl)
+            task(task &&t) noexcept : registered_ts(t.registered_ts), ctrl(t.ctrl)
             {
               ctrl->linked_task = this;
               t.ctrl = nullptr;
@@ -90,7 +88,6 @@ namespace neam
                 delete ctrl;
                 registered_ts = t.registered_ts;
                 ctrl = t.ctrl;
-                func = std::move(t.func);
                 ctrl->linked_task = this;
                 t.ctrl = nullptr;
               }
@@ -129,10 +126,10 @@ namespace neam
             double registered_ts = 0.; ///< \brief to be used by the scheduler, it's the timestamp at wich time task has been registered
 
           private:
-            task_func_t func;
             task_control *ctrl = nullptr;
 
             friend class scheduler;
+            friend class task_control;
         };
       } // namespace task
     } // namespace yaggler
