@@ -196,40 +196,28 @@ namespace neam
             /// \note execution_type::pre_buffer_swap task CAN'T BE TIMED, they will run at the next frame end
             ///       but they can have a priority, and this will be accounted in the call order
             ///       There won't have any other task that will run while a pre_buffer_swap task is running
-            task_control &push_task(task &&t, execution_type etype = execution_type::normal)
+            task_control &push_task(task_control &t)
             {
-              if (!t.ctrl)
-              {
-                neam::cr::out.error() << LOGGER_INFO << "Trying to register an empty task." << std::endl;
-                neam::cr::print_callstack();
-                throw neam::runtime_error<scheduler>("push_task(task &&): Trying to register an empty task");
-              }
-
               std::lock_guard<neam::spinlock> _u0(buffers[index].push_lock);
 
-              task_control *ctrl = nullptr;
-              if (etype == execution_type::pre_buffer_swap)
+              if (t.task_type == execution_type::pre_buffer_swap)
               {
-                buffers[index].gl_pre_swap_task_list.push_back(std::move(t));
+                buffers[index].gl_pre_swap_task_list.push_back(task(t));
                 buffers[index].gl_pre_swap_task_list.back().registered_ts = chrono.now();
-                ctrl = &buffers[index].gl_pre_swap_task_list.back().get_task_control();
               }
-              else if (etype == execution_type::gl || !multiple_threads)
+              else if (t.task_type == execution_type::gl || !multiple_threads)
               {
-                buffers[index].gl_task_list.push_back(std::move(t));
+                buffers[index].gl_task_list.push_back(task(t));
                 buffers[index].gl_task_list.back().registered_ts = chrono.now();
-                ctrl = &buffers[index].gl_task_list.back().get_task_control();
               }
               else
               {
-                buffers[index].other_task_list.push_back(std::move(t));
+                buffers[index].other_task_list.push_back(task(t));
                 buffers[index].other_task_list.back().registered_ts = chrono.now();
-                ctrl = &buffers[index].other_task_list.back().get_task_control();
               }
-              ctrl->task_type = etype;
-              ctrl->task_scheduler = this;
-              ctrl->registered = true;
-              return *ctrl;
+              t.task_scheduler = this;
+              t.registered = true;
+              return t;
             }
 
             /// \brief Clear the task scheduler, also make every thread in run_some() quit the execution as soon as
@@ -642,6 +630,8 @@ namespace neam
                     skip_gl = true;
                   if (gl_task_ptr && gl_task_ptr->get_task_control().dismissed)
                   {
+                    if (gl_task_ptr->get_task_control().then)
+                      gl_task_ptr->get_task_control().then(gl_task_ptr->get_task_control()); // Call the then() method
                     gl_task_ptr->get_task_control().registered = false;
                     gl_task_ptr = nullptr;
                     continue;
@@ -660,7 +650,8 @@ namespace neam
                         skip_ot = true;
                         other_task_in_time_this_frame.store(true, std::memory_order_relaxed);
                         double registered_ts = ot_task_ptr->registered_ts;
-                        task_control &ctrl = push_task(std::move(*ot_task_ptr), ot_task_ptr->get_task_control().task_type);
+                        task_control &ctrl = push_task(ot_task_ptr->get_task_control());
+                        ot_task_ptr->ctrl = nullptr;
                         ctrl.linked_task->registered_ts = registered_ts;
                         ot_task_ptr = nullptr;
                       }
@@ -673,6 +664,8 @@ namespace neam
                   }
                   if (ot_task_ptr && ot_task_ptr->get_task_control().dismissed)
                   {
+                    if (ot_task_ptr->get_task_control().then)
+                      ot_task_ptr->get_task_control().then(ot_task_ptr->get_task_control()); // Call the then() method
                     ot_task_ptr->get_task_control().registered = false;
                     ot_task_ptr = nullptr;
                     continue;
@@ -708,6 +701,8 @@ namespace neam
                       ++cnt;
                       t->get_task_control().registered = false;
                       t->get_task_control().run_func(delta * speed_factor, t->get_task_control(), fnow); // Here we go ! we run that func !
+                      if (!t->get_task_control().registered && t->get_task_control().then)
+                        t->get_task_control().then(t->get_task_control());
                     }
                     catch (std::exception &e) { neam::cr::out.error() << LOGGER_INFO << "task::scheduler::run_some(): caught exception: " << e.what() << std::endl; }
                     catch (...) { neam::cr::out.error() << LOGGER_INFO << "task::scheduler::run_some(): caught unknown exception" << std::endl; }
@@ -725,7 +720,8 @@ namespace neam
                 if (ot_task_ptr)
                 {
                   double registered_ts = ot_task_ptr->registered_ts;
-                  task_control &ctrl = push_task(std::move(*ot_task_ptr), ot_task_ptr->get_task_control().task_type);
+                  task_control &ctrl = push_task(ot_task_ptr->get_task_control());
+                  ot_task_ptr->ctrl = nullptr;
                   ctrl.linked_task->registered_ts = registered_ts;
                 }
               }

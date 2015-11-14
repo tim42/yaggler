@@ -42,6 +42,8 @@ namespace neam
         typedef std::function<void(float, task_control &)> task_func_t;
         /// \brief The function type used by task controls
         typedef std::function<void(float, task_control &, double)> ctrl_func_t;
+        /// \brief The function type used by task controls for the then
+        typedef std::function<void(task_control &)> then_func_t;
 
         enum class execution_type
         {

@@ -48,6 +48,9 @@ namespace neam
           public:
             ctrl_func_t run_func; ///< \brief The method to run (either a proxy function or the final function)
             task_func_t func;     ///< \brief The original task function
+            then_func_t then;     ///< \brief A function that will be called after the task as ended (either been dismissed / not registered)
+                                  ///         A little note on deleting the task_control in the then() function: don't do it, simply set _do_not_delete to false
+                                  ///         and the system will delete it. (else you will face double-free errors, or worse, access to an already freed memory area)
 
             scheduler *task_scheduler = nullptr; ///< \brief The scheduler to use to re-register tasks
 
@@ -59,6 +62,9 @@ namespace neam
 
             int priority = 0; ///< \brief Task priority (mostly used to change the orger of tasks with execution_type::pre_buffer_swap).
                               ///         Priority increase with the number. (negative number mean very low priority)
+
+            bool _do_not_delete = false; ///< \brief Advanced switch to control if the task_control could be deleted automatically
+                                         ///         If true, the user is then responsible of its destruction
 
           public:
 
@@ -129,7 +135,7 @@ namespace neam
           bool f = false;
           if (!registered.compare_exchange_strong(f, true)) // Make sure we have been here only one time
             return;
-          task_scheduler->push_task(std::move(*linked_task), task_type);
+          task_scheduler->push_task(*this);
           if (now > 0.)
             linked_task->registered_ts = now;
         }

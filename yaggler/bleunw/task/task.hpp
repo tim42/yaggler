@@ -80,12 +80,15 @@ namespace neam
               t.ctrl = nullptr;
             }
 
+            task(task_control &t) noexcept : ctrl(&t) {}
+
             /// \brief Move assignation
             task &operator =(task && t) noexcept
             {
               if (&t != this)
               {
-                delete ctrl;
+                if (ctrl && ctrl->_do_not_delete)
+                  delete ctrl;
                 registered_ts = t.registered_ts;
                 ctrl = t.ctrl;
                 ctrl->linked_task = this;
@@ -100,7 +103,8 @@ namespace neam
             /// \brief destroy the task
             ~task()
             {
-              delete ctrl;
+              if (ctrl && ctrl->_do_not_delete)
+                delete ctrl;
             }
 
             /// \brief return the task control for the current task
