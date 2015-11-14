@@ -28,79 +28,102 @@
 
 #include <functional>
 #include <cmath>
+#include <tools/execute_pack.hpp>
 
 namespace neam
 {
-  namespace bleunw
+  namespace easing
   {
-    namespace yaggler
+    /// \brief The signature of an easing function
+    /// \note An easing function takes a number in the interval [0-1] and should return a number in the interval [0-1]
+    typedef std::function<float(float)> func_t;
+
+    /// \brief A linear easing function
+    float linear(float x) { return x; }
+
+    /// \brief A quadratic easing function
+    float quad(float x) { return x * x; }
+
+    /// \brief A cubic easing function
+    float cubic(float x) { return x * x * x; }
+
+    /// \brief A quartic easing function
+    float quart(float x) { return x * x * x * x; }
+
+    /// \brief A quintic easing function
+    float quint(float x) { return x * x * x * x * x; }
+
+    /// \brief A square-root easing function
+    float sqrt(float x) { return sqrtf(x); }
+
+    /// \brief A Circle easing function
+    float circle(float x) { return 1.f - sqrtf(1.f - x * x); }
+
+    /// \brief A cos-like easing function
+    /// \note this is a \b in easing function, to get the inout equivalent, use \code easing::inout(easing::cos) \endcode
+    float cos(float x) { return 1.f - (cosf(x * M_PI / 2.)); }
+
+    /// \brief Apply a pow to an easing function
+    /// \note was initially created for use with cos and inout: \code easing::inout(easing::pow(easing::cos, 2.f)) \endcode
+    func_t pow(func_t f, float factor) { return [ = ](float x) -> float {return powf(f(x), factor); }; }
+
+    /// \brief Return an easing function.
+    /// \note A strength value of 0.4 is very similar to the circle easing function
+    /// \note A strength value of 1.96 is very similar to easing::inout(easing::cos)
+    func_t strange_pow(float strength = 2.f, func_t f = linear) { return [ = ](float x) -> float { return 1.f - powf(1.f - f(x), f(x) * strength); }; }
+
+    /// \brief Return a configurable exp() easing function
+    /// \param strength A number in the interval ]-inf;0[ and ]0;+inf[ indicating the strength of the exponential
+    /// the nearer strength is from 0, the more the curve will look like a linear curve
+    /// If strength is negative, the function will act as in easing::reverse(easing::exp(fabs(strength)))
+    func_t exp(float strength = 1.f)
     {
-      namespace easing
+      const float factor = 1.f / (1.f - expf(-1.f * strength));
+      return [ = ](float x) -> float { return (1.f - expf(-1.f * x * strength)) * factor; };
+    }
+
+    /// \brief Reverse an easing curve (was an in curve, make it a out curve)
+    func_t reverse(func_t func) { return [ = ] (float x) -> float { return 1.f - func(1.f - x); }; }
+
+    /// \brief Make an easing function in-out
+    func_t inout(func_t func)
+    {
+      return [ = ] (float x) -> float
       {
-        /// \brief The signature of an easing function
-        /// \note An easing function takes a number in the interval [0-1] and should return a number in the interval [0-1]
-        typedef std::function<float(float)> func_t;
+        if (x < 0.5)
+          return func(x * 2.f) / 2.f;
+        else
+          return (1. - func(1. - (x - 0.5f) * 2.f)) / 2.f + 0.5f;
+      };
+    }
 
-        /// \brief A linear easing function
-        float linear(float x) { return x; }
+    /// \brief Make two easing function into one in-out function
+    func_t inout(func_t in_func, func_t out_func)
+    {
+      return [ = ] (float x) -> float
+      {
+        if (x < 0.5)
+          return in_func(x * 2.f) / 2.f;
+        else
+          return out_func((x - 0.5f) * 2.f) / 2.f + 0.5f;
+      };
+    }
 
-        /// \brief A quadratic easing function
-        float quad(float x) { return x * x; }
-
-        /// \brief A cubic easing function
-        float cubic(float x) { return x * x * x; }
-
-        /// \brief A quartic easing function
-        float quart(float x) { return x * x * x * x; }
-
-        /// \brief A square-root easing function
-        float sqrt(float x) { return sqrtf(x); }
-
-        /// \brief A Circle easing function
-        float circle(float x) { return 1.f - sqrtf(1.f - x * x); }
-
-        /// \brief Return an easing function.
-        /// \note A strength value of 0.4 is very similar to the circle easing function
-        func_t strange_pow(float strength = 2.f) { return [ = ](float x) -> float { return 1.f - powf(1.f - x, x * strength); }; }
-
-        /// \brief Return a configurable exp() easing function
-        /// \param strength A number in the interval ]0;+inf[ indicating the strength of the exponential
-        /// the nearer strength is from 0, the more the curve will look like a linear curve
-        func_t exp(float strength = 1.f)
-        {
-          const float factor = 1.f / (1.f - expf(-1.f * strength));
-          return [ = ](float x) -> float { return (1.f - expf(-1.f * x)) * factor; };
-        }
-
-        /// \brief Reverse an easing curve (was an in curve, make it a out curve)
-        func_t reverse(func_t func) { return [ = ] (float x) -> float { return 1.f - func(1.f - x); }; }
-
-        /// \brief Make an easing function in-out
-        func_t inout(func_t func)
-        {
-          return [ = ] (float x) -> float
-          {
-            if (x < 0.5)
-              return func(x * 2.f) / 2.f;
-            else
-              return func((x - 0.5f) * 2.f) / 2.f + 0.5f;
-          };
-        }
-
-        /// \brief Make two easing function into one in-out function
-        func_t inout(func_t in_func, func_t out_func)
-        {
-          return [ = ] (float x) -> float
-          {
-            if (x < 0.5)
-              return in_func(x * 2.f) / 2.f;
-            else
-              return out_func((x - 0.5f) * 2.f) / 2.f + 0.5f;
-          };
-        }
-      } // namespace easing
-    } // namespace yaggler
-  } // namespace bleunw
+    /// \brief Allow to "chain" any number of function in order to produce some weird result
+    /// Chaining is feeding the result of an easing function as input to another easing function
+    /// like this: f(g(h(x)))
+    template<typename... ChainFuncs>
+    func_t chain(ChainFuncs... funcs)
+    {
+      static_assert(sizeof...(funcs), "easing::chain() should not be called without any parameter");
+      return [ = ] (float x) -> float
+      {
+        float val = x;
+        NEAM_EXECUTE_PACK(val = funcs(val));
+        return val;
+      };
+    }
+  } // namespace easing
 } // namespace neam
 
 #endif /*__N_15184475972003110334_1285238881__EASING_HPP__*/
