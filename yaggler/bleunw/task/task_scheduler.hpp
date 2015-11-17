@@ -633,6 +633,7 @@ namespace neam
                     if (gl_task_ptr->get_task_control().then)
                       gl_task_ptr->get_task_control().then(gl_task_ptr->get_task_control()); // Call the then() method
                     gl_task_ptr->get_task_control().registered = false;
+                    ot_task_ptr->end();
                     gl_task_ptr = nullptr;
                     continue;
                   }
@@ -667,6 +668,7 @@ namespace neam
                     if (ot_task_ptr->get_task_control().then)
                       ot_task_ptr->get_task_control().then(ot_task_ptr->get_task_control()); // Call the then() method
                     ot_task_ptr->get_task_control().registered = false;
+                    ot_task_ptr->end();
                     ot_task_ptr = nullptr;
                     continue;
                   }
@@ -703,6 +705,7 @@ namespace neam
                       t->get_task_control().run_func(delta * speed_factor, t->get_task_control(), fnow); // Here we go ! we run that func !
                       if (!t->get_task_control().registered && t->get_task_control().then)
                         t->get_task_control().then(t->get_task_control());
+                      t->end();
                     }
                     catch (std::exception &e) { neam::cr::out.error() << LOGGER_INFO << "task::scheduler::run_some(): caught exception: " << e.what() << std::endl; }
                     catch (...) { neam::cr::out.error() << LOGGER_INFO << "task::scheduler::run_some(): caught unknown exception" << std::endl; }

@@ -76,19 +76,23 @@ namespace neam
             /// \brief Move the task to another one
             task(task &&t) noexcept : registered_ts(t.registered_ts), ctrl(t.ctrl)
             {
-              ctrl->linked_task = this;
+              if (ctrl)
+                ctrl->linked_task = this;
               t.ctrl = nullptr;
             }
 
-            task(task_control &t) noexcept : ctrl(&t) {}
+            task(task_control &t) noexcept : ctrl(&t)
+            {
+              ctrl->linked_task = this;
+            }
 
             /// \brief Move assignation
             task &operator =(task && t) noexcept
             {
               if (&t != this)
               {
-                if (ctrl && ctrl->_do_not_delete)
-                  delete ctrl;
+                end();
+
                 registered_ts = t.registered_ts;
                 ctrl = t.ctrl;
                 ctrl->linked_task = this;
@@ -103,8 +107,7 @@ namespace neam
             /// \brief destroy the task
             ~task()
             {
-              if (ctrl && ctrl->_do_not_delete)
-                delete ctrl;
+              end();
             }
 
             /// \brief return the task control for the current task
@@ -121,6 +124,7 @@ namespace neam
               return *ctrl;
             }
 
+            /// \brief Comparison operator
             bool operator <(const task &o) const
             {
               float diff = ctrl && o.ctrl ? ((registered_ts + ctrl->delay) - (o.registered_ts + o.ctrl->delay)) : 0.f;
@@ -128,6 +132,16 @@ namespace neam
             }
 
             double registered_ts = 0.; ///< \brief to be used by the scheduler, it's the timestamp at wich time task has been registered
+
+            /// \brief End the task
+            void end()
+            {
+              if (ctrl && ctrl->linked_task == this)
+                ctrl->linked_task = nullptr;
+              if (ctrl && ctrl->linked_task == this && ctrl->_do_not_delete == false)
+                delete ctrl;
+              ctrl = nullptr;
+            }
 
           private:
             task_control *ctrl = nullptr;
