@@ -102,7 +102,7 @@ namespace neam
               scheduler.end_frame();
             }
 
-          protected:
+          public:
             /// \brief End the current frame
             /// \note should ALWAYS be called at the end of the render loop as it call scheduler.end_frame()
             void end_render_loop()
@@ -184,7 +184,7 @@ namespace neam
               ctrl->priority = gui_priority;
             }
 
-          protected:
+          public:
             neam::yaggler::glfw_window window; ///< \brief the window of the application
             neam::bleunw::yaggler::events::manager emgr; ///< \brief The event manager of the application
 
