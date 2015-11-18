@@ -220,6 +220,23 @@ namespace neam
               return t;
             }
 
+            /// \brief Create a un-registered task_control (this is wait-free)
+            /// \note the _do_not_delete property won't be set to true, every values of the object is kept as if default initialized
+            task_control *create_task_control(const task_func_t &t, execution_type etype = execution_type::normal)
+            {
+              task temp_task(t); // For the allocation + initialization of the task control
+
+              task_control *ctrl = temp_task.ctrl; // Retrieve the task_control + remove it from the task object
+              temp_task.ctrl = nullptr;
+              ctrl->linked_task = nullptr;
+
+              // Initialize it
+              ctrl->task_type = etype;
+              ctrl->task_scheduler = this;
+
+              return ctrl;
+            }
+
             /// \brief Clear the task scheduler, also make every thread in run_some() quit the execution as soon as
             ///        the method is called.
             /// \note To start again, you have to call end_frame()
