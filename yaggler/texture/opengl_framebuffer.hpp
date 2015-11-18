@@ -50,6 +50,7 @@ namespace neam
             : id(0), ownership(true)
           {
             glGenFramebuffers(1, &id);
+            use();
           }
 
           /// \brief wrap an existing GL framebuffer, but don't become the owner of the GL framebuffer
@@ -208,7 +209,6 @@ namespace neam
           template<typename TextureType, typename... TArgs>
           void bind_texture_color(const texture<type::opengl, TextureType, TArgs...> &tex, unsigned int color_attachement_index, unsigned int level = 0)
           {
-            use();
             _sub_bind_texture(GL_FRAMEBUFFER, tex, GL_COLOR_ATTACHMENT0 + color_attachement_index, level);
           }
 
@@ -219,7 +219,6 @@ namespace neam
           template<typename TextureType, typename... TArgs>
           void bind_texture_color(const texture<type::opengl, TextureType, TArgs...> &tex, unsigned int color_attachement_index, unsigned int layer, unsigned int level = 0)
           {
-            use();
             _sub_bind_texture(GL_FRAMEBUFFER, tex, GL_COLOR_ATTACHMENT0 + color_attachement_index, level, layer);
           }
 
@@ -230,7 +229,6 @@ namespace neam
           template<typename TextureType, typename... TArgs>
           void bind_texture_color(GLenum target, const texture<type::opengl, TextureType, TArgs...> &tex, unsigned int color_attachement_index, unsigned int level = 0)
           {
-            use();
             _sub_bind_texture(target, tex, GL_COLOR_ATTACHMENT0 + color_attachement_index, level);
           }
 
@@ -242,7 +240,6 @@ namespace neam
           template<typename TextureType, typename... TArgs>
           void bind_texture_color(GLenum target, const texture<type::opengl, TextureType, TArgs...> &tex, unsigned int color_attachement_index, unsigned int layer, unsigned int level = 0)
           {
-            use();
             _sub_bind_texture(target, tex, GL_COLOR_ATTACHMENT0 + color_attachement_index, level, layer);
           }
 
@@ -253,7 +250,6 @@ namespace neam
           template<typename TextureType, typename... TArgs>
           void bind_texture(const texture<type::opengl, TextureType, TArgs...> &tex, GLenum attachement, unsigned int level = 0)
           {
-            use();
             _sub_bind_texture(GL_FRAMEBUFFER, tex, attachement, level);
           }
 
@@ -265,7 +261,6 @@ namespace neam
           template<typename TextureType, typename... TArgs>
           void bind_texture(const texture<type::opengl, TextureType, TArgs...> &tex, GLenum attachement, unsigned int layer, unsigned int level = 0)
           {
-            use();
             _sub_bind_texture(GL_FRAMEBUFFER, tex, attachement, level, layer);
           }
 
@@ -276,7 +271,6 @@ namespace neam
           template<typename TextureType, typename... TArgs>
           void bind_texture(GLenum target, const texture<type::opengl, TextureType, TArgs...> &tex, GLenum attachement, unsigned int level = 0)
           {
-            use();
             _sub_bind_texture(target, tex, attachement, level);
           }
 
@@ -288,7 +282,6 @@ namespace neam
           template<typename TextureType, typename... TArgs>
           void bind_texture(GLenum target, const texture<type::opengl, TextureType, TArgs...> &tex, GLenum attachement, unsigned int layer, unsigned int level = 0)
           {
-            use();
             _sub_bind_texture(target, tex, attachement, level, layer);
           }
 
@@ -297,7 +290,21 @@ namespace neam
           /// \param attachment the attachement where the renderbuffer will be bound
           void bind_renderbuffer(const renderbuffer<type::opengl> &rdb, GLenum attachment)
           {
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rdb.get_id());
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glNamedFramebufferRenderbufferEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glNamedFramebufferRenderbufferEXT(id, attachment, GL_RENDERBUFFER, rdb.get_id());
+            }
+            else
+            {
+              use();
+              glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rdb.get_id());
+            }
+#undef Y_DSA_COND
           }
 
           /// \brief bind a renderbuffer to a custom attachment and a custom target
@@ -306,24 +313,80 @@ namespace neam
           /// \param attachment the attachement where the renderbuffer will be bound
           void bind_renderbuffer(GLenum target, const renderbuffer<type::opengl> &rdb, GLenum attachment)
           {
-            glFramebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, rdb.get_id());
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glNamedFramebufferRenderbufferEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glNamedFramebufferRenderbufferEXT(id, attachment, GL_RENDERBUFFER, rdb.get_id());
+            }
+            else
+            {
+              use();
+              glFramebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, rdb.get_id());
+            }
+#undef Y_DSA_COND
           }
 
         private:
           template<typename TextureType, typename... TArgs>
           void _sub_bind_texture(GLenum target, const texture<type::opengl, TextureType, TArgs...> &tex, NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_1D), GLenum) attachement, int level)
           {
-            glFramebufferTexture1D(target, attachement, GL_TEXTURE_1D, tex.get_id(), level);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glNamedFramebufferTexture1DEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glNamedFramebufferTexture1DEXT(id, attachement, GL_TEXTURE_1D, tex.get_id(), level);
+            }
+            else
+            {
+              use();
+              glFramebufferTexture1D(target, attachement, GL_TEXTURE_1D, tex.get_id(), level);
+            }
+#undef Y_DSA_COND
           }
           template<typename TextureType, typename... TArgs>
           void _sub_bind_texture(GLenum target, const texture<type::opengl, TextureType, TArgs...> &tex, NCR_ENABLE_IF((TextureType::value != GL_TEXTURE_1D && TextureType::value != GL_TEXTURE_2D_ARRAY && TextureType::value != GL_TEXTURE_3D && TextureType::value != GL_TEXTURE_2D_MULTISAMPLE_ARRAY), GLenum) attachement, int level)
           {
-            glFramebufferTexture2D(target, attachement, TextureType::value, tex.get_id(), level);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glNamedFramebufferTexture2DEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glNamedFramebufferTexture2DEXT(id, attachement, TextureType::value, tex.get_id(), level);
+            }
+            else
+            {
+              use();
+              glFramebufferTexture2D(target, attachement, TextureType::value, tex.get_id(), level);
+            }
+#undef Y_DSA_COND
           }
           template<typename TextureType, typename... TArgs>
           void _sub_bind_texture(GLenum target, const texture<type::opengl, TextureType, TArgs...> &tex, NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_2D_ARRAY && TextureType::value == GL_TEXTURE_3D && TextureType::value == GL_TEXTURE_2D_MULTISAMPLE_ARRAY), GLenum) attachement, int level, int layer)
           {
-            glFramebufferTextureLayer(target, attachement, tex.get_id(), level, layer);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glNamedFramebufferTextureLayerEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glNamedFramebufferTextureLayerEXT(id, attachement, tex.get_id(), level, layer);
+            }
+            else
+            {
+              use();
+              glFramebufferTextureLayer(target, attachement, tex.get_id(), level, layer);
+            }
+#undef Y_DSA_COND
           }
 
         private:

@@ -30,6 +30,8 @@
 #include <tools/logger/logger.hpp>
 #include <cstddef>
 
+#define YAGGLER_USE_DSA_IF_AVAILABLE
+
 namespace neam
 {
   namespace yaggler
@@ -46,6 +48,8 @@ namespace neam
     ///     // using opengl 4.5
     ///     using opengl_version = neam::yaggler::setup::opengl<4, 5>;
     ///   \endcode
+    /// \note DSA could be activated/deactivated but if one want to activate DSA only if availlable, \b YAGGLER_USE_DSA_IF_AVAILABLE MUST be defined and DSA activated
+    ///       The default is to have \b YAGGLER_USE_DSA_IF_AVAILABLE defined, but could be undefined to make sure yaggler remove all compatibility code at compilation time
     namespace setup
     {
       /// \brief what kind of opengl profile to use
@@ -67,7 +71,7 @@ namespace neam
       };
 
       /// \brief the opengl object, describing what kind of gl context will be created by yaggler
-      template<size_t GlMajor, size_t GlMinor, opengl_profile Profile = opengl_profile::core, opengl_context_flag CtxFlags = opengl_context_flag::none>
+      template<size_t GlMajor, size_t GlMinor, opengl_profile Profile = opengl_profile::core, opengl_context_flag CtxFlags = opengl_context_flag::none, bool UseDSA = true>
       struct opengl
       {
         static constexpr size_t gl_major = GlMajor;
@@ -75,6 +79,8 @@ namespace neam
         static constexpr opengl_profile profile = Profile;
         static constexpr bool forward_compat = (int)CtxFlags & (int)opengl_context_flag::forward_compat;
         static constexpr bool debug = (int)CtxFlags & (int)opengl_context_flag::debug;
+
+        static constexpr bool useDSA = UseDSA;
 
         /// \brief log the context information in the neam::cr::out stream
         static inline void _log()
@@ -86,6 +92,7 @@ namespace neam
                                << (debug && forward_compat ? ", " : "" )
                                << (forward_compat ? "forward compatible" : "" )
                                << (debug || forward_compat ? "]" : "" )
+                               << (useDSA ? " DSA: Enabled [*]" : " DSA: Disabled")
                                << std::endl;
         }
       };

@@ -503,8 +503,21 @@ namespace neam
           auto set_texture_data(GLint internal_format, ct::fixed_t size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_1D), void)
           {
-            bind();
-            glTexImage1D(TextureType::value, level, internal_format, size, 0, format, type, data);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glTextureImage1DEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glTextureImage1DEXT(id, TextureType::value, level, internal_format, size, 0, format, type, data);
+            }
+            else
+            {
+              bind();
+              glTexImage1D(TextureType::value, level, internal_format, size, 0, format, type, data);
+            }
+#undef Y_DSA_COND
           }
 
           /// set 2D texture data
@@ -517,8 +530,21 @@ namespace neam
           auto set_texture_data(GLint internal_format, const ct::vector2 &size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_2D || TextureType::value == GL_TEXTURE_1D_ARRAY), void)
           {
-            bind();
-            glTexImage2D(TextureType::value, level, internal_format, size.x, size.y, 0, format, type, data);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glTextureImage2DEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glTextureImage2DEXT(id, TextureType::value, level, internal_format, size.x, size.y, 0, format, type, data);
+            }
+            else
+            {
+              bind();
+              glTexImage2D(TextureType::value, level, internal_format, size.x, size.y, 0, format, type, data);
+            }
+#undef Y_DSA_COND
           }
 
           /// set 2D texture data (rectangle textures)
@@ -532,8 +558,21 @@ namespace neam
           auto set_texture_data(GLint internal_format, const ct::vector2 &size, GLenum format, GLenum type, GLvoid *data)
           -> NCR_ENABLE_IF(TextureType::value == GL_TEXTURE_RECTANGLE, void)
           {
-            bind();
-            glTexImage2D(TextureType::value, 0, internal_format, size.x, size.y, 0, format, type, data);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glTextureImage2DEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glTextureImage2DEXT(id, TextureType::value, 0, internal_format, size.x, size.y, 0, format, type, data);
+            }
+            else
+            {
+              bind();
+              glTexImage2D(TextureType::value, 0, internal_format, size.x, size.y, 0, format, type, data);
+            }
+#undef Y_DSA_COND
           }
 
           /// set 2D texture data (cubemaps)
@@ -547,8 +586,21 @@ namespace neam
           auto set_texture_data(cubemap_face face, GLint internal_format, const ct::vector2 &size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF(TextureType::value == GL_TEXTURE_CUBE_MAP, void)
           {
-            bind();
-            glTexImage2D(static_cast<GLenum>(face), level, internal_format, size.x, size.y, 0, format, type, data);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glTextureImage2DEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glTextureImage2DEXT(id, static_cast<GLenum>(face), level, internal_format, size.x, size.y, 0, format, type, data);
+            }
+            else
+            {
+              bind();
+              glTexImage2D(static_cast<GLenum>(face), level, internal_format, size.x, size.y, 0, format, type, data);
+            }
+#undef Y_DSA_COND
           }
 
           /// \brief set 3D texture data
@@ -561,8 +613,21 @@ namespace neam
           auto set_texture_data(GLint internal_format, const ct::vector3 &size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_3D || TextureType::value == GL_TEXTURE_2D_ARRAY), void)
           {
-            bind();
-            glTexImage3D(TextureType::value, level, internal_format, size.x, size.y, size.z, 0, format, type, data);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glTextureImage3DEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glTextureImage3DEXT(id, TextureType::value, level, internal_format, size.x, size.y, size.z, 0, format, type, data);
+            }
+            else
+            {
+              bind();
+              glTexImage3D(TextureType::value, level, internal_format, size.x, size.y, size.z, 0, format, type, data);
+            }
+#undef Y_DSA_COND
           }
 
           /// \brief set 1D texture data of a particular region of the texture
@@ -575,8 +640,21 @@ namespace neam
           auto set_sub_texture_data(ct::fixed_t offset, ct::fixed_t size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_1D), void)
           {
-            bind();
-            glTexSubImage1D(TextureType::value, level, offset, size, format, type, data);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glTextureSubImage1DEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glTextureSubImage1DEXT(id, TextureType::value, level, offset, size, format, type, data);
+            }
+            else
+            {
+              bind();
+              glTexSubImage1D(TextureType::value, level, offset, size, format, type, data);
+            }
+#undef Y_DSA_COND
           }
 
           /// set 2D texture data of a particular region of the texture
@@ -589,8 +667,21 @@ namespace neam
           auto set_sub_texture_data(const ct::vector2 &offset, const ct::vector2 &size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_2D || TextureType::value == GL_TEXTURE_1D_ARRAY), void)
           {
-            bind();
-            glTexSubImage2D(TextureType::value, level, offset.x, offset.y, size.x, size.y, format, type, data);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glTextureSubImage2DEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glTextureSubImage2DEXT(id, TextureType::value, level, offset.x, offset.y, size.x, size.y, format, type, data);
+            }
+            else
+            {
+              bind();
+              glTexSubImage2D(TextureType::value, level, offset.x, offset.y, size.x, size.y, format, type, data);
+            }
+#undef Y_DSA_COND
           }
 
           /// set 2D texture data of a particular region of the texture (rectangle)
@@ -604,8 +695,21 @@ namespace neam
           auto set_sub_texture_data(const ct::vector2 &offset, const ct::vector2 &size, GLenum format, GLenum type, GLvoid *data)
           -> NCR_ENABLE_IF(TextureType::value == GL_TEXTURE_RECTANGLE, void)
           {
-            bind();
-            glTexSubImage2D(TextureType::value, 0, offset.x, offset.y, size.x, size.y, format, type, data);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glTextureSubImage2DEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glTextureSubImage2DEXT(id, TextureType::value, 0, offset.x, offset.y, size.x, size.y, format, type, data);
+            }
+            else
+            {
+              bind();
+              glTexSubImage2D(TextureType::value, 0, offset.x, offset.y, size.x, size.y, format, type, data);
+            }
+#undef Y_DSA_COND
           }
 
           /// set 2D texture data of a particular region of the texture (cubemap)
@@ -620,8 +724,21 @@ namespace neam
           auto set_sub_texture_data(cubemap_face face, const ct::vector2 &offset, const ct::vector2 &size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF(TextureType::value == GL_TEXTURE_CUBE_MAP, void)
           {
-            bind();
-            glTexSubImage2D(static_cast<GLenum>(face), level, offset.x, offset.y, size.x, size.y, format, type, data);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glTextureSubImage2DEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glTextureSubImage2DEXT(id, static_cast<GLenum>(face), level, offset.x, offset.y, size.x, size.y, format, type, data);
+            }
+            else
+            {
+              bind();
+              glTexSubImage2D(static_cast<GLenum>(face), level, offset.x, offset.y, size.x, size.y, format, type, data);
+            }
+#undef Y_DSA_COND
           }
 
           /// \brief set 3D texture data
@@ -634,50 +751,141 @@ namespace neam
           auto set_sub_texture_data(const ct::vector3 &offset, const ct::vector3 &size, GLenum format, GLenum type, GLvoid *data, GLint level = 0)
           -> NCR_ENABLE_IF((TextureType::value == GL_TEXTURE_3D || TextureType::value == GL_TEXTURE_2D_ARRAY), void)
           {
-            bind();
-            glTexSubImage3D(TextureType::value, level, offset.x, offset.y, offset.z, size.x, size.y, size.z, format, type, data);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glTextureSubImage3DEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glTextureSubImage3DEXT(id, TextureType::value, level, offset.x, offset.y, offset.z, size.x, size.y, size.z, format, type, data);
+            }
+            else
+            {
+              bind();
+              glTexSubImage3D(TextureType::value, level, offset.x, offset.y, offset.z, size.x, size.y, size.z, format, type, data);
+            }
+#undef Y_DSA_COND
           }
 
           /// \brief set tex parameters (see openGL doc for pname / param @ https://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml)
           void set_gl_parameter(GLenum pname, float param)
           {
-            bind();
-            glTexParameterf(TextureType::value, pname, param);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glTextureParameterfEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glTextureParameterfEXT(id, TextureType::value, pname, param);
+            }
+            else
+            {
+              bind();
+              glTexParameterf(TextureType::value, pname, param);
+            }
+#undef Y_DSA_COND
           }
 
           /// \brief set tex parameters (see openGL doc for pname / param @ https://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml)
           void set_gl_parameter(GLenum pname, GLint param)
           {
-            bind();
-            glTexParameteri(TextureType::value, pname, param);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glTextureParameteriEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glTextureParameteriEXT(id, TextureType::value, pname, param);
+            }
+            else
+            {
+              bind();
+              glTexParameteri(TextureType::value, pname, param);
+            }
+#undef Y_DSA_COND
           }
 
           /// \brief set tex parameters (see openGL doc for pname / param @ https://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml)
           void set_gl_parameter(GLenum pname, float *params)
           {
-            bind();
-            glTexParameterfv(TextureType::value, pname, params);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glTextureParameterfvEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glTextureParameterfvEXT(id, TextureType::value, pname, params);
+            }
+            else
+            {
+              bind();
+              glTexParameterfv(TextureType::value, pname, params);
+            }
+#undef Y_DSA_COND
           }
 
           /// \brief set tex parameters (see openGL doc for pname / param @ https://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml)
           void set_gl_parameter(GLenum pname, GLint *params)
           {
-            bind();
-            glTexParameteriv(TextureType::value, pname, params);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glTextureParameterivEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glTextureParameterivEXT(id, TextureType::value, pname, params);
+            }
+            else
+            {
+              bind();
+              glTexParameteriv(TextureType::value, pname, params);
+            }
+#undef Y_DSA_COND
           }
 
           /// \brief set tex parameters (see openGL doc for pname / param @ https://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml)
           void set_gl_parameterI(GLenum pname, GLint *params)
           {
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glTextureParameterIivEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glTextureParameterIivEXT(id, TextureType::value, pname, params);
+            }
+            else
+            {
             bind();
             glTexParameterIiv(TextureType::value, pname, params);
+            }
+#undef Y_DSA_COND
           }
 
           /// \brief set tex parameters (see openGL doc for pname / param @ https://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml)
           void set_gl_parameterI(GLenum pname, GLuint *params)
           {
-            bind();
-            glTexParameterIuiv(TextureType::value, pname, params);
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glTextureParameterIuivEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glTextureParameterIuivEXT(id, TextureType::value, pname, params);
+            }
+            else
+            {
+              bind();
+              glTexParameterIuiv(TextureType::value, pname, params);
+            }
+#undef Y_DSA_COND
           }
 
           /// \brief create a link to a more generic texture. (removing from the type any extra Args template parameter)
