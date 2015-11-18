@@ -46,17 +46,19 @@ namespace neam
           void on_change(const std::string &s)
           {
             source = s;
+            changed = true;
           }
 
           /// \brief Called to query for env inner changes
           bool has_changed() const
           {
-            return false;
+            return changed;
           }
 
           /// \brief Reset inner change flag
-          void clear_changed() const
+          void clear_changed()
           {
+            changed = false;
           }
 
           /// \brief Called to retrieve the source code of the shader
@@ -70,6 +72,7 @@ namespace neam
 
         private:
           std::string source;
+          bool changed = false;
       };
 
       /// \brief This is the base class for shader envs with preprocessor usage

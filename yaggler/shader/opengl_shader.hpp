@@ -289,7 +289,6 @@ namespace neam
         private:
           inline void unlocked_recompile()
           {
-
             std::string source = env.get_source();
             env.clear_changed();
 
