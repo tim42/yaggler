@@ -428,6 +428,13 @@ namespace neam
 
       } // namespace internal
 
+      namespace framework_files
+      {
+        extern constexpr neam::string_t main_frag = "data/klmb-framework/main.frag";
+        extern constexpr neam::string_t main_vert = "data/klmb-framework/main.vert";
+        extern constexpr neam::string_t main_geom = "data/klmb-framework/main.geom";
+      } // namespace framework
+
       /// \brief The default KLMB shader framework
       struct default_shader_framework
       {
@@ -435,6 +442,14 @@ namespace neam
         using setup_framework = internal::setup_shader_framework<ShaderType>;
 
         using framework_data = internal::_shader_framework_data;
+
+        using framework_files = ct::type_list
+        <
+          // Framework files
+          ct::pair<embed::GLenum<GL_VERTEX_SHADER>, auto_file_shader<framework_files::main_vert>>,
+          ct::pair<embed::GLenum<GL_GEOMETRY_SHADER>, auto_file_shader<framework_files::main_geom>>,
+          ct::pair<embed::GLenum<GL_FRAGMENT_SHADER>, auto_file_shader<framework_files::main_frag>>
+        >;
 
         static constexpr neam::string_t framework_name = "K:LMB";
         static constexpr neam::string_t framework_version = "0.1";
