@@ -78,6 +78,44 @@ namespace neam
             __split_init<Args...>(0);
           }
 
+          void DSA_aware_glBufferData(GLuint id, GLenum target, GLsizei size, const void *data, GLenum usage)
+          {
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glNamedBufferDataEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glNamedBufferDataEXT(id, size, data, usage);
+            }
+            else
+            {
+              bind();
+              glBufferData(target, size, data, usage);
+            }
+          }
+
+#undef Y_DSA_COND
+          void DSA_aware_glBufferSubData(GLuint id, GLenum target, GLintptr offset, GLsizei size, const void *data)
+          {
+#ifdef YAGGLER_USE_DSA_IF_AVAILABLE
+#define Y_DSA_COND  (!!glNamedBufferSubDataEXT)
+#else
+#define Y_DSA_COND  true
+#endif
+            if (::opengl_version::useDSA && Y_DSA_COND) // NOTE: as useDSA is constexpr, the dead-code elimination pass will remove that branching
+            {
+              glNamedBufferSubDataEXT(id, offset, size, data);
+            }
+            else
+            {
+              bind();
+              glBufferSubData(target, offset, size, data);
+            }
+          }
+#undef Y_DSA_COND
+
         public:
           /// \brief Allocate a new buffer and acquire its ownership
           buffer()
@@ -266,8 +304,7 @@ namespace neam
           template<typename ArrayType, size_t ArraySize>
           void set_data(const ArrayType (&data)[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
-            bind();
-            glBufferData(GeomType::value, sizeof(ArrayType) * ArraySize, data, draw_type);
+            DSA_aware_glBufferData(id, GeomType::value, sizeof(ArrayType) * ArraySize, data, draw_type);
           }
 
           /// \brief set the data from an array_wrapper
@@ -276,8 +313,7 @@ namespace neam
           template<typename ArrayType>
           void set_data(const array_wrapper<ArrayType> &w, GLenum draw_type = GL_STATIC_DRAW)
           {
-            bind();
-            glBufferData(GeomType::value, (sizeof(ArrayType) * w.size), w.array, draw_type);
+            DSA_aware_glBufferData(id, GeomType::value, (sizeof(ArrayType) * w.size), w.array, draw_type);
           }
 
           /// \brief set the data from an C array (with fixed size)
@@ -286,7 +322,6 @@ namespace neam
           template<size_t ArraySize>
           void set_data_convert_to_float(ct::vector4 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
-            bind();
             GLfloat *dest_data = new GLfloat[ArraySize * 4];
             for (size_t i = 0; i < ArraySize; ++i)
             {
@@ -296,7 +331,7 @@ namespace neam
               dest_data[i + 3] = ct::conversion::to<GLfloat>(data[i].w);
             }
 
-            glBufferData(GeomType::value, sizeof(GLfloat) * 4 * ArraySize, dest_data, draw_type);
+            DSA_aware_glBufferData(id, GeomType::value, sizeof(GLfloat) * 4 * ArraySize, dest_data, draw_type);
             delete [] dest_data;
           }
 
@@ -306,7 +341,6 @@ namespace neam
           template<size_t ArraySize>
           void set_data_convert_to_float(ct::vector3 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
-            bind();
             GLfloat *dest_data = new GLfloat[ArraySize * 3];
             for (size_t i = 0; i < ArraySize; ++i)
             {
@@ -315,7 +349,7 @@ namespace neam
               dest_data[i + 2] = ct::conversion::to<GLfloat>(data[i].z);
             }
 
-            glBufferData(GeomType::value, sizeof(GLfloat) * 3 * ArraySize, dest_data, draw_type);
+            DSA_aware_glBufferData(id, GeomType::value, sizeof(GLfloat) * 3 * ArraySize, dest_data, draw_type);
             delete [] dest_data;
           }
 
@@ -325,7 +359,6 @@ namespace neam
           template<size_t ArraySize>
           void set_data_convert_to_float(ct::vector2 data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
-            bind();
             GLfloat *dest_data = new GLfloat[ArraySize * 2];
             for (size_t i = 0; i < ArraySize; ++i)
             {
@@ -333,7 +366,7 @@ namespace neam
               dest_data[i + 1] = ct::conversion::to<GLfloat>(data[i].y);
             }
 
-            glBufferData(GeomType::value, sizeof(GLfloat) * 2 * ArraySize, dest_data, draw_type);
+            DSA_aware_glBufferData(id, GeomType::value, sizeof(GLfloat) * 2 * ArraySize, dest_data, draw_type);
             delete [] dest_data;
           }
 
@@ -343,19 +376,106 @@ namespace neam
           template<size_t ArraySize>
           void set_data_convert_to_float(ct::fixed_t data[ArraySize], GLenum draw_type = GL_STATIC_DRAW)
           {
-            bind();
             GLfloat *dest_data = new GLfloat[ArraySize];
             for (size_t i = 0; i < ArraySize; ++i)
             {
               dest_data[i + 0] = ct::conversion::to<GLfloat>(data[i]);
             }
 
-            glBufferData(GeomType::value, sizeof(GLfloat) * ArraySize, dest_data, draw_type);
+            DSA_aware_glBufferData(id, GeomType::value, sizeof(GLfloat) * ArraySize, dest_data, draw_type);
+            delete [] dest_data;
+          }
+
+          /// \brief set the data from a C array (with fixed size)
+          /// \param data the data to set
+          /// \param offset The position/offset where the data will be written
+          template<typename ArrayType, size_t ArraySize>
+          void set_subdata(const ArrayType (&data)[ArraySize], size_t offset)
+          {
+            DSA_aware_glBufferSubData(id, GeomType::value, offset, sizeof(ArrayType) * ArraySize, data);
+          }
+
+          /// \brief set the data from an array_wrapper
+          /// \param data the data to set
+          /// \param offset The position/offset where the data will be written
+          template<typename ArrayType>
+          void set_subdata(const array_wrapper<ArrayType> &w, size_t offset)
+          {
+            DSA_aware_glBufferSubData(id, GeomType::value, offset, (sizeof(ArrayType) * w.size), w.array);
+          }
+
+          /// \brief set the data from an C array (with fixed size)
+          /// \param data the data to set
+          /// \param offset The position/offset where the data will be written
+          template<size_t ArraySize>
+          void set_subdata_convert_to_float(ct::vector4 data[ArraySize], size_t offset)
+          {
+            GLfloat *dest_data = new GLfloat[ArraySize * 4];
+            for (size_t i = 0; i < ArraySize; ++i)
+            {
+              dest_data[i + 0] = ct::conversion::to<GLfloat>(data[i].x);
+              dest_data[i + 1] = ct::conversion::to<GLfloat>(data[i].y);
+              dest_data[i + 2] = ct::conversion::to<GLfloat>(data[i].z);
+              dest_data[i + 3] = ct::conversion::to<GLfloat>(data[i].w);
+            }
+
+            DSA_aware_glBufferSubData(id, GeomType::value, offset, sizeof(GLfloat) * 4 * ArraySize, dest_data);
+            delete [] dest_data;
+          }
+
+          /// \brief set the data from an C array (with fixed size)
+          /// \param data the data to set
+          /// \param offset The position/offset where the data will be written
+          template<size_t ArraySize>
+          void set_subdata_convert_to_float(ct::vector3 data[ArraySize], size_t offset)
+          {
+            GLfloat *dest_data = new GLfloat[ArraySize * 3];
+            for (size_t i = 0; i < ArraySize; ++i)
+            {
+              dest_data[i + 0] = ct::conversion::to<GLfloat>(data[i].x);
+              dest_data[i + 1] = ct::conversion::to<GLfloat>(data[i].y);
+              dest_data[i + 2] = ct::conversion::to<GLfloat>(data[i].z);
+            }
+
+            DSA_aware_glBufferSubData(id, GeomType::value, offset, sizeof(GLfloat) * 3 * ArraySize, dest_data);
+            delete [] dest_data;
+          }
+
+          /// \brief set the data from an C array (with fixed size)
+          /// \param data the data to set
+          /// \param offset The position/offset where the data will be written
+          template<size_t ArraySize>
+          void set_subdata_convert_to_float(ct::vector2 data[ArraySize], size_t offset)
+          {
+            GLfloat *dest_data = new GLfloat[ArraySize * 2];
+            for (size_t i = 0; i < ArraySize; ++i)
+            {
+              dest_data[i + 0] = ct::conversion::to<GLfloat>(data[i].x);
+              dest_data[i + 1] = ct::conversion::to<GLfloat>(data[i].y);
+            }
+
+            DSA_aware_glBufferSubData(id, GeomType::value, offset, sizeof(GLfloat) * 2 * ArraySize, dest_data);
+            delete [] dest_data;
+          }
+
+          /// \brief set the data from an C array (with fixed size)
+          /// \param data the data to set
+          /// \param offset The position/offset where the data will be written
+          template<size_t ArraySize>
+          void set_subdata_convert_to_float(ct::fixed_t data[ArraySize], size_t offset)
+          {
+            GLfloat *dest_data = new GLfloat[ArraySize];
+            for (size_t i = 0; i < ArraySize; ++i)
+            {
+              dest_data[i + 0] = ct::conversion::to<GLfloat>(data[i]);
+            }
+
+            DSA_aware_glBufferSubData(id, GeomType::value, offset, sizeof(GLfloat) * ArraySize, dest_data);
             delete [] dest_data;
           }
 
           /// \brief create a link to a more generic buffer (generic when speaking of C++ types).
-          /// no inheritance involved. This cast will create a 'link' program shader object.
+          /// no inheritance involved. This cast will create a 'link' buffer object.
           operator buffer<type::opengl, GeomType> ()
           {
             return buffer<type::opengl, GeomType> (*this);
