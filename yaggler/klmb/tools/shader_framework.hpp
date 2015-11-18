@@ -54,7 +54,7 @@ namespace neam
         // that ugly framework data structure...
         struct _shader_framework_data
         {
-          // global stuff
+          // global stuff (MUST be defined by a framework data)
           uint8_t       fragment_shader_number = 0;
           uint8_t       geometry_shader_number = 0;
           uint8_t       tes_shader_number = 0;
@@ -427,6 +427,20 @@ namespace neam
         };
 
       } // namespace internal
+
+      /// \brief The default KLMB shader framework
+      struct default_shader_framework
+      {
+        template<GLenum ShaderType>
+        using setup_framework = internal::setup_shader_framework<ShaderType>;
+
+        using framework_data = internal::_shader_framework_data;
+
+        static constexpr neam::string_t framework_name = "K:LMB";
+        static constexpr neam::string_t framework_version = "0.1";
+      };
+      constexpr neam::string_t default_shader_framework::framework_version;
+      constexpr neam::string_t default_shader_framework::framework_name;
     } // namespace yaggler
   } // namespace klmb
 } // namespace neam

@@ -55,6 +55,14 @@ namespace neam
         extern constexpr neam::string_t main_vert = "data/klmb-framework/main.vert";
         extern constexpr neam::string_t main_geom = "data/klmb-framework/main.geom";
       } // namespace framework
+      /// \brief The default framework files
+      using default_framework_files = ct::type_list
+      <
+        // Framework files
+        ct::pair<embed::GLenum<GL_VERTEX_SHADER>, auto_file_shader<framework_files::main_vert>>,
+        ct::pair<embed::GLenum<GL_GEOMETRY_SHADER>, auto_file_shader<framework_files::main_geom>>,
+        ct::pair<embed::GLenum<GL_FRAGMENT_SHADER>, auto_file_shader<framework_files::main_frag>>
+      >;
 
       /// \brief this is the very basic K:LMB/YägGLer base_material.
       /// you should take a look at the files material_usings.hpp and klmb_context_helper.hpp
@@ -77,15 +85,29 @@ namespace neam
       ///    (like, for example, changing the default color merging algo to implement a controlled color grading).
       ///    If overridden by custom shaders, you should follow *exactly* how default shaders are implemented,
       ///    and you have to specify a shader for each stage with at least two shader entry points
+      ///    The default value is default_framework_files
+      ///
+      /// \see default_framework_files
+      ///
+      /// \p Framework The framework to use for this material
+      /// \note the shader could specify the framework they are using and their version by defining those macros:
+      ///       \code FRAMEWORK [framework-name]\endcode (default framework name is K:LMB)
+      ///       \code FRAMEWORK_VERSION [framework-version]\endcode
+      ///       If the version or the name doesn't match an error is triggered (with a proper message in the console)
+      ///
+      /// \see default_shader_framework
+      ///
+      /// \note A shader used by this class MUST define the following macro: \code KLMB_IS_USING_FRAMEWORK \endcode, independently of the framework used
+      ///
+      /// The default framework (K:LMB) ask the shaders to define the following marco (in some cases):
+      ///   \code KLMB_IS_ENTRY_POINT \endcode : Define it if the shader file has a main function (under K:LMB framework \e KLMB_MAIN_FUNCTION)
+      ///   \code KLMB_NUMBER_OF_OUTPUT_BUFFER [the actual number] \endcode The default is 1. It is the number of output buffers the shader write.
+      ///         Each output buffer have a pre-defined output variable: \code KLMB_SHARED_NAME(color_[output-buffer-index]) \endcode
+      /// Under the K:LMB framework, you could define multiple shaders with an entry point, but only in the Fragment shader stage
+      /// K:LMB files are located in \e data/klmb-framework
       ///
       /// As most of the K:LMB framework, this is mostly shader oriented.
-      template<typename Shaders, typename Textures, typename VarCtx, typename Variables, typename FrameworkShaders = ct::type_list
-      <
-        // Framework files
-        ct::pair<embed::GLenum<GL_VERTEX_SHADER>, auto_file_shader<framework_files::main_vert>>,
-        ct::pair<embed::GLenum<GL_GEOMETRY_SHADER>, auto_file_shader<framework_files::main_geom>>,
-        ct::pair<embed::GLenum<GL_FRAGMENT_SHADER>, auto_file_shader<framework_files::main_frag>>
-      >>
+      template<typename Shaders, typename Textures, typename VarCtx, typename Variables, typename FrameworkShaders = default_framework_files, typename Framework = default_shader_framework>
       class base_material
       {
         private:
@@ -257,12 +279,38 @@ namespace neam
 
             bool is_using_klmb = tools::is_true(shader.environment.get_preprocessor_value("KLMB_IS_USING_FRAMEWORK"));
 
+            std::string framework = shader.environment.get_preprocessor_value("FRAMEWORK");
+            bool bad_framework = false;
+            if (!framework.empty())
+            {
+              // We have some custom framework
+              if (framework != Framework::framework_name)
+              {
+                neam::cr::out.error() << LOGGER_INFO << "K:LMB/YAGGLER: material: shader '" << shader.get_source_name() << "':" << cr::newline
+                                      << "  Shader is expecting framework '" << framework << "' but current framework is '" << Framework::framework_name << "'" << std::endl;
+                bad_framework = true;
+              }
+            }
+
+            std::string framework_version = shader.environment.get_preprocessor_value("FRAMEWORK_VERSION");
+            if (!framework_version.empty())
+            {
+              // TODO: maybe a better framework version comparison
+              if (framework_version != Framework::framework_version)
+              {
+                neam::cr::out.error() << LOGGER_INFO << "K:LMB/YAGGLER: material: shader '" << shader.get_source_name() << "':" << cr::newline
+                                      << "  Shader is expecting framework version '" << framework_version << "' but current framework version is '" << Framework::framework_version << "'" << cr::newline
+                                      << "  Framework name: '" << Framework::framework_name << "'" << std::endl;
+                bad_framework = true;
+              }
+            }
+
             // setup klmb frmwk
-            if (is_using_klmb)
-              prog_counter += internal::setup_shader_framework<std::remove_reference<decltype(shader)>::type::shader_type>::setup(shader, prog_counter, framework_data);
+            if (is_using_klmb && !bad_framework)
+              prog_counter += Framework::template setup_framework<std::remove_reference<decltype(shader)>::type::shader_type>::setup(shader, prog_counter, framework_data);
 #ifndef YAGGLER_NO_MESSAGES
             else if (shader.shader_type == GL_FRAGMENT_SHADER || shader.shader_type == GL_VERTEX_SHADER)
-              neam::cr::out.warning() << LOGGER_INFO << "K:LMB/YAGGLER: material: shader framework: shader '" << shader.get_source_name() << "' is not using K:LMB framework." << std::endl;
+              neam::cr::out.warning() << LOGGER_INFO << "K:LMB/YAGGLER: material: shader framework: shader '" << shader.get_source_name() << "' is not using " << Framework::framework_name << " framework." << std::endl;
 #endif
 
             return 0;
@@ -272,7 +320,7 @@ namespace neam
           void _klmb_defines_loop_over_shaders(neam::cr::seq<Idxs...>)
           {
             uint8_t prog_counter = 0;
-            internal::_shader_framework_data framework_data;
+            typename Framework::framework_data framework_data;
 
             // setup number of shaders
             framework_data.fragment_shader_number = Shaders::fragment_shaders_t::size();
@@ -350,8 +398,8 @@ namespace neam
       /// \note A convention exists where the first variable should be the vp_matrix and the second one the object_matrix
       /// \see create_material()
       /// \see variables_indexes::variable_indexes
-      template<typename Shaders, typename Textures, typename FrameworkShaders, typename... VarCtxPairs>
-      base_material<Shaders, Textures, typename internal::template context_t<Textures, VarCtxPairs...>, typename internal::variable_filter<VarCtxPairs...>::tuple, FrameworkShaders>
+      template<typename Shaders, typename Textures, typename FrameworkShaders, typename... VarCtxPairs, typename Framework = default_shader_framework>
+      base_material<Shaders, Textures, typename internal::template context_t<Textures, VarCtxPairs...>, typename internal::variable_filter<VarCtxPairs...>::tuple, FrameworkShaders, Framework>
       create_base_material(VarCtxPairs... vctx)
       {
         return internal::material_creator
@@ -362,7 +410,8 @@ namespace neam
             Textures,
             typename internal::template context_t<Textures, VarCtxPairs...>,
             typename internal::variable_filter<VarCtxPairs...>::tuple,
-            FrameworkShaders
+            FrameworkShaders,
+            Framework
           >,
           typename internal::variable_indexer<VarCtxPairs...>::tuple
         >::create_base_material(std::move(vctx)...);
@@ -395,8 +444,8 @@ namespace neam
       /// \note A convention exists where the first variable should be the vp_matrix and the second one the object_matrix
       /// \see create_material_ptr()
       /// \see variables_indexes::variable_indexes
-      template<typename Shaders, typename Textures, typename FrameworkShaders, typename... VarCtxPairs>
-      base_material<Shaders, Textures, typename internal::template context_t<Textures, VarCtxPairs...>, typename internal::variable_filter<VarCtxPairs...>::tuple, FrameworkShaders> *
+      template<typename Shaders, typename Textures, typename FrameworkShaders, typename... VarCtxPairs, typename Framework = default_shader_framework>
+      base_material<Shaders, Textures, typename internal::template context_t<Textures, VarCtxPairs...>, typename internal::variable_filter<VarCtxPairs...>::tuple, FrameworkShaders, Framework> *
       create_base_material_ptr(VarCtxPairs... vctx)
       {
         return internal::material_creator
@@ -407,7 +456,8 @@ namespace neam
             Textures,
             typename internal::template context_t<Textures, VarCtxPairs...>,
             typename internal::variable_filter<VarCtxPairs...>::tuple,
-            FrameworkShaders
+            FrameworkShaders,
+            Framework
           >,
           typename internal::variable_indexer<VarCtxPairs...>::tuple
         >::create_base_material_ptr(std::move(vctx)...);
@@ -428,10 +478,10 @@ namespace neam
 
       /// \brief an helper for creating materials
       /// It adds references to the vp_matrix and the object_matrix automatically (as the first and second variables)
-      template<typename Shaders, typename Textures, typename FrameworkShaders, typename... VarCtxPairs>
+      template<typename Shaders, typename Textures, typename FrameworkShaders, typename... VarCtxPairs, typename Framework = default_shader_framework>
       auto create_material(VarCtxPairs... vctx)
       {
-        return create_base_material<Shaders, Textures, FrameworkShaders>
+        return create_base_material<Shaders, Textures, FrameworkShaders, Framework>
                (
                  neam::klmb::yaggler::make_ctx_pair("vp_matrix", neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)), // allow camera switches
                  neam::klmb::yaggler::make_ctx_pair("object_matrix", neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)),
@@ -454,10 +504,10 @@ namespace neam
 
       /// \brief an helper for creating materials
       /// It adds references to the vp_matrix and the object_matrix automatically (as the first and second variables)
-      template<typename Shaders, typename Textures, typename FrameworkShaders, typename... VarCtxPairs>
+      template<typename Shaders, typename Textures, typename FrameworkShaders, typename... VarCtxPairs, typename Framework = default_shader_framework>
       auto create_material_ptr(VarCtxPairs... vctx)
       {
-        return create_base_material_ptr<Shaders, Textures, FrameworkShaders>
+        return create_base_material_ptr<Shaders, Textures, FrameworkShaders, Framework>
                (
                  neam::klmb::yaggler::make_ctx_pair("vp_matrix", neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)), // allow camera switches
                  neam::klmb::yaggler::make_ctx_pair("object_matrix", neam::klmb::yaggler::variable<glm::mat4 *>(nullptr)),
