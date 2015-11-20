@@ -34,6 +34,7 @@
 
 #include <klmb/tools/tools.hpp>
 #include <tools/logger/logger.hpp>
+#include <version.hpp>
 
 // lovely defines for GLSL * shaders
 #define KLMB_YAGGLER_GLOBAL_DEFS                "./data/klmb-framework/defs.glsl"
@@ -452,10 +453,10 @@ namespace neam
         >;
 
         static constexpr neam::string_t framework_name = "K:LMB";
-        static constexpr neam::string_t framework_version = "0.1";
+        static constexpr const char *framework_version = *&neam::yaggler::version::short_string;
       };
-      constexpr neam::string_t default_shader_framework::framework_version;
       constexpr neam::string_t default_shader_framework::framework_name;
+      constexpr const char *default_shader_framework::framework_version;
     } // namespace yaggler
   } // namespace klmb
 } // namespace neam

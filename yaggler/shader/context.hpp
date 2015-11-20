@@ -48,8 +48,11 @@ namespace neam
       // context types
       namespace contexts
       {
+        /// \brief The none context is used for creation only
         class none {};
+        /// \brief Fixed (meaning, can't be changed at runtime) context
         class fixed {};
+        /// \brief Dynamic context, not implemented
         class dynamic {};
       } // namespace contexts
 

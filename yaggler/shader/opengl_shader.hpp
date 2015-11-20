@@ -270,7 +270,7 @@ namespace neam
           }
 
           /// \brief return the source name (ex. the filename) or type (ex. \code "<dynamic string>" \endcode)
-          static constexpr inline const char *get_source_name()
+          static inline std::string get_source_name()
           {
             return ShaderSource::get_source_name();
           }

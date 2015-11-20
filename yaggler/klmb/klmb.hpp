@@ -57,6 +57,10 @@
 // gbuffer
 #include <klmb/gbuffer/gbuffer.hpp>
 
+// compute
+#include <klmb/compute/compute.hpp>
+#include <klmb/compute/compute_framework.hpp>
+
 namespace neam
 {
   /// \brief Holds an upper level set of utilities that doesn't mimic at 1:1 the openGL functionalities
