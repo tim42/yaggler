@@ -27,14 +27,16 @@
 #ifndef __N_302503673843070490_1235359853__GEOMETRY_HPP__
 # define __N_302503673843070490_1235359853__GEOMETRY_HPP__
 
-#include "geometry/options.hpp"
+#include "options.hpp"
 
-#include "geometry/opengl_buffer.hpp"
-#include "geometry/opengl_buffer_view.hpp"
+#include "opengl_buffer.hpp"
+#include "opengl_buffer_view.hpp"
 
-#include "geometry/opengl_vao.hpp"
+#include "opengl_vao.hpp"
 
-#include "geometry/opengl_draw_state.hpp"
+#include "opengl_draw_state.hpp"
+
+#include "opengl_transform_feedback.hpp"
 
 #endif /*__N_302503673843070490_1235359853__GEOMETRY_HPP__*/
 

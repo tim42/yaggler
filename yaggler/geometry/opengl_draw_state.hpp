@@ -28,6 +28,7 @@
 
 #include <yaggler_type.hpp>
 #include <geometry/draw_state_base.hpp>
+#include <geometry/opengl_transform_feedback.hpp>
 #include <GLEW/glew.h>
 
 namespace neam
@@ -41,7 +42,11 @@ namespace neam
         normal,
         indexed,
         instanced,
-        indexed_instanced
+        indexed_instanced,
+        transform_feedback,
+        transform_feedback_instanced,
+        transform_feedback_stream,
+        transform_feedback_stream_instanced,
       };
 
       /// \brief this class represent a draw state.
@@ -53,7 +58,8 @@ namespace neam
           /// \brief initialize and create the draw state
           /// \param _method describe the kind of geometry to render
           draw_state(draw_method _method = draw_method::normal)
-            : method(_method), mode(0), patch_size(0), count(0), type(GL_UNSIGNED_INT), start_index(0), prim_count(1)
+            : method(_method), mode(0), patch_size(0), count(0), type(GL_UNSIGNED_INT), start_index(0), prim_count(1), stream(0),
+              tf(0)
           {
           }
 
@@ -147,6 +153,26 @@ namespace neam
             prim_count = _prim_count;
           }
 
+          /// \brief Set the stream to use
+          /// \note only used by transform_feedback_stream*
+          void set_stream(size_t _stream)
+          {
+            stream = _stream;
+          }
+
+          /// \brief Set the transform_feedback to use
+          void set_transform_feedback(const transform_feedback<type::opengl> &_tf)
+          {
+            tf.link_to(_tf);
+          }
+
+          /// \brief Set the transform_feedback to use
+          /// \note With this method, the internal transform_feedback object will have the ownership of the GL resource
+          void set_transform_feedback(transform_feedback<type::opengl> &&_tf)
+          {
+            tf.stole(_tf);
+          }
+
           /// \brief return the mode (which kind of geometry to draw)
           GLenum get_mode() const
           {
@@ -177,6 +203,24 @@ namespace neam
             return prim_count;
           }
 
+          /// \brief Get the stream to use
+          size_t get_stream() const
+          {
+            return stream;
+          }
+
+          /// \brief Return the transform_feedback object
+          transform_feedback<type::opengl> &get_transform_feedback()
+          {
+            return tf;
+          }
+
+          /// \brief Return the transform_feedback object
+          const transform_feedback<type::opengl> &get_transform_feedback() const
+          {
+            return tf;
+          }
+
           /// \brief do the draw call
           void draw() const
           {
@@ -197,6 +241,18 @@ namespace neam
               case draw_method::indexed_instanced:
                 glDrawElementsInstanced(mode, count, type, reinterpret_cast<GLvoid *>(start_index), prim_count);
                 break;
+              case draw_method::transform_feedback:
+                glDrawTransformFeedback(mode, tf.get_id());
+                break;
+              case draw_method::transform_feedback_instanced:
+                glDrawTransformFeedbackInstanced(mode, tf.get_id(), prim_count);
+                break;
+              case draw_method::transform_feedback_stream:
+                glDrawTransformFeedbackStream(mode, tf.get_id(), stream);
+                break;
+              case draw_method::transform_feedback_stream_instanced:
+                glDrawTransformFeedbackStreamInstanced(mode, tf.get_id(), stream, prim_count);
+                break;
 #ifndef YAGGLER_NO_MESSAGES
               default:
                 neam::cr::out.error() << LOGGER_INFO << "unknow draw method" << std::endl;
@@ -212,6 +268,8 @@ namespace neam
           GLenum type;
           size_t start_index;
           size_t prim_count;
+          size_t stream;
+          transform_feedback<type::opengl> tf;
       };
     } // namespace geometry
   } // namespace yaggler

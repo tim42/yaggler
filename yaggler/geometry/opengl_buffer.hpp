@@ -258,6 +258,30 @@ namespace neam
             glBindBuffer(GeomType::value, id);
           }
 
+          /// \brief Bind the buffer to a different buffer target
+          void bind_to_target(GLenum value) const
+          {
+            glBindBuffer(value, id);
+          }
+
+          /// \brief bind the buffer
+          void bind_range(GLuint index, size_t offset, size_t size) const
+          {
+            glBindBufferRange(GeomType::value, index, id, offset, size);
+          }
+
+          /// \brief Bind the buffer to a different buffer target
+          void bind_range_to_target(GLenum value, GLuint index, size_t offset, size_t size) const
+          {
+            glBindBufferRange(value, index, id, offset, size);
+          }
+
+          /// \brief Unbind a target
+          void unbind_target(GLenum value) const
+          {
+            glBindBuffer(value, 0);
+          }
+
           /// \brief unbind the buffer
           void unbind() const
           {

@@ -114,12 +114,10 @@ namespace neam
               variable_strings {{pairs.variable_name...}},
               variable_buffers {{pairs.buffer_storage...}}
           {
-            glGetError(); // because shader_prog is not yet linked, we remove the error
-
             // setup shader defines
             _setup_klmb_defines();
 
-            // link it :)
+            // link it
             link_shader();
           }
 
@@ -204,6 +202,14 @@ namespace neam
           const typename Textures::template get_type<Index> &get_texture() const
           {
             return textures.instance.template get<Index>();
+          }
+
+          /// \brief Set the varyings to be captured by the transform feedback
+          /// \note Well, you'll have to (re ?)link your shader after this. (Except with the \e NV_transform_feedback extension if activated)
+          /// \link https://www.opengl.org/wiki/Transform_Feedback
+          void set_transform_feedback_varyings(std::initializer_list<std::string> varyings, GLenum buffer_mode)
+          {
+            shader_prog.set_transform_feedback_varyings(varyings, buffer_mode);
           }
 
           /// \brief return the shader program

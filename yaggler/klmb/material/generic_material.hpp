@@ -138,6 +138,15 @@ namespace neam
               wrapper->link_shader();
           }
 
+          /// \brief Set the varyings to be captured by the transform feedback
+          /// \note Well, you'll have to (re ?)link your shader after this. (Except with the \e NV_transform_feedback extension if activated)
+          /// \link https://www.opengl.org/wiki/Transform_Feedback
+          void set_transform_feedback_varyings(std::initializer_list<std::string> varyings, GLenum buffer_mode)
+          {
+            if (wrapper)
+              wrapper->set_transform_feedback_varyings(varyings, buffer_mode);
+          }
+
           /// \brief Return a reference to the pointer of the view-projection matrix
           glm::mat4 *& get_vp_matrix()
           {
@@ -163,6 +172,7 @@ namespace neam
 
             virtual void use() const = 0;
             virtual void link_shader() = 0;
+            virtual void set_transform_feedback_varyings(std::initializer_list<std::string> varyings, GLenum buffer_mode) = 0;
 
 
             bool ownership = false;
@@ -201,6 +211,11 @@ namespace neam
             virtual void link_shader() final
             {
               matptr->link_shader();
+            }
+
+            virtual void set_transform_feedback_varyings(std::initializer_list<std::string> varyings, GLenum buffer_mode) final
+            {
+              matptr->set_transform_feedback_varyings(varyings, buffer_mode);
             }
 
             virtual glm::mat4 *&get_object_matrix() final

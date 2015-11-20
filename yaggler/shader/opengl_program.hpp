@@ -30,7 +30,6 @@
 #include <cstring>
 
 #include <GLEW/glew.h>
-// #include <GL/gl.h>
 
 #include <shader/program_base.hpp>
 #include <shader/except.hpp>
@@ -268,7 +267,7 @@ namespace neam
 
               ownership = t.has_ownership();
               pg_id = t.get_id();
-              t.give_up();
+              t.give_up_ownership();
             }
             return *this;
           }
@@ -276,7 +275,7 @@ namespace neam
           /// \brief link to another shader program object. (it could be associated as a pointer copy)
           /// The openGL resource life-scope will not be related with the current object lifetime.
           template<typename... OInit>
-          program &link_to(program<type::opengl, OInit...> &t)
+          program &link_to(const program<type::opengl, OInit...> &t)
           {
             if (&t != this)
             {
@@ -321,7 +320,7 @@ namespace neam
               failed = true;
               return;
             }
-            if (need_link)
+            if (need_link || need_relink)
               link();
           }
 
@@ -374,6 +373,20 @@ namespace neam
               glGetProgramInfoLog(pg_id, max_len - strlen(header), &ret, message + strlen(header));
               throw shader_exception(message, true);
             }
+            need_relink = false;
+          }
+
+          /// \brief Set the varyings to be captured by the transform feedback
+          /// \note Well, you'll have to (re ?)link your shader after this. (Except with the \e NV_transform_feedback extension if activated)
+          /// \link https://www.opengl.org/wiki/Transform_Feedback
+          void set_transform_feedback_varyings(std::initializer_list<std::string> varyings, GLenum buffer_mode)
+          {
+            size_t i = 0;
+            const char *array[varyings.size()];
+            for (const auto &v : varyings)
+              array[i++] = v.data();
+            glTransformFeedbackVaryings(pg_id, varyings.size(), array, buffer_mode);
+            need_relink = true;
           }
 
           /// \brief return the uniform variable associated with a given \p name
@@ -503,6 +516,7 @@ namespace neam
           GLuint pg_id;
           bool ownership;
           bool failed = false;
+          bool need_relink = false;
       };
     } // namespace shader
   } // namespace yaggler
