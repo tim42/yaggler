@@ -262,7 +262,7 @@ namespace neam
           buffer<type::opengl, neam::embed::GLenum<GeomType>> stole_buffer()
           {
             if (ct_buffers_views.template get<Idx>().is_link())
-              throw yaggler_exception("n/y::geometry::vao::stole_buffer(): unable to stole owneship: ownership has already been 'stolen'.");
+              throw yaggler_exception("n/y::geometry::vao::stole_buffer(): unable to stole owneship: ownership has already been 'stolen'.", __FILE__, __LINE__);
             return buffer<type::opengl, neam::embed::GLenum<GeomType>>(ct_buffers_views.template get<Idx>(), stole_ownership);
           }
 

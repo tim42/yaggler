@@ -133,12 +133,12 @@ namespace neam
             std::string line;
             std::ifstream file(init_file);
             if (!file)
-              throw neam::runtime_error<font_face>("bfont file not found: '" + init_file + "'");
+              throw neam::runtime_error<font_face>("bfont file not found: '" + init_file + "'", __FILE__, __LINE__);
 
             // get the magic line
             std::getline(file, line);
             if (line != magic_line)
-              throw neam::runtime_error<font_face>("bfont file: '" + init_file + "': line 1: bad magic line");
+              throw neam::runtime_error<font_face>("bad magic bfont number", init_file, 1);
 
             // get the font texture
             std::string font_texture;
@@ -152,6 +152,7 @@ namespace neam
             font.set_gl_parameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
             // load the table
+            size_t line_num = 0;
             while (std::getline(file, line))
             {
               char discard;
@@ -161,6 +162,7 @@ namespace neam
               glm::vec2 lower;
               glm::vec2 dt;
               glm::vec2 left_top;
+              ++line_num;
 
               if (line.size())
               {
@@ -175,8 +177,8 @@ namespace neam
                    >> discard >> left_top.x >> left_top.y >> discard
                    >> x_inc;
 
-                if (index > 256)
-                  throw  neam::runtime_error<font_face>("bfont file: '" + init_file + "': index greater than the hardcoded array size: 256.");
+                if (index >= 256)
+                  throw  neam::runtime_error<font_face>("index greater than the **hardcoded** array size of 256", init_file, line_num);
 
                 table[index].lower_pos = lower;
                 table[index].upper_pos = upper;
@@ -190,7 +192,7 @@ namespace neam
             vbo.set_data(table);
 
 #ifndef YAGGLER_NO_MESSAGES
-              neam::cr::out.debug() << LOGGER_INFO << "YAGGLER: loaded font face '" << init_file << "' in " << timer.delta() << " seconds" << std::endl;
+              neam::cr::out.debug() << LOGGER_INFO_TPL(init_file, 0) << "loaded font face in " << timer.delta() << " seconds" << std::endl;
 #endif
 
           }

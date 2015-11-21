@@ -69,7 +69,7 @@ namespace neam
             if (!id)
             {
               glGetError(); // discard error
-              throw yaggler_exception("Unable to create the transform_feedback (glCreateProgram)");
+              throw yaggler_exception("Unable to create the transform_feedback (glCreateProgram)", __FILE__, __LINE__);
             }
           }
 

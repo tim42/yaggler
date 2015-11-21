@@ -151,7 +151,7 @@ namespace neam
           glm::mat4 *& get_vp_matrix()
           {
             if (!wrapper)
-              throw neam::yaggler::yaggler_exception("get_vp_matrix on empty material wrapper");
+              throw neam::yaggler::yaggler_exception("get_vp_matrix on empty material wrapper", __FILE__, __LINE__);
             return wrapper->get_vp_matrix();
           }
 
@@ -159,7 +159,7 @@ namespace neam
           glm::mat4 *& get_object_matrix()
           {
             if (!wrapper)
-              throw neam::yaggler::yaggler_exception("get_object_matrix on empty material wrapper");
+              throw neam::yaggler::yaggler_exception("get_object_matrix on empty material wrapper", __FILE__, __LINE__);
             return wrapper->get_object_matrix();
           }
 

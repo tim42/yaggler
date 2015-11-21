@@ -93,40 +93,55 @@ namespace neam
             {
               glDebugMessageCallbackARB([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei, const char * message, void *) -> void
               {
-                auto &stream = neam::cr::out.debug() << LOGGER_INFO;
                 bool do_print_callstack = false;
-                stream << "OPENGL DEBUG OUTPUT: [";
+                std::string type_str;
+                cr::multiplexed_stream *_stream = nullptr;
                 switch (type)
                 {
                   case GL_DEBUG_TYPE_ERROR_ARB:
-                    stream << "ERROR";
+                    type_str = "ERROR";
                     do_print_callstack = true;
+                    _stream = &neam::cr::out.error();
                     break;
                   case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB:
-                    stream << "DEPRECATED BEHAVIOUR";
+                    type_str = "DEPRECATED BEHAVIOUR";
+                    _stream = &neam::cr::out.warning();
                     break;
                   case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB:
-                    stream << "UNDEFINED BEHAVIOUR";
+                    type_str = "UNDEFINED BEHAVIOUR";
+                    _stream = &neam::cr::out.warning();
                     break;
                   case GL_DEBUG_TYPE_PORTABILITY_ARB:
-                    stream << "PORTABILITY ISSUE";
+                    type_str = "PORTABILITY ISSUE";
+                    _stream = &neam::cr::out.info();
                     break;
                   case GL_DEBUG_TYPE_PERFORMANCE_ARB:
-                    stream << "PERFORMANCE ISSUE";
+                    type_str = "PERFORMANCE ISSUE";
+                    _stream = &neam::cr::out.warning();
                     break;
                   case GL_DEBUG_TYPE_MARKER:
-                    stream << "ANNOTATION";
+                    type_str = "ANNOTATION";
+                    _stream = &neam::cr::out.debug();
                     break;
                   case GL_DEBUG_TYPE_PUSH_GROUP:
-                    stream << "PUSH";
+                    type_str = "PUSH";
+                    _stream = &neam::cr::out.debug();
                     break;
                   case GL_DEBUG_TYPE_POP_GROUP:
-                    stream << "POP";
+                    type_str = "POP";
+                    _stream = &neam::cr::out.debug();
                     break;
                   case GL_DEBUG_TYPE_OTHER_ARB:
-                    stream << "OTHER(" << type << ")";
+                    type_str = "OTHER";
+                    _stream = &neam::cr::out.debug();
+                    break;
+                  default:
+                    type_str = "UNKNOWN";
+                    _stream = &neam::cr::out.debug();
                 }
-                stream << "/";
+                auto &stream = *_stream;
+                stream << LOGGER_INFO << "OPENGL DEBUG OUTPUT: [" << type << " / ";
+
                 switch (severity)
                 {
                   case GL_DEBUG_SEVERITY_HIGH_ARB:
@@ -166,7 +181,7 @@ namespace neam
                   case GL_DEBUG_SOURCE_OTHER_ARB:
                     stream << "OTHER (" << source << ")";
                 }
-                stream << "] (ID: " << id << "): '" << message << "'" << std::endl;
+                stream << "] (ID: " << id << "):" << cr::newline << message << std::endl;
 
                 if (do_print_callstack)
                   neam::cr::print_callstack(25, 2);
@@ -198,7 +213,7 @@ namespace neam
             glfwWindowHint(it.first, it.second);
 
           if (!(win = glfwCreateWindow(window_size.x, window_size.y, title.data(), 0, 0)))
-            throw glfw_exception("GLFW: glfwCreateWindow call failed");
+            throw glfw_exception("GLFW: glfwCreateWindow call failed", __FILE__, __LINE__);
 
           select();
 
@@ -206,10 +221,10 @@ namespace neam
           glewExperimental = GL_TRUE;
           GLenum err = glewInit();
 
-          throw_on_glerror<glew_exception>("GLEW INTERNAL ERROR (glewInit): ");
+          throw_on_glerror<glew_exception>("GLEW INTERNAL ERROR (glewInit)", __FILE__, __LINE__);
           if (err != GLEW_OK)
           {
-            throw glew_exception(reinterpret_cast<const char *>(glewGetErrorString(err)));
+            throw glew_exception(reinterpret_cast<const char *>(glewGetErrorString(err)), __FILE__, __LINE__);
           }
 
           init_debug();
@@ -231,7 +246,7 @@ namespace neam
           const GLFWvidmode *vmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
           if (!(win = glfwCreateWindow(vmode->width, vmode->height, title.data(), glfwGetPrimaryMonitor(), 0)))
-            throw glfw_exception("GLFW: glfwCreateWindow call failed");
+            throw glfw_exception("GLFW: glfwCreateWindow call failed", __FILE__, __LINE__);
 
           select();
 
@@ -239,10 +254,10 @@ namespace neam
           glewExperimental = GL_TRUE;
           GLenum err = glewInit();
 
-          throw_on_glerror<glew_exception>("GLEW INTERNAL ERROR (glewInit): ");
+          throw_on_glerror<glew_exception>("GLEW INTERNAL ERROR (glewInit)", __FILE__, __LINE__);
           if (err != GLEW_OK)
           {
-            throw glew_exception(reinterpret_cast<const char *>(glewGetErrorString(err)));
+            throw glew_exception(reinterpret_cast<const char *>(glewGetErrorString(err)), __FILE__, __LINE__);
           }
 
           init_debug();

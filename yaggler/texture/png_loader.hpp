@@ -86,13 +86,13 @@ namespace neam
               size.y = szy;
 
               if (ret)
-                throw runtime_error<png_texture_init>(lodepng_error_text(ret) + std::string(" when opening ") + std::string(File::value));
+                throw runtime_error<png_texture_init>(lodepng_error_text(ret), File::value, 0);
 
               uint8_t *data = new uint8_t[size.x * size.y * 8];
               memcpy(data, image.data(), size.x * size.y * 8);
 
 #ifndef YAGGLER_NO_MESSAGES
-              neam::cr::out.debug() << LOGGER_INFO << "YAGGLER: loaded png image '" << File::value << "' in " << timer.delta() << " seconds" << std::endl;
+              neam::cr::out.debug() << LOGGER_INFO_TPL(File::value, 0) << "loaded png image in " << timer.delta() << " seconds" << std::endl;
 #endif
               return data;
             }
@@ -176,13 +176,13 @@ namespace neam
               size.y = szy;
 
               if (ret)
-                throw runtime_error<png_texture_loader>(lodepng_error_text(ret) + std::string(" when opening ") + file);
+                throw runtime_error<png_texture_loader>(lodepng_error_text(ret), file, 0);
 
               uint8_t *data = new uint8_t[size.x * size.y * 8];
               memcpy(data, image.data(), image.size());
 
 #ifndef YAGGLER_NO_MESSAGES
-              neam::cr::out.debug() << LOGGER_INFO << "YAGGLER: loaded png image '" << file << "' in " << timer.delta() << " seconds" << std::endl;
+              neam::cr::out.debug() << LOGGER_INFO_TPL(file, 0) << "loaded png image in " << timer.delta() << " seconds" << std::endl;
 #endif
               return data;
             }

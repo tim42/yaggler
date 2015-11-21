@@ -133,7 +133,7 @@ namespace neam
           if (!file)
           {
 #ifndef YAGGLER_NO_MESSAGES
-            neam::cr::out.error() << LOGGER_INFO << "shader_loader<File>: Could not open '" << FileName::get() << "'" << std::endl;
+            neam::cr::out.error() << LOGGER_INFO_TPL(FileName::get(), 0) << "File not found" << std::endl;
 #endif
             return "";
           }
@@ -142,7 +142,7 @@ namespace neam
 #ifndef YAGGLER_NO_MESSAGES
           if (!str.size())
           {
-            neam::cr::out.error() << LOGGER_INFO << "shader_loader<File>: Reading '" << FileName::get() << "': Empty file !" << std::endl;
+            neam::cr::out.error() << LOGGER_INFO_TPL(FileName::get(), 0) << "Empty file" << std::endl;
           }
 #endif
           return str;

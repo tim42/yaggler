@@ -161,7 +161,7 @@ namespace neam
             if (!(pg_id = glCreateProgram()))
             {
               glGetError(); // discard error
-              throw shader_exception("Unable to create the shader (glCreateProgram)");
+              throw shader_exception("Unable to create the shader (glCreateProgram)", __FILE__, __LINE__);
             }
 
             it_over_cts_attach(cr::gen_seq<sizeof...(CTShaders)>());
@@ -371,7 +371,7 @@ namespace neam
               const char *header = "could not link program:\n";
               strcpy(message, header);
               glGetProgramInfoLog(pg_id, max_len - strlen(header), &ret, message + strlen(header));
-              throw shader_exception(message, true);
+              throw shader_exception(message, __FILE__, __LINE__);
             }
             need_relink = false;
           }

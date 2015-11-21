@@ -39,8 +39,8 @@ namespace neam
       class shader_exception : public opengl_exception
       {
         public:
-          explicit shader_exception(const char *__arg, bool _free_message = false) noexcept
-           : opengl_exception(__arg, _free_message)
+          explicit shader_exception(const std::string &__arg, const std::string &file, size_t line) noexcept
+           : opengl_exception(__arg, file, line)
           {
           }
 

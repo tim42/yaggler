@@ -83,7 +83,7 @@ namespace neam
             {
               auto it = font_faces.find(name);
               if (it == font_faces.end())
-                throw neam::runtime_error<font_manager>("could not find the font '" + name + "'");
+                throw neam::runtime_error<font_manager>("could not find the font '" + name + "'", __FILE__, __LINE__);
               return it->second;
             }
 

@@ -64,14 +64,14 @@ namespace neam
             (void)code;
 #ifndef YAGGLER_NO_MESSAGES
             if (::opengl_version::debug)
-              neam::cr::out.warning() << LOGGER_INFO << "GLFW error [" << code << "]: '" << message << "'" << std::endl;
+              neam::cr::out.error() << LOGGER_INFO << "GLFW error [" << code << "]: '" << message << "'" << std::endl;
 #endif
-            throw glfw_exception(message, false);
+            throw glfw_exception(message, __FILE__, __LINE__);
           });
 
           // init glfw
           if (!glfwInit())
-            throw glfw_exception("unable to init GLFW (glfwInit call failed)");
+            throw glfw_exception("unable to init GLFW (glfwInit call failed)", __FILE__, __LINE__);
         }
 
         ~yaggler_init()

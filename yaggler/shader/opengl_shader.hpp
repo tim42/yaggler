@@ -83,7 +83,7 @@ namespace neam
                 if (!(shader_id = glCreateShader(ShaderType::value)))
                 {
                   failed = true;
-                  throw_on_glerror<shader_exception>("Unable to create the shader (glCreateShader): ");
+                  throw_on_glerror<shader_exception>("Unable to create the shader (glCreateShader)", __FILE__, __LINE__);
                   failed = false;
                 }
                 static_shader_id = shader_id;
@@ -92,7 +92,7 @@ namespace neam
             else if (!(shader_id = glCreateShader(ShaderType::value)))
             {
               failed = true;
-              throw_on_glerror<shader_exception>("Unable to create the shader (glCreateShader): ");
+              throw_on_glerror<shader_exception>("Unable to create the shader (glCreateShader)", __FILE__, __LINE__);
               failed = false;
             }
 
@@ -279,7 +279,7 @@ namespace neam
           /// \note marked as advanced
           void _preload()
           {
-            env.on_change(ShaderSource::get_source_string());
+            env.on_change(ShaderSource::get_source_string(), get_source_name());
           }
 
           using shader_source = ShaderSource;
@@ -301,7 +301,7 @@ namespace neam
             glGetError();
             glShaderSource(shader_id, sizeof(source_array) / sizeof(source_array[0]), source_array, nullptr);
             failed = true;
-            throw_on_glerror<shader_exception>("unable to set the shader source (glShaderSource): ");
+            throw_on_glerror<shader_exception>(get_source_name() + ": unable to set the shader source (glShaderSource)", __FILE__, __LINE__);
             failed = false;
 
             glCompileShader(shader_id);
@@ -314,24 +314,18 @@ namespace neam
               failed = true;
               constexpr size_t max_len = 8192;
               char *message = new char[max_len];
-              const char *header = "could not compile shader";
-              strcpy(message, header);
-
-              strcat(message, " '");
-              strcat(message, ShaderSource::get_source_name());
-              strcat(message, "'");
+              message[0] = 0;
 
               if (::opengl_version::debug)
-              {
-                strcat(message, ":\n");
-                glGetShaderInfoLog(shader_id, max_len - strlen(message), &status, message + strlen(message));
-              }
-              throw shader_exception(message, true);
+                glGetShaderInfoLog(shader_id, max_len, &status, message);
+              neam::cr::out.error() << LOGGER_INFO_TPL(ShaderSource::get_source_name(), 0) << "could not compile shader" << (::opengl_version::debug ? ":" : "") << message << std::endl;
+
+              return;
             }
 #ifndef YAGGLER_NO_MESSAGES
             if (::opengl_version::debug)
             {
-              neam::cr::out.debug() << LOGGER_INFO << "compiled shader  '" << ShaderSource::get_source_name() << "'" << std::endl;
+              neam::cr::out.debug() << LOGGER_INFO_TPL(ShaderSource::get_source_name(), 0) << "compiled shader" << std::endl;
             }
 #endif
             failed = false;

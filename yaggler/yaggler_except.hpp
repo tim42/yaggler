@@ -45,18 +45,18 @@ namespace neam
   class base_runtime_error : public std::exception
   {
     public:
-      base_runtime_error(const std::string &s) noexcept
+      base_runtime_error(const std::string &s, const std::string &file, size_t line) noexcept
         : str(s)
       {
 #ifndef YAGGLER_NO_MESSAGES
-        neam::cr::out.error() << LOGGER_INFO << "\n[EXCEPTION]: " << s << std::endl << std::endl;
+        neam::cr::out.error() << LOGGER_INFO_TPL(file, line) << "[EXCEPTION]: " << s << std::endl << std::endl;
 #endif
       }
-      base_runtime_error(std::string &&s) noexcept
+      base_runtime_error(std::string &&s, const std::string &file, size_t line) noexcept
         : str(s)
       {
 #ifndef YAGGLER_NO_MESSAGES
-        neam::cr::out.error() << LOGGER_INFO << "\n[EXCEPTION]: " << s << std::endl << std::endl;
+        neam::cr::out.error() << LOGGER_INFO_TPL(file, line) << "[EXCEPTION]: " << s << std::endl << std::endl;
 #endif
       }
 
@@ -78,10 +78,12 @@ namespace neam
   class runtime_error : public base_runtime_error
   {
     public:
-      runtime_error(const std::string &s) noexcept : base_runtime_error(neam::demangle<ExceptionType>() + ": " + s)
+      runtime_error(const std::string &s, const std::string &file, size_t line) noexcept
+        : base_runtime_error(neam::demangle<ExceptionType>() + ": " + s, file, line)
       {
       }
-      runtime_error(std::string &&s) noexcept : base_runtime_error(neam::demangle<ExceptionType>() + ": " + (s))
+      runtime_error(std::string &&s, const std::string &file, size_t line) noexcept
+        : base_runtime_error(neam::demangle<ExceptionType>() + ": " + (s), file, line)
       {
       }
 
@@ -95,22 +97,24 @@ namespace neam
     /// \brief throw an ExceptionClass in case of an OpenGL error
     /// ExceptionClass may be an exception defined below.
     template<typename ExceptionClass>
-    static inline void throw_on_glerror(const char *header)
+    static inline void throw_on_glerror(const std::string &message, const std::string &file, size_t line)
     {
       GLint error;
+      std::string s;
       if ((error = glGetError()) != GL_NO_ERROR)
-        throw ExceptionClass(header, false);
+      {
+        s = reinterpret_cast<const char *>(glewGetErrorString(error));
+        throw ExceptionClass(message + ": " + s, file, line);
+      }
     }
 
     /// \brief an exception related with GLFW
     class glfw_exception : public neam::runtime_error<glfw_exception>
     {
       public:
-        explicit glfw_exception(const char *__arg, bool _free_message = false) noexcept
-          : neam::runtime_error<glfw_exception>(std::string("yaggler/GLFW: ") + __arg)
+        explicit glfw_exception(const std::string &str, const std::string &file, size_t line) noexcept
+          : neam::runtime_error<glfw_exception>("yaggler/GLFW: " + str, file, line)
         {
-          if (_free_message)
-            delete []  __arg;
         }
 
         virtual ~glfw_exception() noexcept
@@ -124,12 +128,9 @@ namespace neam
     class glew_exception : public neam::runtime_error<glew_exception>
     {
       public:
-        explicit glew_exception(const char *__arg, bool _free_message = false) noexcept
-      :
-        neam::runtime_error<glew_exception>(std::string("yaggler/GLEW: ") + __arg)
+        explicit glew_exception(const std::string &str, const std::string &file, size_t line) noexcept
+          : neam::runtime_error<glew_exception>("yaggler/GLEW: " + str, file, line)
         {
-          if (_free_message)
-            delete []  __arg;
         }
 
         virtual ~glew_exception() noexcept
@@ -143,12 +144,9 @@ namespace neam
     class opengl_exception : public neam::runtime_error<opengl_exception>
     {
       public:
-        explicit opengl_exception(const char *__arg, bool _free_message = false) noexcept
-      :
-        neam::runtime_error<opengl_exception>(std::string("yaggler/OpenGL: ") + __arg)
+        explicit opengl_exception(const std::string &str, const std::string &file, size_t line) noexcept
+          : neam::runtime_error<opengl_exception>("yaggler/OpenGL: " + str, file, line)
         {
-          if (_free_message)
-            delete []  __arg;
         }
 
         virtual ~opengl_exception() noexcept
@@ -162,12 +160,9 @@ namespace neam
     class yaggler_exception : public neam::runtime_error<yaggler_exception>
     {
       public:
-        explicit yaggler_exception(const char *__arg, bool _free_message = false) noexcept
-        :
-        neam::runtime_error<yaggler_exception>(std::string("YagGler: ") + __arg)
+        explicit yaggler_exception(const std::string &str, const std::string &file, size_t line) noexcept
+          : neam::runtime_error<yaggler_exception>("YagGler: " + str, file, line)
         {
-          if (_free_message)
-            delete []  __arg;
         }
 
         virtual ~yaggler_exception() noexcept
