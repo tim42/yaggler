@@ -26,7 +26,10 @@
 #ifndef __N_11405993361271642551_656833314__COMMON_SHADER_ENV_HPP__
 # define __N_11405993361271642551_656833314__COMMON_SHADER_ENV_HPP__
 
-#include "../yaggler_type.hpp"
+
+#include <yaggler_type.hpp>
+#include <tools/logger/logger.hpp>
+
 #include "shader_env.hpp"
 #include "shader/shader_preprocessor.hpp"
 
@@ -43,7 +46,7 @@ namespace neam
       {
         public:
           /// \brief Called each time the source has changed
-          void on_change(const std::string &s)
+          void on_change(const std::string &s, const std::string &)
           {
             source = s;
             changed = true;
@@ -235,7 +238,7 @@ namespace neam
       {
         public:
           /// \brief Called each time the source has changed
-          void on_change(const std::string &s)
+          void on_change(const std::string &s, const std::string &)
           {
             preprocessor.clear();
             preprocessor.feed(s);
@@ -272,15 +275,51 @@ namespace neam
           friend class preprocessor_shader_env_api<shader_env<simple_preprocessor>>;
       };
 
+      /// \brief a derivate of preprocessor_shader_env_api with include path management
+      template<typename Env>
+      class advanced_preprocessor_shader_env_api : public preprocessor_shader_env_api<Env>
+      {
+        public:
+          advanced_preprocessor_shader_env_api()
+#ifdef YAGGLER_DEFAULT_INCLUDE_PATHS
+          : include_paths(YAGGLER_DEFAULT_INCLUDE_PATHS)
+#endif
+          {
+          }
+
+          /// \brief Add an include path
+          void push_include_path(const std::string &path)
+          {
+            include_paths.push_back(path);
+          }
+
+          /// \brief Clear the include paths
+          void clear_include_path()
+          {
+            include_paths.clear();
+          }
+
+        protected:
+          std::vector<std::string> include_paths;
+
+          friend Env;
+          template<typename EnvAPI> friend class preprocessor_shader_env;
+      };
+
       /// \brief This is a shader env with a preprocessor parser
       /// It provides support for #include
+      /// \note You can define the following macro \e YAGGLER_DEFAULT_INCLUDE_PATHS
+      ///       with a value like this \code { "./my-shader-path", "./other-path/shaders", my_golbal_variable } \endcode
+      ///       or any value that can initialize a \code std::vector< std::string > \endcode
+      ///       to define the defaults include paths in your application
       template<>
-      struct shader_env<advanced_preprocessor> : public preprocessor_shader_env<preprocessor_shader_env_api<shader_env<advanced_preprocessor>>>
+      struct shader_env<advanced_preprocessor> : public preprocessor_shader_env<advanced_preprocessor_shader_env_api<shader_env<advanced_preprocessor>>>
       {
         public:
           /// \brief Called each time the source has changed
-          void on_change(const std::string &s)
+          void on_change(const std::string &s, const std::string &f)
           {
+            filename = f;
             preprocessor.clear();
             preprocessor.feed(s);
 
@@ -315,25 +354,51 @@ namespace neam
           {
             size_t count = 0;
             auto token = preprocessor.get_first_token("include");
+            std::list<std::string> include_files;
             while (token.type != shader_preprocessor::e_token_type::none)
             {
               // Oops, too many included files !
               if (count++ > 100)
               {
-                neam::cr::out.error() << LOGGER_INFO << "Too Many file included !!!" << std::endl;
+                neam::cr::out.error() << LOGGER_INFO_TPL(filename, token.line) << "Too Many file included !!!" << std::endl;
                 preprocessor.clear();
                 return;
               }
 
+              std::ifstream file;
               std::string include_file = (++token.subtokens.begin())->str;
               std::string content = "";
+              std::string include_path = include_file;
+              file.open(include_path);
 
-              std::ifstream file(include_file);
+              if (include_file.size() && include_file[0] != '/' && !file)
+              {
+                for (size_t i = 0; i < api.include_paths.size(); ++i)
+                {
+                  include_path = api.include_paths[i] + "/" + include_file;
+
+                  file.open(include_path);
+                  if (file)
+                    break;
+                }
+              }
 
               if (!file)
-                neam::cr::out.error() << LOGGER_INFO << "could not find included file '" << include_file << "'" << std::endl;
+                neam::cr::out.error() << LOGGER_INFO_TPL(filename, token.line) << "could not include file '" << include_file << "'" << cr::newline
+                                      << "NOTE: the filename is name of the base file" << std::endl;
               else
+              {
                 content = static_cast<const std::ostringstream &>(std::ostringstream() << (file.rdbuf())).str();
+
+                shader_preprocessor tmp_prep(content);
+
+                // check for double inclusion when #pragma once is defined
+                if (tmp_prep.get_token("pragma", "once").type != shader_preprocessor::e_token_type::none &&
+                    std::find(include_files.begin(), include_files.end(), include_path) != include_files.end())
+                  content = "";
+                else
+                  include_files.push_back(include_path);
+              }
               preprocessor.replace_token(token, "// include: " + include_file + " \n" + content + "\n// end include: " + include_file + "\n");
 
               // next token:
@@ -348,6 +413,9 @@ namespace neam
           }
 
         protected:
+          std::string filename;
+
+          friend class advanced_preprocessor_shader_env_api<shader_env<advanced_preprocessor>>;
           friend class preprocessor_shader_env_api<shader_env<advanced_preprocessor>>;
       };
     }
