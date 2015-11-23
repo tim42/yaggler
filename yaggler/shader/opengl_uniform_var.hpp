@@ -143,6 +143,15 @@ namespace neam
             return *this;
           }
 
+          /// SHADER STORAGE BLOCK ///
+          inline uniform_variable &operator = (const geometry::buffer<type::opengl, embed::GLenum<GL_SHADER_STORAGE_BUFFER>> &b)
+          {
+            CHECK_ID;
+            CHECK_PGID;
+
+            glShaderStorageBlockBinding(pgid, id, b.get_binding_point());
+            return *this;
+          }
 
           /// FLOAT 1V ///
 
