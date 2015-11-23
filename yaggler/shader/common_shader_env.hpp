@@ -132,7 +132,7 @@ namespace neam
 
           /// \brief 'parse' (what a big word here...) the source to get a preprocessor token and its value.
           /// return an empty string if nothing was found, the 'value' of the first occurrence if anything was found
-          /// (if there isn't values, it simply return \code "\n" \endcode)
+          /// (if the token is present without value, it simply return \code "\n" \endcode)
           ///
           /// to get something like
           /// \code #define TOTO       42 \endcode
@@ -187,6 +187,57 @@ namespace neam
             if (!value.size())
               return std::string("\n");
             return value;
+          }
+
+          /// \brief 'parse' (what a big word here...) the source to get all values for a preprocessor token.
+          /// return an empty list if nothing was found, the list of all 'values' if anything was found
+          /// (if the token is present without value, it simply yield \code "\n" \endcode)
+          std::list<std::string> get_preprocessor_values(const std::string &name, const std::string &preprocessor_token = "define") const
+          {
+            std::list<std::string> ret;
+            std::list<shader_preprocessor::token_entry> token_list = env->preprocessor.get_tokens(preprocessor_token, name);
+            if (!token_list.size())
+              return ret;
+            for (const auto &token : token_list)
+            {
+              std::string value;
+              if (!token.subtokens.size())
+              {
+                ret.push_back(std::string("\n"));
+                continue;
+              }
+              auto it = token.subtokens.begin();
+              ++it; // skip the prep. token
+              if (name.size())
+                ++it; // skip the name token
+              while (it != token.subtokens.end() && it->type != shader_preprocessor::e_token_type::preprocessor_token)
+                ++it; // skip args
+              // build the return string
+              shader_preprocessor::e_token_type last_type = shader_preprocessor::e_token_type::none;
+              for (; it != token.subtokens.end(); ++it)
+              {
+                if (last_type != shader_preprocessor::e_token_type::preprocessor_token_args &&
+                    it->type == shader_preprocessor::e_token_type::preprocessor_token_args)
+                  value += '(';
+                if (last_type == shader_preprocessor::e_token_type::preprocessor_token_args)
+                {
+                  if (it->type == shader_preprocessor::e_token_type::preprocessor_token_args)
+                    value += ',';
+                  else
+                    value += ')';
+                }
+                if (it->type == shader_preprocessor::e_token_type::preprocessor_token_string)
+                  value += '"';
+                value += it->str;
+                if (it->type == shader_preprocessor::e_token_type::preprocessor_token_string)
+                  value += '"';
+              }
+              if (last_type == shader_preprocessor::e_token_type::preprocessor_token_args)
+                value += ')';
+              if (!value.size())
+                ret.push_back(std::string("\n"));
+            }
+            return ret;
           }
 
           /// \brief Append a given string after the #version line
@@ -293,10 +344,21 @@ namespace neam
             include_paths.push_back(path);
           }
 
-          /// \brief Clear the include paths
-          void clear_include_path()
+          /// \brief Clear the include paths, even the default ones !
+          /// \see reset_include_paths()
+          void clear_include_paths()
           {
             include_paths.clear();
+          }
+
+          /// \brief Reset the include paths to the default value
+          void reset_include_paths()
+          {
+#ifdef YAGGLER_DEFAULT_INCLUDE_PATHS
+            include_paths = std::vector<std::string>(YAGGLER_DEFAULT_INCLUDE_PATHS);
+#else
+            include_paths.clear();
+#endif
           }
 
         protected:

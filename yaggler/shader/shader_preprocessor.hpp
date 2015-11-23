@@ -112,7 +112,6 @@ namespace neam
             std::list<token_entry> ret = insert_after(token, content);
             remove_token(token);
             return ret;
-//             return std::list<token_entry>();
           }
 
           /// \brief insert something after a given token
@@ -150,6 +149,24 @@ namespace neam
             if (it == entries.end())
               return empty_list;
             return it->second;
+          }
+
+          /// \brief Get the tokens corresponding to a preprocessor directive and a specific key
+          /// \param preprocessor_directive is the name of the directive (like "define" or "include")
+          /// \param key the key (for "define" it will be the name of the macro being defined, without any argument)
+          /// \return the list of tokens
+          const std::list<token_entry> get_tokens(const std::string &preprocessor_directive, const std::string &key) const
+          {
+            std::list<token_entry> ret;
+            auto it = entries.find(preprocessor_directive);
+            if (it == entries.end())
+              return ret;
+            for (const token_entry &entry : it->second)
+            {
+              if (entry.subtokens.size() >= 2 && (++entry.subtokens.begin())->str == key)
+                ret.push_back(entry);
+            }
+            return ret;
           }
 
           /// \brief Get the first token matching a preprocessor directive

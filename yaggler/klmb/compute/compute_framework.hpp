@@ -49,12 +49,12 @@ namespace neam
         struct _shader_framework_data
         {
           // global stuff (MUST be defined by a framework data)
-          uint8_t       fragment_shader_number = 0;
-          uint8_t       geometry_shader_number = 0;
-          uint8_t       tes_shader_number = 0;
-          uint8_t       tcs_shader_number = 0;
-          uint8_t       vertex_shader_number = 0;
-          uint8_t       compute_shader_number = 0;
+          uint8_t fragment_shader_number = 0;
+          uint8_t geometry_shader_number = 0;
+          uint8_t tes_shader_number = 0;
+          uint8_t tcs_shader_number = 0;
+          uint8_t vertex_shader_number = 0;
+          uint8_t compute_shader_number = 0;
         };
 
         // the default one

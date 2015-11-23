@@ -125,7 +125,7 @@ namespace neam
           /// \warning if I remember things correctly, indexed_variables won't work here, as they will keep their references to the old \p mt variables<>
           /// \todo fix the indexed_variables issue
           base_material(base_material &&mt)
-            : textures(std::move(mt.textures)), shader_prog(std::move(mt.shader_prog)),
+            : textures(std::move(mt.textures)), framework_data(std::move(mt.framework_data)), shader_prog(std::move(mt.shader_prog)),
               variable_values(std::move(mt.variable_values)),
               vctx(std::move(mt.vctx)), variable_strings(std::move(mt.variable_strings)), variable_buffers(std::move(mt.variable_buffers))
           {
@@ -253,7 +253,7 @@ namespace neam
 
           // shader framework
           template<size_t Idx>
-          char _klmb_defines_single_shader_setup(uint8_t &prog_counter, internal::_shader_framework_data &framework_data)
+          char _klmb_defines_single_shader_setup(uint8_t &prog_counter)
           {
             auto &shader = shader_prog.template get_shader_at_index<Idx>();
 
@@ -302,7 +302,8 @@ namespace neam
           void _klmb_defines_loop_over_shaders(neam::cr::seq<Idxs...>)
           {
             uint8_t prog_counter = 0;
-            typename Framework::framework_data framework_data;
+
+            framework_data = typename Framework::framework_data();
 
             // setup number of shaders
             framework_data.fragment_shader_number = Shaders::fragment_shaders_t::size();
@@ -312,13 +313,13 @@ namespace neam
             framework_data.vertex_shader_number = Shaders::vertex_shaders_t::size();
             framework_data.compute_shader_number = Shaders::compute_shaders_t::size();
 
-            NEAM_EXECUTE_PACK((_klmb_defines_single_shader_setup<Idxs>(prog_counter, framework_data)));
+            NEAM_EXECUTE_PACK((_klmb_defines_single_shader_setup<Idxs>(prog_counter)));
           }
 
         private:
           Textures textures;
 
-          // framework shader files
+          typename Framework::framework_data framework_data;
 
           // the prog
           program_t shader_prog;
