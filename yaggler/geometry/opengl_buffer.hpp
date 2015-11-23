@@ -128,8 +128,8 @@ namespace neam
           /// \brief Create a wrapper linked to an openGL buffer ID, allowing the GL buffer object to be managed for a short time
           /// by this class. When the created instance has ended its life, the GL object won't be destructed
           /// \param _id the openGL buffer object ID
-          explicit buffer(GLuint _id)
-            : id(_id), ownership(false)
+          explicit buffer(GLuint _id, size_t _binding_index = 0)
+            : id(_id), ownership(false), binding_index(_binding_index)
           {
             __tpl_init();
           }
@@ -143,6 +143,14 @@ namespace neam
             __tpl_init();
           }
 
+          /// \brief Create a wrapper of an openGL buffer ID, allowing the GL buffer object to be managed
+          /// by this class. When the created instance has ended its life, the GL object will be destructed
+          /// \param _id the openGL buffer object ID
+          buffer(GLuint _id, size_t _binding_index, assume_ownership_t)
+            : id(_id), ownership(true), binding_index(_binding_index)
+          {
+            __tpl_init();
+          }
           /// \brief create a wrapper of the same GL buffer object in another buffer instance, allowing the GL buffer object to be managed for a short time
           /// by this class. When the created instance has ended its life, the GL object won't be destructed
           /// \param b the other buffer class to copy the information from
@@ -496,6 +504,28 @@ namespace neam
 
             DSA_aware_glBufferSubData(id, GeomType::value, offset, sizeof(GLfloat) * ArraySize, dest_data);
             delete [] dest_data;
+          }
+
+          /// \brief Change the buffer type
+          /// \note the returned object does not have the ownership on the GL resource, but shares the same default binding index
+          template<GLenum MutateType>
+          buffer<type::opengl, embed::GLenum<MutateType>> mutate_buffer() const
+          {
+            return buffer<type::opengl, embed::GLenum<MutateType>>(id, binding_index);
+          }
+
+          /// \brief Change the buffer type
+          /// \note the returned object will have the ownership on the GL resource if the current buffer has its ownership
+          template<GLenum MutateType>
+          buffer<type::opengl, embed::GLenum<MutateType>> mutate_and_stole_buffer()
+          {
+            if (has_ownership())
+            {
+              give_up_ownership();
+              return buffer<type::opengl, embed::GLenum<MutateType>>(id, binding_index, neam::assume_ownership);
+            }
+            else
+              return buffer<type::opengl, embed::GLenum<MutateType>>(id, binding_index);
           }
 
           /// \brief create a link to a more generic buffer (generic when speaking of C++ types).
