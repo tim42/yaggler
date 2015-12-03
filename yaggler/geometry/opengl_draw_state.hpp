@@ -43,10 +43,16 @@ namespace neam
         indexed,
         instanced,
         indexed_instanced,
+
         transform_feedback,
         transform_feedback_instanced,
         transform_feedback_stream,
         transform_feedback_stream_instanced,
+
+        indirect,
+        multi_indirect,
+        indexed_indirect,
+        multi_indexed_indirect
       };
 
       /// \brief this class represent a draw state.
@@ -58,8 +64,8 @@ namespace neam
           /// \brief initialize and create the draw state
           /// \param _method describe the kind of geometry to render
           draw_state(draw_method _method = draw_method::normal)
-            : method(_method), mode(0), patch_size(0), count(0), type(GL_UNSIGNED_INT), start_index(0), prim_count(1), stream(0),
-              tf(0)
+            : method(_method), mode(0), patch_size(0), count(0), type(GL_UNSIGNED_INT),
+              start_index(0), prim_count(1), stream(0), stride(0), tf(0)
           {
           }
 
@@ -97,7 +103,7 @@ namespace neam
           /// \param line_count the number of line to draw
           void set_draw_lines(size_t line_count)
           {
-            mode = GL_LINE;
+            mode = GL_LINES;
             count = line_count * 2;
           }
 
@@ -109,7 +115,7 @@ namespace neam
             count = point_count;
           }
 
-          /// \brief set a custom rendering mode with a custom geometry count
+          /// \brief set a custom rendering mode with a custom geometry/element count
           void set_draw(GLenum _mode, size_t _count)
           {
             mode = _mode;
@@ -143,6 +149,23 @@ namespace neam
           void set_start_index(size_t _index)
           {
             start_index = _index;
+          }
+
+          /// \brief set the start index in the indirect buffer
+          /// \note only used in indirect modes
+          /// \param _index the start index in the indirect buffer
+          void set_indirect_buffer_offset(size_t _index)
+          {
+            start_index = _index;
+          }
+
+          /// \brief Specifie the distance in byte between elements of the indirect buffer
+          /// \note only used in the mult-indirect mode
+          /// \note the default value is 0, meaning the buffer is tightly packed.
+          /// \link https://www.opengl.org/wiki/GLAPI/glMultiDrawArraysIndirect
+          void set_stride(size_t _stride)
+          {
+            stride = _stride;
           }
 
           /// \brief set the primitive count
@@ -195,6 +218,18 @@ namespace neam
           size_t get_start_index() const
           {
             return start_index;
+          }
+
+          /// \brief return the start index of the indirect buffer
+          size_t get_indirect_buffer_offset() const
+          {
+            return start_index;
+          }
+
+          /// \brief return the distance in byte between elements of the indirect buffer
+          size_t get_stride() const
+          {
+            return stride;
           }
 
           /// \brief return the number of primitive to draw
@@ -253,6 +288,18 @@ namespace neam
               case draw_method::transform_feedback_stream_instanced:
                 glDrawTransformFeedbackStreamInstanced(mode, tf.get_id(), stream, prim_count);
                 break;
+              case draw_method::indirect:
+                glDrawArraysIndirect(mode, reinterpret_cast<GLvoid *>(start_index));
+                break;
+              case draw_method::multi_indirect:
+                glMultiDrawArraysIndirect(mode, reinterpret_cast<GLvoid *>(start_index), count, stride);
+                break;
+              case draw_method::indexed_indirect:
+                glDrawElementsIndirect(mode, type, reinterpret_cast<GLvoid *>(start_index));
+                break;
+              case draw_method::multi_indexed_indirect:
+                glMultiDrawElementsIndirect(mode, type, reinterpret_cast<GLvoid *>(start_index), count, stride);
+                break;
 #ifndef YAGGLER_NO_MESSAGES
               default:
                 neam::cr::out.error() << LOGGER_INFO << "unknow draw method" << std::endl;
@@ -269,6 +316,7 @@ namespace neam
           size_t start_index;
           size_t prim_count;
           size_t stream;
+          size_t stride;
           transform_feedback<type::opengl> tf;
       };
     } // namespace geometry

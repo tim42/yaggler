@@ -329,6 +329,13 @@ namespace neam
             return binding_index;
           }
 
+          /// \brief Initialize the buffer with a uninitialized memory area of \p size size
+          /// \param size the size of the buffer (in byte)
+          /// \param draw_type a hint for openGL to choose the memory where the buffer will be stored
+          void set_empty_data(size_t size, GLenum draw_type = GL_STATIC_DRAW)
+          {
+            DSA_aware_glBufferData(id, GeomType::value, size, nullptr, draw_type);
+          }
 
           /// \brief set the data from a C array (with fixed size)
           /// \param data the data to set
