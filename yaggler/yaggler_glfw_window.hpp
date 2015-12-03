@@ -53,6 +53,7 @@ namespace neam
     } // namespace window_mode
 
     /// \brief an helper class for creating windows with GLFW
+    /// \note defining STACKTRACE_FOR_YOU_ALL with a debuf context will print a stacktrace for each GL message
     class glfw_window
     {
       private:
@@ -94,6 +95,9 @@ namespace neam
               glDebugMessageCallbackARB([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei, const char * message, void *) -> void
               {
                 bool do_print_callstack = false;
+#ifdef STACKTRACE_FOR_YOU_ALL
+                do_print_callstack = true;
+#endif
                 std::string type_str;
                 cr::multiplexed_stream *_stream = nullptr;
                 switch (type)
