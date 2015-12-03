@@ -498,6 +498,240 @@
   {
     return glm::ivec4((val), (val), (val), (val));
   }
+
+  ///
+
+  static inline glm::uvec2 operator "" _uvec2_x(long double val)
+  {
+    return glm::uvec2((val), (0));
+  }
+  static inline glm::uvec2 operator "" _uvec2_x(unsigned long long val)
+  {
+    return glm::uvec2((val), (0));
+  }
+
+  static inline glm::uvec2 operator "" _uvec2_y(long double val)
+  {
+    return glm::uvec2((0), (val));
+  }
+  static inline glm::uvec2 operator "" _uvec2_y(unsigned long long val)
+  {
+    return glm::uvec2((0), (val));
+  }
+
+  static inline glm::uvec2 operator "" _uvec2_xy(long double val)
+  {
+    return glm::uvec2((val), (val));
+  }
+  static inline glm::uvec2 operator "" _uvec2_xy(unsigned long long val)
+  {
+    return glm::uvec2((val), (val));
+  }
+
+  // 3D glm::uvec
+  static inline glm::uvec3 operator "" _uvec3_x(long double val)
+  {
+    return glm::uvec3((val), (0), (0));
+  }
+  static inline glm::uvec3 operator "" _uvec3_x(unsigned long long val)
+  {
+    return glm::uvec3((val), (0), (0));
+  }
+
+  static inline glm::uvec3 operator "" _uvec3_y(long double val)
+  {
+    return glm::uvec3((0), (val), (0));
+  }
+  static inline glm::uvec3 operator "" _uvec3_y(unsigned long long val)
+  {
+    return glm::uvec3((0), (val), (0));
+  }
+
+  static inline glm::uvec3 operator "" _uvec3_z(long double val)
+  {
+    return glm::uvec3((0), (0), (val));
+  }
+  static inline glm::uvec3 operator "" _uvec3_z(unsigned long long val)
+  {
+    return glm::uvec3((0), (0), (val));
+  }
+
+  static inline glm::uvec3 operator "" _uvec3_xy(long double val)
+  {
+    return glm::uvec3((val), (val), (0));
+  }
+  static inline glm::uvec3 operator "" _uvec3_xy(unsigned long long val)
+  {
+    return glm::uvec3((val), (val), (0));
+  }
+
+  static inline glm::uvec3 operator "" _uvec3_xz(long double val)
+  {
+    return glm::uvec3((val), (0), (val));
+  }
+  static inline glm::uvec3 operator "" _uvec3_xz(unsigned long long val)
+  {
+    return glm::uvec3((val), (0), (val));
+  }
+
+  static inline glm::uvec3 operator "" _uvec3_yz(long double val)
+  {
+    return glm::uvec3((0), (val), (val));
+  }
+  static inline glm::uvec3 operator "" _uvec3_yz(unsigned long long val)
+  {
+    return glm::uvec3((0), (val), (val));
+  }
+
+  static inline glm::uvec3 operator "" _uvec3_xyz(long double val)
+  {
+    return glm::uvec3((val), (val), (val));
+  }
+  static inline glm::uvec3 operator "" _uvec3_xyz(unsigned long long val)
+  {
+    return glm::uvec3((val), (val), (val));
+  }
+
+  // 4D glm::uvec
+  static inline glm::uvec4 operator "" _uvec4_x(long double val)
+  {
+    return glm::uvec4((val), (0), (0), 0);
+  }
+  static inline glm::uvec4 operator "" _uvec4_x(unsigned long long val)
+  {
+    return glm::uvec4((val), (0), (0), 0);
+  }
+
+  static inline glm::uvec4 operator "" _uvec4_y(long double val)
+  {
+    return glm::uvec4((0), (val), (0), 0);
+  }
+  static inline glm::uvec4 operator "" _uvec4_y(unsigned long long val)
+  {
+    return glm::uvec4((0), (val), (0), 0);
+  }
+
+  static inline glm::uvec4 operator "" _uvec4_z(long double val)
+  {
+    return glm::uvec4((0), (0), (val), 0);
+  }
+  static inline glm::uvec4 operator "" _uvec4_z(unsigned long long val)
+  {
+    return glm::uvec4((0), (0), (val), 0);
+  }
+
+  static inline glm::uvec4 operator "" _uvec4_w(long double val)
+  {
+    return glm::uvec4((0), (0), (0), (val));
+  }
+  static inline glm::uvec4 operator "" _uvec4_w(unsigned long long val)
+  {
+    return glm::uvec4((0), (0), (0), (val));
+  }
+
+  ///
+
+  static inline glm::uvec4 operator "" _uvec4_xy(long double val)
+  {
+    return glm::uvec4((val), (val), (0), 0);
+  }
+  static inline glm::uvec4 operator "" _uvec4_xy(unsigned long long val)
+  {
+    return glm::uvec4((val), (val), (0), 0);
+  }
+
+  static inline glm::uvec4 operator "" _uvec4_xz(long double val)
+  {
+    return glm::uvec4((val), (0), (val), 0);
+  }
+  static inline glm::uvec4 operator "" _uvec4_xz(unsigned long long val)
+  {
+    return glm::uvec4((val), (0), (val), 0);
+  }
+
+  static inline glm::uvec4 operator "" _uvec4_yz(long double val)
+  {
+    return glm::uvec4((0), (val), (val), 0);
+  }
+  static inline glm::uvec4 operator "" _uvec4_yz(unsigned long long val)
+  {
+    return glm::uvec4((0), (val), (val), 0);
+  }
+
+  static inline glm::uvec4 operator "" _uvec4_xw(long double val)
+  {
+    return glm::uvec4((val), (0), (0), (val));
+  }
+  static inline glm::uvec4 operator "" _uvec4_xw(unsigned long long val)
+  {
+    return glm::uvec4((val), (0), (0), (val));
+  }
+
+  static inline glm::uvec4 operator "" _uvec4_yw(long double val)
+  {
+    return glm::uvec4((0), (val), (0), (val));
+  }
+  static inline glm::uvec4 operator "" _uvec4_yw(unsigned long long val)
+  {
+    return glm::uvec4((0), (val), (0), (val));
+  }
+
+  static inline glm::uvec4 operator "" _uvec4_zw(long double val)
+  {
+    return glm::uvec4((0), (0), (val), (val));
+  }
+  static inline glm::uvec4 operator "" _uvec4_zw(unsigned long long val)
+  {
+    return glm::uvec4((0), (0), (val), (val));
+  }
+
+  ///
+  static inline glm::uvec4 operator "" _uvec4_xyz(long double val)
+  {
+    return glm::uvec4((val), (val), (val), 0);
+  }
+  static inline glm::uvec4 operator "" _uvec4_xyz(unsigned long long val)
+  {
+    return glm::uvec4((val), (val), (val), 0);
+  }
+
+  static inline glm::uvec4 operator "" _uvec4_yzw(long double val)
+  {
+    return glm::uvec4((0), (val), (val), (val));
+  }
+  static inline glm::uvec4 operator "" _uvec4_yzw(unsigned long long val)
+  {
+    return glm::uvec4((0), (val), (val), (val));
+  }
+
+  static inline glm::uvec4 operator "" _uvec4_xzw(long double val)
+  {
+    return glm::uvec4((val), (0), (val), (val));
+  }
+  static inline glm::uvec4 operator "" _uvec4_xzw(unsigned long long val)
+  {
+    return glm::uvec4((val), (0), (val), (val));
+  }
+
+  static inline glm::uvec4 operator "" _uvec4_xyw(long double val)
+  {
+    return glm::uvec4((val), (val), (0), (val));
+  }
+  static inline glm::uvec4 operator "" _uvec4_xyw(unsigned long long val)
+  {
+    return glm::uvec4((val), (val), (0), (val));
+  }
+
+  ///
+
+  static inline glm::uvec4 operator "" _uvec4_xyzw(long double val)
+  {
+    return glm::uvec4((val), (val), (val), (val));
+  }
+  static inline glm::uvec4 operator "" _uvec4_xyzw(unsigned long long val)
+  {
+    return glm::uvec4((val), (val), (val), (val));
+  }
 // } // namespace neam
 
 #endif /*__N_1814989461818831215_234927224__GLM_UDL_HPP__*/
