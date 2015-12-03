@@ -43,56 +43,56 @@ namespace neam
         using value_t = Value; ///< \brief the value type
 
         /// \brief Initialize the ctx_pair
-        material_ctx_pair(const std::string &name, const Value &val, bool buffer = false) : variable_name(name), value(val), buffer_storage(buffer) {}
+        material_ctx_pair(const std::string &name, const Value &val, GLenum _resource_type = GL_UNIFORM) : variable_name(name), value(val), resource_type(_resource_type) {}
 
         /// \brief Initialize the ctx_pair
-        material_ctx_pair(std::string &&name, const Value &val, bool buffer = false) : variable_name(name), value(val), buffer_storage(buffer) {}
+        material_ctx_pair(std::string &&name, const Value &val, GLenum _resource_type = GL_UNIFORM) : variable_name(name), value(val), resource_type(_resource_type) {}
 
         /// \brief Initialize the ctx_pair
-        material_ctx_pair(const std::string &name, Value &&val, bool buffer = false) : variable_name(name), value(val), buffer_storage(buffer) {}
+        material_ctx_pair(const std::string &name, Value &&val, GLenum _resource_type = GL_UNIFORM) : variable_name(name), value(val), resource_type(_resource_type) {}
 
         /// \brief Initialize the ctx_pair
-        material_ctx_pair(std::string &&name, Value &&val, bool buffer = false) : variable_name(name), value(val), buffer_storage(buffer) {}
+        material_ctx_pair(std::string &&name, Value &&val, GLenum _resource_type = GL_UNIFORM) : variable_name(name), value(val), resource_type(_resource_type) {}
 
         /// \brief Initialize by copy the ctx_pair
         template<typename OtherValue>
-        material_ctx_pair(const material_ctx_pair<OtherValue> &o) : variable_name(o.variable_name), value(o.value), buffer_storage(o.buffer_storage) {}
+        material_ctx_pair(const material_ctx_pair<OtherValue> &o) : variable_name(o.variable_name), value(o.value), resource_type(o.resource_type) {}
 
         /// \brief Initialize by move the ctx_pair
         template<typename OtherValue>
-        material_ctx_pair(material_ctx_pair<OtherValue> &&o) : variable_name(std::move(o.variable_name)), value(std::move(o.value)), buffer_storage(o.buffer_storage) {}
+        material_ctx_pair(material_ctx_pair<OtherValue> &&o) : variable_name(std::move(o.variable_name)), value(std::move(o.value)), resource_type(o.resource_type) {}
 
         std::string variable_name;
         value_t value;
-        bool buffer_storage;
+        GLenum resource_type;
       };
 
       /// \brief a material_ctx_pair maker for uniform variable
       template<typename Value>
       material_ctx_pair<Value> make_ctx_pair(const std::string &name, Value val)
       {
-        return material_ctx_pair<Value>(name, std::move(val), false);
+        return material_ctx_pair<Value>(name, std::move(val), GL_UNIFORM);
       }
 
       /// \brief a material_ctx_pair maker for uniform variable
       template<typename Value>
       material_ctx_pair<Value> make_ctx_pair(std::string &&name, Value val)
       {
-        return material_ctx_pair<Value>(std::move(name), std::move(val), false);
+        return material_ctx_pair<Value>(std::move(name), std::move(val), GL_UNIFORM);
       }
 
       /// \brief a material_ctx_pair maker for uniform buffer
       template<typename Value>
-      material_ctx_pair<Value> make_ctx_buffer_pair(const std::string &name, Value val)
+      material_ctx_pair<Value> make_ctx_buffer_pair(const std::string &name, Value val, GLenum resource_type = GL_UNIFORM_BLOCK)
       {
-        return material_ctx_pair<Value>(name, std::move(val), true);
+        return material_ctx_pair<Value>(name, std::move(val), resource_type);
       }
 
       /// \brief a material_ctx_pair maker for uniform buffer
       template<typename Value>
-      material_ctx_pair<Value> make_ctx_buffer_pair(std::string &&name, Value val)
+      material_ctx_pair<Value> make_ctx_buffer_pair(std::string &&name, Value val, GLenum resource_type = GL_UNIFORM_BLOCK)
       {
-        return material_ctx_pair<Value>(std::move(name), std::move(val), true);
+        return material_ctx_pair<Value>(std::move(name), std::move(val), resource_type);
       }
 
 

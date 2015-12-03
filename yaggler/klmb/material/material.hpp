@@ -112,7 +112,7 @@ namespace neam
                      // Y. A. Y. :D
                    )),
               variable_strings {{pairs.variable_name...}},
-              variable_buffers {{pairs.buffer_storage...}}
+              variable_buffers {{pairs.resource_type...}}
           {
             // setup shader defines
             _setup_klmb_defines();
@@ -328,7 +328,7 @@ namespace neam
 
           VarCtx vctx; // must be last (after the textures, after shader_prog and after the variable values)
           std::array<std::string, VarCtx::get_number_of_variables()> variable_strings;
-          std::array<bool, VarCtx::get_number_of_variables()> variable_buffers; // is an uniform buffer ?
+          std::array<GLenum, VarCtx::get_number_of_variables()> variable_buffers; // is an uniform buffer ?
       };
 
       namespace internal

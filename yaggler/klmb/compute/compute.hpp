@@ -42,10 +42,23 @@ namespace neam
       class compute_shader
       {
         public:
+          compute_shader() {}
           compute_shader(material_wrapper &&_mw) : mw(std::move(_mw)) {}
           compute_shader(const material_wrapper &_mw) : mw(_mw) {}
 
           ~compute_shader() {}
+
+          /// \brief Set/change the compute shader
+          void set_compute_shader(material_wrapper && _mw)
+          {
+            mw = std::move(_mw);
+          }
+
+          /// \brief Set/change the compute shader
+          void set_compute_shader(const material_wrapper &_mw)
+          {
+            mw = _mw;
+          }
 
           /// \brief Ask the driver to start the compute shader using a previously defined work group count
           void dispatch()

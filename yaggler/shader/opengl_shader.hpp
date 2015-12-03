@@ -325,7 +325,14 @@ namespace neam
 #ifndef YAGGLER_NO_MESSAGES
             if (::opengl_version::debug)
             {
-              neam::cr::out.debug() << LOGGER_INFO_TPL(ShaderSource::get_source_name(), 0) << "compiled shader" << std::endl;
+              constexpr size_t max_len = 8192;
+              char *message = new char[max_len];
+              message[0] = 0;
+              glGetShaderInfoLog(shader_id, max_len, &status, message);
+              if (message[0])
+                neam::cr::out.log() << LOGGER_INFO_TPL(ShaderSource::get_source_name(), 0) << "compiled shader:" << cr::newline << message << std::endl;
+              else
+                neam::cr::out.debug() << LOGGER_INFO_TPL(ShaderSource::get_source_name(), 0) << "compiled shader" << std::endl;
             }
 #endif
             failed = false;

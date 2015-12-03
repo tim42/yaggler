@@ -46,16 +46,17 @@ namespace neam
     namespace shader
     {
 
+#define SUB_CHECK_ID          if (static_cast<GLint>(id) == -2){return *this;}
 #ifndef YAGGLER_NO_FUCKING_TESTS
 # ifdef YAGGLER_NO_MESSAGES
-#  define CHECK_ID            if (static_cast<GLint>(id) == -1){return *this;}
+#  define CHECK_ID            SUB_CHECK_ID if (static_cast<GLint>(id) == -1){return *this;}
 #  define CHECK_PGID          if (static_cast<GLint>(pgid) == -1){return *this;}
 # else
-#  define CHECK_ID            if (static_cast<GLint>(id) == -1){if (::opengl_version::debug){neam::cr::out.debug() << LOGGER_INFO << ": setting a value with a invalid uniform variable ID..." << std::endl;}return *this;}
-#  define CHECK_PGID          if (static_cast<GLint>(pgid) == -1){if (::opengl_version::debug){neam::cr::out.debug() << LOGGER_INFO << ": setting an uniform block with a invalid shader program ID..." << std::endl;}return *this;}
+#  define CHECK_ID            SUB_CHECK_ID if (static_cast<GLint>(id) == -1){if (::opengl_version::debug){neam::cr::out.debug() << LOGGER_INFO << "setting a value with a invalid uniform variable ID..." << std::endl;}return *this;}
+#  define CHECK_PGID          if (static_cast<GLint>(pgid) == -1){if (::opengl_version::debug){neam::cr::out.debug() << LOGGER_INFO << "setting an uniform block with a invalid shader program ID..." << std::endl;}return *this;}
 # endif
 #else
-# define CHECK_ID
+# define CHECK_ID             SUB_CHECK_ID
 # define CHECK_PGID
 #endif
 
@@ -2763,7 +2764,9 @@ namespace neam
           GLuint id;
           GLuint pgid;
       };
+#undef SUB_CHECK_ID
 #undef CHECK_ID
+#undef CHECK_PGID
     } // namespace shader
   } // namespace yaggler
 } // namespace neam

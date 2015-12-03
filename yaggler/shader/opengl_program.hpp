@@ -393,24 +393,31 @@ namespace neam
           /// \note the variable will be invalid if the program is relinked
           uniform_variable get_uniform_variable(const std::string &name) const
           {
+            if (name.empty())
+              return -2;
             return glGetUniformLocation(pg_id, name.data());
           }
 
           /// \brief return the uniform block associated with a given \p name
           /// \note the variable will be invalid if the program is relinked
-          uniform_variable get_uniform_block(const std::string &name) const
+          uniform_variable get_uniform_block(const std::string &name, GLenum block_type = GL_UNIFORM_BLOCK) const
           {
-            return uniform_variable(glGetUniformBlockIndex(pg_id, name.data()), pg_id);
+            if (name.empty())
+              return -2;
+            if (glGetProgramResourceIndex)
+              return uniform_variable(glGetProgramResourceIndex(pg_id, block_type, name.data()), pg_id);
+            else
+              return uniform_variable(glGetUniformBlockIndex(pg_id, name.data()), pg_id);
           }
 
           /// \brief return the uniform variable/block associated with a given \p name
           /// switch based on a boolean parameter (mostly used in materials)
           /// \note the variable will be invalid if the program is relinked
-          uniform_variable get_uniform(const std::string &name, bool block)
+          uniform_variable get_uniform(const std::string &name, GLenum block_type) const
           {
-            if (block)
-              return get_uniform_block(name);
-            return get_uniform_variable(name);
+            if (!block_type || block_type == GL_UNIFORM)
+              return get_uniform_variable(name);
+            return get_uniform_block(name, block_type);
           }
 
           /// \brief Associates a generic vertex attribute index with a named attribute variable (gl doc for glBindAttribLocation)
